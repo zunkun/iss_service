@@ -5,8 +5,7 @@ module.exports = () => {
 	return async function isAdmin (ctx, next) {
 		const user = ctx.state.user;
 		const corpUser = await CorpUsers.findOne({ where: { corpId: ctx.params.corpId, userId: user ? user.id : '' } });
-
-		if (ctx.isAuthenticated() && corpUser && [20, 30].indexOf(corpUser.role) > -1) {
+		if (ctx.isAuthenticated() && corpUser && corpUser.role === 30) {
 			await next();
 			return;
 		}

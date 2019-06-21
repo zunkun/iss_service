@@ -41,6 +41,7 @@ class Dingding {
 			},
 			json: true
 		});
+		console.log({ data });
 		if (data.errcode === 0) {
 			return data.department;
 		} else {
@@ -111,27 +112,6 @@ class Dingding {
 		let accessToken = await this.getAccessToken();
 		let url = `${config.dingBaseUri}/user/getuserinfo?access_token=${accessToken}&code=${code}`;
 		let data = await rp.get(url, { json: true });
-		return data;
-	}
-
-	async btrip (queryPath, rq) {
-		let accessToken = await this.getAccessToken();
-		let uri = `${config.topBaseUri}${queryPath}?access_token=${accessToken}`;
-		let data = await rp({
-			uri,
-			method: 'POST',
-			body: { rq },
-			json: true
-		});
-		return data;
-	}
-
-	async postBtrip (queryPath, body) {
-		let uri = `${config.dingBaseUri}${queryPath}`;
-		let data = await rp.post(uri, {
-			formData: JSON.stringify(body),
-			json: true
-		});
 		return data;
 	}
 

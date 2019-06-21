@@ -1,10 +1,24 @@
-const Catalogs = require('../../models/Catalogs');
-const Staffs = require('../../models/Staffs');
-const Depts = require('../../models/Depts');
-const config = require('../../config');
+var crypto = require('crypto');
 
-class Util {
-}
+const util = {
+	async wait (mileseconds) {
+		console.log('等待中...');
+		return new Promise((resolve, reject) => {
+			return setTimeout(() => {
+				resolve();
+			}, mileseconds || 200);
+		});
+	},
+	stringHash (string) {
+		try {
+			var md5sum = crypto.createHash('md5');
+			let hash = md5sum.update(string).digest('hex');
+			return hash;
+		} catch (error) {
+			console.error({ error });
+			return '';
+		}
+	}
+};
 
-const util = new Util();
 module.exports = util;
