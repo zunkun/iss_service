@@ -13,7 +13,7 @@ Syncs.init({
 		type: DataTypes.INTEGER,
 		defaultValue: 0
 	} // 0-没有同步 1-同步成功 2-同步失败
-}, { sequelize: postgres });
+}, { sequelize: postgres, modelName: 'syncs' });
 
 Syncs.sync();
 

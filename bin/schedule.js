@@ -1,1 +1,1 @@
-require('../schedule/depts');
+require('../schedule/structure');

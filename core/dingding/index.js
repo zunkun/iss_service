@@ -41,7 +41,6 @@ class Dingding {
 			},
 			json: true
 		});
-		console.log({ data });
 		if (data.errcode === 0) {
 			return data.department;
 		} else {

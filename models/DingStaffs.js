@@ -1,11 +1,9 @@
 const postgres = require('../core/db/postgres');
 const { DataTypes, Model } = require('sequelize');
-const Depts = require('./Depts');
 
-class Staffs extends Model {}
-
+class DingStaffs extends Model {}
 // 系统用户
-Staffs.init({
+DingStaffs.init({
 	userId: {
 		type: DataTypes.STRING,
 		unique: true
@@ -21,10 +19,8 @@ Staffs.init({
 	email: DataTypes.STRING,
 	role: DataTypes.INTEGER, // 1-技术员 2-SV 3-OE 4-超级管理员
 	depts: DataTypes.ARRAY(DataTypes.JSON) // 用户部门信息 [{deptId: DataTypes.String, deptName: DataTypes.String}]
-}, { sequelize: postgres });
+}, { sequelize: postgres, modelName: 'dingstaffs' });
 
-Staffs.belongsTo(Depts);
+DingStaffs.sync();
 
-Staffs.sync();
-
-module.exports = Staffs;
+module.exports = DingStaffs;

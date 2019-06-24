@@ -1,5 +1,6 @@
-const Depts = require('../models/Depts');
-const Staffs = require('../models/Staffs');
+const DingDepts = require('../models/DingDepts');
+const DingStaffs = require('../models/DingStaffs');
+const DeptStaffs = require('../models/DeptStaffs');
 const Syncs = require('../models/Syncs');
 
 const dingding = require('../core/dingding');
@@ -8,14 +9,18 @@ const cron = require('node-cron');
 const moment = require('moment');
 const util = require('../core/util');
 
-class DeptSchedule {
+class StructureSchedule {
 	constructor () {
 		this.date = moment().format('YYYY-MM-DD');
 		this.deptMap = new Map();
 		this.departments = [];
+		this.dingdeptIdMap = new Map();
 	}
 
 	async start () {
+		setTimeout(async () => {
+			await this.sync();
+		}, 2000);
 		const task = cron.schedule(config.deptCron, async () => {
 			this.date = moment().format('YYYY-MM-DD');
 			await this.sync();
@@ -63,17 +68,17 @@ class DeptSchedule {
 
 		console.log('【开始】保存部门列表');
 		for (let department of this.departments) {
-			await Depts.upsert({
-				corpId: config.corpId,
+			let dingdept = await DingDepts.upsert({
 				deptId: department.id,
 				deptName: department.name,
 				parentId: department.parentid
 			}, {
 				where: {
-					corpId: config.corpId,
 					deptId: department.id
-				}
+				},
+				returning: true
 			});
+			this.dingdeptIdMap.set(department.id, dingdept[0].id);
 		}
 		console.log('【成功】保存部门列表');
 		return Promise.resolve();
@@ -96,39 +101,46 @@ class DeptSchedule {
 		let userLists = await dingding.getDeptUsers(deptId);
 
 		console.log(`【开始】保存部门 ${deptId} ${this.deptMap.get(deptId).deptName} 人员列表`);
-		let promiseArray = [];
-		for (let user of userLists) {
-			let departmentIds = user.department || [];
-			let depts = [];
-			let promise;
-			for (let deptId of departmentIds) {
-				depts.push({
+		try {
+			for (let user of userLists) {
+				let departmentIds = user.department || [];
+				let depts = [];
+				for (let deptId of departmentIds) {
+					depts.push({
+						deptId,
+						deptName: this.deptMap.get(deptId).deptName || ''
+					});
+				}
+
+				let staffData = {
+					userId: user.userid,
+					userName: user.name,
+					depts,
+					mobile: user.mobile,
+					isAdmin: user.isAdmin,
+					isBoss: user.isBoss,
+					position: user.position,
+					email: user.email,
+					avatar: user.avatar,
+					jobnumber: user.jobnumber
+				};
+
+				let dingstaff = await DingStaffs.upsert(staffData, { where: { userId: user.userid }, returning: true });
+				await DeptStaffs.upsert({
+					userId: user.userid,
 					deptId,
-					deptName: this.deptMap.get(deptId).deptName || ''
-				});
+					userName: user.name,
+					deptName: this.deptMap.get(deptId).deptName || '',
+					dingdeptId: this.dingdeptIdMap.get(deptId),
+					dingstaffId: dingstaff[0].id
+				}, { where: { deptId, userId: user.userid } });
 			}
-
-			let staffData = {
-				corpId: config.corpId,
-				userId: user.userid,
-				userName: user.name,
-				depts,
-				mobile: user.mobile,
-				isAdmin: user.isAdmin,
-				isBoss: user.isBoss,
-				position: user.position,
-				email: user.email,
-				avatar: user.avatar,
-				jobnumber: user.jobnumber
-			};
-
-			promise = await Staffs.upsert(staffData, { where: { corpId: config.corpId, userId: user.userid } });
-			promiseArray.push(promise);
+		} catch (error) {
+			return Promise.reject(error);
 		}
-		return Promise.all(promiseArray);
 	}
 }
 
-const deptSchedule = new DeptSchedule();
+const structureSchedule = new StructureSchedule();
 
-module.exports = deptSchedule.start();
+module.exports = structureSchedule.start();
