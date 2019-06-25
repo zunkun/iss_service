@@ -1,6 +1,5 @@
 const postgres = require('../core/db/postgres');
 const { DataTypes, Model } = require('sequelize');
-
 // 客户信息表
 class Customers extends Model {}
 Customers.init({
@@ -9,7 +8,8 @@ Customers.init({
 	industryName: DataTypes.STRING,
 	site: DataTypes.STRING, // 网址
 	email: DataTypes.STRING,
-	mobile: DataTypes.STRING
+	mobile: DataTypes.STRING,
+	oe: DataTypes.JSONB
 }, { sequelize: postgres, modelName: 'customers', paranoid: true });
 
 Customers.sync();

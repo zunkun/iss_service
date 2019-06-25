@@ -29,7 +29,7 @@ const Customers = require('../models/Customers');
 * @apiError {Number} errmsg 错误消息
 */
 router.get('/', isAdmin(), async (ctx, next) => {
-	let user = jwt.decode(ctx.header.authorization.substr(7));
+	let user = ctx.state.user;
 	let { page, limit, keywords, code, provinceCode, cityCode, customerId, inuse } = ctx.query;
 	page = Number(page) || 1;
 	limit = Number(limit) || 10;
@@ -88,7 +88,7 @@ router.get('/', isAdmin(), async (ctx, next) => {
 router.post('/', isOE(), async (ctx, next) => {
 	let user = ctx.state.user;
 	const data = ctx.request.body;
-	let customer = await Customers.findOne({ id: data.customerId });
+	let customer = await Customers.findOne({ where: { id: data.customerId } });
 	if (!data.customerId || !customer || !data.code || !data.name || !data.provinceCode || !data.cityCode || !data.districtCode || !data.svs || !data.svs.length) {
 		ctx.body = ServiceResult.getFail('参数不正确');
 		return;
@@ -145,7 +145,7 @@ router.put('/:id', isOE(), async (ctx, next) => {
 	const body = ctx.request.body;
 	const data = {};
 	if (body.customerId) {
-		let customer = await Customers.findOne({ id: body.customerId });
+		let customer = await Customers.findOne({ where: { id: body.customerId } });
 		if (!customer) {
 			ctx.body = ServiceResult.getFail('参数不正确');
 			return;
