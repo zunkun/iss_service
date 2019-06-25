@@ -18,7 +18,7 @@ DingStaffs.init({
 	position: DataTypes.STRING,
 	email: DataTypes.STRING,
 	role: DataTypes.INTEGER, // 1-技术员 2-SV 3-OE 4-超级管理员
-	depts: DataTypes.ARRAY(DataTypes.JSON) // 用户部门信息 [{deptId: DataTypes.String, deptName: DataTypes.String}]
+	depts: DataTypes.ARRAY(DataTypes.JSONB) // 用户部门信息 [{deptId: DataTypes.String, deptName: DataTypes.String}]
 }, { sequelize: postgres, modelName: 'dingstaffs', paranoid: true });
 
 DingStaffs.sync();

@@ -1,11 +1,13 @@
-const isAdmin = require('./isAdmin');
-const isAuth = require('./isAuth');
-const isNotAuth = require('./isNotAuth');
 const isSuperAdmin = require('./isSuperAdmin');
+const isAdmin = require('./isAdmin');
+const isOE = require('./isOE');
+const isSV = require('./isSV');
+const isCommon = require('./isCommon');
 
 module.exports = {
-	isAuth,
-	isNotAuth,
+	isSuperAdmin,
 	isAdmin,
-	isSuperAdmin
+	isOE,
+	isSV,
+	isCommon
 };

@@ -8,7 +8,6 @@ const logger = require('koa-logger');
 const jwt = require('koa-jwt');
 const fs = require('fs');
 const path = require('path');
-const config = require('./config');
 
 app.use(bodyparser({
 	enableTypes: [ 'json', 'form', 'text' ]
@@ -17,7 +16,7 @@ app.use(json());
 app.use(logger());
 
 app.use(jwt({ secret: 'iss' }).unless({
-	path: [ /^\/api\/auth/]
+	path: [ /^\/api\/auth/, /^\/iss/ ]
 }));
 
 // 请求出错日志

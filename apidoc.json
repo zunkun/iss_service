@@ -1,0 +1,11 @@
+{
+  "name": "ISS巡检API",
+  "version": "0.1.0",
+  "description": "ISS巡检API",
+  "title": "ISS巡检API",
+  "url" : "http://172.18.1.100:3000",
+  "header": {
+    "title": "ISS巡检API",
+    "filename": "./README.md"
+  }
+}

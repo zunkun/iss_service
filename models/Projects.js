@@ -14,9 +14,9 @@ Projects.init({
 	cityName: DataTypes.STRING,
 	districtCode: DataTypes.STRING, // 区县
 	districtName: DataTypes.STRING,
-	streets: DataTypes.STRING,
-	svs: DataTypes.ARRAY(DataTypes.JSON), // 主管列表 [{userId: '', userName: '', avatar: '', phone: ''}]
-	oe: DataTypes.JSON, // 创建
+	street: DataTypes.STRING,
+	svs: DataTypes.ARRAY(DataTypes.JSONB), // 主管列表 [{userId: '', userName: '', avatar: '', phone: ''}]
+	oe: DataTypes.JSONB, // 创建
 	tosv: DataTypes.BOOLEAN, // 是否下发主管
 	toTime: DataTypes.DATE, // 下发主管时间
 	inuse: { // 是否使用中
