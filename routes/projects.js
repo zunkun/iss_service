@@ -1,6 +1,5 @@
 const ServiceResult = require('../core/ServiceResult');
 const Projects = require('../models/Projects');
-const jwt = require('jsonwebtoken');
 const { Op } = require('sequelize');
 const Router = require('koa-router');
 const router = new Router();
