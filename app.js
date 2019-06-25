@@ -15,9 +15,13 @@ app.use(bodyparser({
 app.use(json());
 app.use(logger());
 
-app.use(jwt({ secret: 'iss' }).unless({
-	path: [ /^\/api\/auth/, /^\/iss/ ]
-}));
+app.use(ctx => {
+	ctx.body = 'hello world from ' + ctx.request.url;
+});
+
+// app.use(jwt({ secret: 'iss' }).unless({
+// 	path: [ /^\/api\/auth/, /^\/iss/ ]
+// }));
 
 // 请求出错日志
 app.on('error', (error) => {

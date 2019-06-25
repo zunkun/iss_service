@@ -6,7 +6,8 @@ const Projects = require('./Projects');
 class Buildings extends Model {}
 Buildings.init({
 	name: DataTypes.STRING, // 建筑名称
-	address: DataTypes.STRING // 地址
+	address: DataTypes.STRING, // 地址
+	projectName: DataTypes.STRING
 }, {
 	sequelize: postgres,
 	modelName: 'buildings',

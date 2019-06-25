@@ -1,20 +1,32 @@
 #!/usr/bin/env node
 require('console-stamp')(console, { pattern: 'yyyy-mm-dd\'T\'HH:MM:ss:l' });
 // require('../services/init');
+const fs = require('fs');
+const path = require('path');
 if (process.env.NODE_ENV === 'production') {
 	console.log('正式环境');
 } else {
 	console.log('测试环境');
 }
 
-const app = require('../app');
-const http = require('http');
-
 const config = require('../config');
+const app = require('../app');
+const https = require('https');
+const { default: enforceHttps } = require('koa-sslify');
+
+app.use(enforceHttps({
+	port: config.PORT2
+}));
 
 const port = process.env.PORT || config.PORT || 4000;
 
-const server = http.createServer(app.callback());
+var options = {
+	key: fs.readFileSync(path.join(__dirname, '../config/ssl/development/iss.key')),
+	cert: fs.readFileSync(path.join(__dirname, '../config/ssl/development/iss.crt'))
+};
+
+const server = https.createServer(options, app.callback());
+
 server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
