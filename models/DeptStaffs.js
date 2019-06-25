@@ -16,7 +16,7 @@ DeptStaffs.init({
 	},
 	userName: DataTypes.STRING,
 	deptName: DataTypes.STRING
-}, { sequelize: postgres, modelName: 'deptstaffs' });
+}, { sequelize: postgres, modelName: 'deptstaffs', paranoid: true });
 
 DeptStaffs.belongsTo(DingDepts, { foreignKey: 'dingdeptId' });
 DeptStaffs.belongsTo(DingStaffs, { foreignKey: 'dingstaffId' });

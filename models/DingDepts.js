@@ -10,7 +10,7 @@ DingDepts.init({
 	}, // 钉钉部门deptId
 	deptName: DataTypes.STRING, // 部门名称
 	managers: DataTypes.ARRAY(DataTypes.JSON) // 部门主管
-}, { sequelize: postgres, modelName: 'dingdepts' });
+}, { sequelize: postgres, modelName: 'dingdepts', paranoid: true });
 
 DingDepts.sync();
 
