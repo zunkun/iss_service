@@ -18,7 +18,9 @@ Floors.init({
 });
 
 Projects.hasMany(Floors);
+Floors.belongsTo(Projects);
 Buildings.hasMany(Floors);
+Floors.belongsTo(Buildings);
 Floors.sync();
 
 module.exports = Floors;

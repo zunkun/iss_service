@@ -20,8 +20,11 @@ Spaces.init({
 });
 
 Projects.hasMany(Spaces);
+Spaces.belongsTo(Projects);
 Buildings.hasMany(Spaces);
+Spaces.belongsTo(Buildings);
 Floors.hasMany(Spaces);
+Spaces.belongsTo(Floors);
 
 Spaces.sync();
 

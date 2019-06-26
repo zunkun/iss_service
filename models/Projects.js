@@ -38,6 +38,7 @@ Projects.init({
 
 // 项目客户关系
 Customers.hasMany(Projects);
+Projects.belongsTo(Customers);
 Projects.sync();
 
 module.exports = Projects;

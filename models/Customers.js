@@ -9,7 +9,7 @@ Customers.init({
 	site: DataTypes.STRING, // 网址
 	email: DataTypes.STRING,
 	mobile: DataTypes.STRING,
-	oe: DataTypes.JSONB
+	oe: DataTypes.BOOLEAN
 }, { sequelize: postgres, modelName: 'customers', paranoid: true });
 
 Customers.sync();

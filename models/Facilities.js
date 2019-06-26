@@ -24,10 +24,14 @@ Facilities.init({
 	paranoid: true
 });
 
-Projects.hasMany(Projects);
+Projects.hasMany(Facilities);
+Facilities.belongsTo(Projects);
 Buildings.hasMany(Facilities);
+Facilities.belongsTo(Buildings);
 Floors.hasMany(Facilities);
+Facilities.belongsTo(Floors);
 Spaces.hasMany(Facilities);
+Facilities.belongsTo(Spaces);
 Facilities.sync();
 
 module.exports = Facilities;

@@ -15,6 +15,7 @@ Buildings.init({
 });
 
 Projects.hasMany(Buildings);
+Buildings.belongsTo(Projects);
 Buildings.sync();
 
 module.exports = Buildings;
