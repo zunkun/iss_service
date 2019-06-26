@@ -122,6 +122,24 @@ router.post('/', isOE(), async (ctx, next) => {
 });
 
 /**
+* @api {get} /api/projects/:id 项目信息
+* @apiName projects-info
+* @apiGroup 项目
+* @apiDescription 项目信息
+* @apiHeader {String} authorization 登录token Bearer + token
+* @apiParam {Number} id 项目id
+* @apiSuccess {Number} errcode 成功为0
+* @apiSuccess {Object} data 项目信息
+* @apiError {Number} errcode 失败不为0
+* @apiError {Number} errmsg 错误消息
+*/
+router.get('/:id', async (ctx, next) => {
+	let project = await Projects.findOne({ where: { id: ctx.params.id } });
+	ctx.body = ServiceResult.getSuccess(project);
+	await next();
+});
+
+/**
 * @api {put} /api/projects/:id 修改项目
 * @apiName project-modify
 * @apiGroup 项目

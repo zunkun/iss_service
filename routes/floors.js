@@ -78,6 +78,26 @@ router.post('/', isAdmin(), async (ctx, next) => {
 });
 
 /**
+* @api {get}  /api/projects/:id/buildings/:buildingId/floors/:id 楼层信息
+* @apiName floor-info
+* @apiGroup 楼层
+* @apiDescription 楼层信息
+* @apiHeader {String} authorization 登录token Bearer + token
+* @apiParam {Number} projectId 项目id
+* @apiParam {Number} buildingId 建筑id
+* @apiParam {Number} id 楼层id
+* @apiSuccess {Number} errcode 成功为0
+* @apiSuccess {Object} data 楼层信息
+* @apiError {Number} errcode 失败不为0
+* @apiError {Number} errmsg 错误消息
+*/
+router.get('/:id', async (ctx, next) => {
+	let floor = await Floors.findOne({ where: { projectId: ctx.params.projectId, buildingId: ctx.params.buildingId, id: ctx.params.id } });
+	ctx.body = ServiceResult.getSuccess(floor);
+	await next();
+});
+
+/**
 * @api {put} /api/projects/:projectId/buildings/:buildingId/floors/:id 修改楼层
 * @apiName floor-modify
 * @apiGroup 楼层

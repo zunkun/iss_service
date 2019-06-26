@@ -93,6 +93,24 @@ router.post('/', isOE(), async (ctx, next) => {
 });
 
 /**
+* @api {get} /api/customers/:id 客户信息
+* @apiName projects-info
+* @apiGroup 客户
+* @apiDescription 客户信息
+* @apiHeader {String} authorization 登录token Bearer + token
+* @apiParam {Number} id 客户id
+* @apiSuccess {Number} errcode 成功为0
+* @apiSuccess {Object} data 客户信息
+* @apiError {Number} errcode 失败不为0
+* @apiError {Number} errmsg 错误消息
+*/
+router.get('/:id', async (ctx, next) => {
+	let customer = await Customers.findOne({ where: { id: ctx.params.id } });
+	ctx.body = ServiceResult.getSuccess(customer);
+	await next();
+});
+
+/**
 * @api {put} /api/customers/:id 修改客户
 * @apiName customer-modify
 * @apiGroup 客户

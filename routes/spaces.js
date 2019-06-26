@@ -83,6 +83,27 @@ router.post('/', isAdmin(), async (ctx, next) => {
 });
 
 /**
+* @api {get} /api/projects/:id/buildings/:buildingId/floors/:floorId/spaces/:id 空间信息
+* @apiName space-info
+* @apiGroup 空间
+* @apiDescription 空间信息
+* @apiHeader {String} authorization 登录token Bearer + token
+* @apiParam {Number} projectId 项目id
+* @apiParam {Number} buildingId 建筑id
+* @apiParam {Number} buildingId 楼层id
+* @apiParam {Number} id 空间id
+* @apiSuccess {Number} errcode 成功为0
+* @apiSuccess {Object} data 空间信息
+* @apiError {Number} errcode 失败不为0
+* @apiError {Number} errmsg 错误消息
+*/
+router.get('/:id', async (ctx, next) => {
+	let space = await Spaces.findOne({ where: { projectId: ctx.params.projectId, buildingId: ctx.params.buildingId, floorId: ctx.params.floorId, id: ctx.params.id } });
+	ctx.body = ServiceResult.getSuccess(space);
+	await next();
+});
+
+/**
 * @api {put} /api/projects/:projectId/buildings/:buildingId/floors/:floorId/spaces/:id 修改空间
 * @apiName space-modify
 * @apiGroup 空间

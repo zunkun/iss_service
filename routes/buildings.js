@@ -74,6 +74,25 @@ router.post('/', isAdmin(), async (ctx, next) => {
 });
 
 /**
+* @api {get} /api/projects/:projectId/buildings/:id 建筑信息
+* @apiName building-info
+* @apiGroup 建筑
+* @apiDescription 建筑信息
+* @apiHeader {String} authorization 登录token Bearer + token
+* @apiParam {Number} projectId 项目id
+* @apiParam {Number} id 建筑id
+* @apiSuccess {Number} errcode 成功为0
+* @apiSuccess {Object} data 建筑信息
+* @apiError {Number} errcode 失败不为0
+* @apiError {Number} errmsg 错误消息
+*/
+router.get('/:id', async (ctx, next) => {
+	let building = await Buildings.findOne({ where: { projectId: ctx.params.buildingId, id: ctx.params.id } });
+	ctx.body = ServiceResult.getSuccess(building);
+	await next();
+});
+
+/**
 * @api {put} /api/projects/:projectId/buildings/:id 修改建筑
 * @apiName building-modify
 * @apiGroup 建筑
