@@ -1,12 +1,17 @@
 const ServiceResult = require('../core/ServiceResult');
+const Customers = require('../models/Customers');
 const Projects = require('../models/Projects');
+const Buildings = require('../models/Buildings');
+const Floors = require('../models/Floors');
+const Spaces = require('../models/Spaces');
+
 const { Op } = require('sequelize');
 const Router = require('koa-router');
-const router = new Router();
 const { isAdmin, isOE } = require('../core/auth');
-router.prefix('/api/projects');
 const areaMap = require('../config/areaMap');
-const Customers = require('../models/Customers');
+
+const router = new Router();
+router.prefix('/api/projects');
 
 /**
 * @api {get} /api/projects?limit=&page=&keywords=&provinceCode=&cityCode=&districtCode=&inuse= 项目列表
@@ -143,6 +148,12 @@ router.put('/:id', isOE(), async (ctx, next) => {
 	let user = ctx.state.user;
 	const body = ctx.request.body;
 	const data = {};
+	if (body.code) {
+		data.code = body.code;
+	}
+	if (body.name) {
+		data.name = body.name;
+	}
 	if (body.customerId) {
 		let customer = await Customers.findOne({ where: { id: body.customerId } });
 		if (!customer) {
@@ -175,6 +186,11 @@ router.put('/:id', isOE(), async (ctx, next) => {
 			'oe.userId': user.userId
 		}
 	});
+	if (body.name) {
+		await Buildings.update({ projectName: body.name }, { where: { projectId: ctx.params.id } });
+		await Floors.update({ projectName: body.name }, { where: { projectId: ctx.params.id } });
+		await Spaces.update({ projectName: body.name }, { where: { projectId: ctx.params.id } });
+	}
 	ctx.body = ServiceResult.getSuccess({});
 	await next();
 });

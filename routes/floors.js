@@ -2,24 +2,24 @@ const ServiceResult = require('../core/ServiceResult');
 const Router = require('koa-router');
 const router = new Router();
 const { isAdmin, isOE } = require('../core/auth');
-const Projects = require('../models/Projects');
 const Buildings = require('../models/Buildings');
 const Floors = require('../models/Floors');
 const Spaces = require('../models/Spaces');
 
-router.prefix('/api/projects/:projectId/buildings');
+router.prefix('/api/projects/:projectId/buildings/:buildingId/floors');
 /**
-* @api {get} /api/projects/:projectId/buildings?limit=&page=&keywords= 建筑列表
-* @apiName buildings-query
-* @apiGroup 建筑
-* @apiDescription 建筑列表
+* @api {get} /api/projects/:projectId/buildings/:buildingId/floors?limit=&page=&keywords= 楼层列表
+* @apiName floors-query
+* @apiGroup 楼层
+* @apiDescription 楼层列表
 * @apiHeader {String} authorization 登录token Bearer + token
 * @apiParam {Number} projectId 项目id
+* @apiParam {String} buildingId 建筑id
 * @apiParam {Number} [limit] 分页条数，默认10
 * @apiParam {Number} [page] 第几页，默认1
 * @apiParam {String} [keywords] 关键词查询
 * @apiSuccess {Number} errcode 成功为0
-* @apiSuccess {Object[]} data 建筑列表
+* @apiSuccess {Object[]} data 楼层列表
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
@@ -37,52 +37,57 @@ router.get('/', async (ctx, next) => {
 		]);
 	}
 	where.projectId = ctx.params.projectId;
+	where.buildingId = ctx.params.buildingId;
 
-	let buildings = await Buildings.findAndCountAll({ where, limit, offset });
-	ctx.body = ServiceResult.getSuccess(buildings);
+	let floors = await Floors.findAndCountAll({ where, limit, offset });
+	ctx.body = ServiceResult.getSuccess(floors);
 	await next();
 });
 
 /**
-* @api {post} /api/projects/:projectId/buildings 创建建筑
-* @apiName building-create
-* @apiGroup 建筑
-* @apiDescription 创建建筑
+* @api {post} /api/projects/:projectId/buildings/:buildingId/floors 创建楼层
+* @apiName floor-create
+* @apiGroup 楼层
+* @apiDescription 创建楼层
 * @apiPermission OE/SV
 * @apiHeader {String} authorization 登录token Bearer + token
 * @apiParam {Number} projectId 项目id
-* @apiParam {String} name 建筑名称
+* @apiParam {String} buildingId 建筑id
+* @apiParam {String} name 楼层名称
 * @apiSuccess {Number} errcode 成功为0
-* @apiSuccess {Object[]} data 建筑building
+* @apiSuccess {Object[]} data 楼层building
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
 router.post('/', isAdmin(), async (ctx, next) => {
 	const data = ctx.request.body;
-	let project = await Projects.findOne({ where: { id: ctx.params.projectId } });
-	if (!data.name || !project) {
+	let building = await Buildings.findOne({ where: { projectId: ctx.params.projectId, id: ctx.params.buildingId } });
+	if (!data.name || !building) {
 		ctx.body = ServiceResult.getFail('参数不正确');
 		return;
 	}
 
 	data.projectId = ctx.params.projectId;
-	data.projectName = project.name;
+	data.projectName = building.projectName;
+	data.buildingId = ctx.params.buildingId;
+	data.buildingName = building.name;
 
-	let building = await Buildings.create(data);
-	ctx.body = ServiceResult.getSuccess(building);
+	let floor = await Floors.create(data);
+	ctx.body = ServiceResult.getSuccess(floor);
 	await next();
 });
 
 /**
-* @api {put} /api/projects/:projectId/buildings/:id 修改建筑
-* @apiName building-modify
-* @apiGroup 建筑
-* @apiDescription 修改建筑
+* @api {put} /api/projects/:projectId/buildings/:buildingId/floors/:id 修改楼层
+* @apiName floor-modify
+* @apiGroup 楼层
+* @apiDescription 修改楼层
 * @apiPermission OE/SV
 * @apiHeader {String} authorization 登录token Bearer + token
+* @apiParam {Number} id 楼层id
 * @apiParam {Number} projectId 项目id
-* @apiParam {Number} id 建筑id
-* @apiParam {String} name 建筑名称
+* @apiParam {String} buildingId 建筑id
+* @apiParam {String} [name] 楼层名称
 * @apiSuccess {Number} errcode 成功为0
 * @apiSuccess {Object[]} data {}
 * @apiError {Number} errcode 失败不为0
@@ -90,43 +95,48 @@ router.post('/', isAdmin(), async (ctx, next) => {
 */
 router.put('/:id', isAdmin(), async (ctx, next) => {
 	const data = ctx.request.body;
-	let project = await Projects.findOne({ where: { id: ctx.params.projectId } });
-	if (!project) {
+	let floor = await Floors.findOne({
+		where: {
+			id: ctx.params.id,
+			projectId: ctx.params.projectId,
+			buildingId: ctx.params.buildingId
+		}
+	});
+	if (!floor) {
 		ctx.body = ServiceResult.getFail('参数不正确');
 		return;
 	}
-	await Buildings.update(data, {
+	await Floors.update(data, {
 		where: {
-			id: ctx.params.id,
-			projectId: ctx.params.projectId
+			id: ctx.params.id
 		}
 	});
 	if (data.name) {
-		await Floors.update({ buildingName: data.name }, { where: { buildingId: ctx.params.id } });
-		await Spaces.update({ buildingName: data.name }, { where: { buildingId: ctx.params.id } });
+		await Spaces.update({ floorName: data.name }, { where: { floorId: ctx.params.id } });
 	}
 	ctx.body = ServiceResult.getSuccess({});
 	await next();
 });
 
 /**
-* @api {delete} /api/projects/:projectId/buildings/:id 删除建筑
-* @apiName building-delete
-* @apiGroup 建筑
-* @apiDescription 删除建筑
+* @api {delete} /api/projects/:projectId/buildings/:buildingId/floors/:id 删除楼层
+* @apiName floor-delete
+* @apiGroup 楼层
+* @apiDescription 删除楼层
 * @apiPermission OE
 * @apiHeader {String} authorization 登录token Bearer + token
 * @apiParam {Number} projectId 项目id
-* @apiParam {String} id 建筑id
-* @apiSuccess {Object} data 建筑building
+* @apiParam {String} buildingId 建筑id
+* @apiParam {String} id 楼层id
+* @apiSuccess {Object} data 楼层building
 * @apiSuccess {Number} errcode 成功为0
 * @apiSuccess {Object[]} data {}
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
 router.delete('/:id', isOE(), async (ctx, next) => {
-	// TODO: 建筑删除其他表处理
-	await Buildings.destroy({ where: { id: ctx.params.id, projectId: ctx.params.projectId } });
+	// TODO: 楼层删除其他表处理
+	await Floors.destroy({ where: { id: ctx.params.id, projectId: ctx.params.projectId, buildingId: ctx.params.buildingId } });
 	await next();
 });
 
