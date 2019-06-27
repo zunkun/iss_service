@@ -9,24 +9,76 @@ const config = require('../config');
 router.prefix('/api/auth');
 
 /**
+* @api {get} /api/auth/jsconfig 系统配置
+* @apiName jsconfig
+* @apiGroup 鉴权
+* @apiDescription 系统配置
+* @apiSuccess {Number} errcode 成功为0
+* @apiSuccess {Object} data 项目列表
+* @apiSuccess {Object} data.corpId 企业corpId
+* @apiSuccess {Object} data.corpName 企业名称
+* @apiSuccess {String} data.agentId 当前应用agentId
+* @apiError {Number} errcode 失败不为0
+* @apiError {Number} errmsg 错误消息
+*/
+router.get('/jsconfig', async (ctx, next) => {
+	ctx.body = ServiceResult.getSuccess({
+		corpId: config.corpId,
+		agentId: config.agentId
+	});
+});
+
+/**
+* @api {get} /api/auth/signature?platform=&url= 签名
+* @apiName signature
+* @apiGroup 鉴权
+* @apiDescription 签名
+* @apiParam {String} platform 生成签名的平台, mobile-移动端 pc-PC端
+* @apiParam {String} url 当前网页的URL，不包含#及其后面部分
+* @apiSuccess {Number} errcode 成功为0
+* @apiSuccess {Object} data 项目列表
+* @apiSuccess {Object} data.corpId 企业corpId
+* @apiSuccess {String} data.agentId 当前应用agentId
+* @apiSuccess {Object} data.url 当前页面url
+* @apiSuccess {Object} data.timeStamp 时间戳
+* @apiSuccess {Object} data.signature 签名
+* @apiSuccess {Object} data.nonceStr 	随机串
+* @apiError {Number} errcode 失败不为0
+* @apiError {Number} errmsg 错误消息
+*/
+
+router.get('/signature', async (ctx, next) => {
+	let { platform, url } = ctx.query;
+	if (!url || !platform) {
+		ctx.body = ServiceResult.getFail('参数不正确');
+		return;
+	}
+	const signature = await dingding.getJsApiSign({ platform, url });
+	ctx.body = ServiceResult.getSuccess(signature);
+	await next();
+});
+
+/**
 * @api {get} /api/auth/login?code=:code&userId= 用户登录
 * @apiName login
 * @apiGroup 鉴权
 * @apiDescription 用户登录
 * @apiParam {String} code 钉钉免登code
 * @apiParam {String} userId 测试环境中使用，没有code,携带钉钉用户的userId
-* @apiSuccess {Object} user 钉钉获取当前用户信息
-* @apiSuccess {String} token token信息,需要鉴权的api中请在header中携带此token
+* @apiSuccess {Number} errcode 成功为0
+* @apiSuccess {Object} data 项目列表
+* @apiSuccess {Object} data.user 钉钉获取当前用户信息
+* @apiSuccess {String} data.token token信息,需要鉴权的api中请在header中携带此token
+* @apiError {Number} errcode 失败不为0
+* @apiError {Number} errmsg 错误消息
 */
 router.get('/login', async (ctx, next) => {
 	let code = ctx.query.code;
 	if (!code || code === 'undefined') {
-		ctx.body = ServiceResult.getFail('参数不正确', 404);
-		let userId = ctx.query.userId || '03020644054858';
+		let userId = ctx.query.userId || '4508346521365159';
 		let user = await DingStaffs.findOne({ where: { userId } });
-
+		console.log(config.secret);
 		let token = jwt.sign({ userId: user.userId, userName: user.userName, jobnumber: user.jobnumber }, config.secret);
-
 		ctx.body = ServiceResult.getSuccess({ user, token: 'Bearer ' + token });
 
 		return;
@@ -40,7 +92,7 @@ router.get('/login', async (ctx, next) => {
 		let user = await DingStaffs.findOne({ where: { userId: userInfo.userid } });
 
 		if (!user) {
-			let userRes = await dingding.getUser(userInfo.userid);
+			let userRes = await dingding.getUse(userInfo.userid);
 			if (userRes.errcode !== 0) {
 				ctx.body = ServiceResult.getFail(user.errmsg, user.errcode);
 				return;
