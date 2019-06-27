@@ -5,15 +5,16 @@ const { isAdmin, isOE } = require('../core/auth');
 const Buildings = require('../models/Buildings');
 const Floors = require('../models/Floors');
 const Spaces = require('../models/Spaces');
+const { Op } = require('sequelize');
 
-router.prefix('/api/projects/:projectId/buildings/:buildingId/floors');
+router.prefix('/api/floors');
 /**
-* @api {get} /api/projects/:projectId/buildings/:buildingId/floors?limit=&page=&keywords= 楼层列表
+* @api {get} /api/floors?projectId=&buildingId=&limit=&page=&keywords= 楼层列表
 * @apiName floors-query
 * @apiGroup 楼层
 * @apiDescription 楼层列表
 * @apiHeader {String} authorization 登录token Bearer + token
-* @apiParam {Number} projectId 项目id
+* @apiParam {Number} [projectId] 项目id
 * @apiParam {String} buildingId 建筑id
 * @apiParam {Number} [limit] 分页条数，默认10
 * @apiParam {Number} [page] 第几页，默认1
@@ -24,17 +25,16 @@ router.prefix('/api/projects/:projectId/buildings/:buildingId/floors');
 * @apiError {Number} errmsg 错误消息
 */
 router.get('/', async (ctx, next) => {
-	let { page, limit, keywords } = ctx.query;
+	let { page, limit, keywords, buildingId, projectId } = ctx.query;
 	page = Number(page) || 1;
 	limit = Number(limit) || 10;
 	let offset = (page - 1) * limit;
 
-	let where = { $or: [] };
+	let where = { buildingId };
+	if (projectId) where.projectId = projectId;
+
 	if (keywords && keywords !== 'undefined') {
-		let regex = new RegExp(keywords, 'i');
-		where.$or = where.$or.concat([
-			{ name: { $regex: regex } }
-		]);
+		where.name = { [Op.iLike]: `%${keywords}%` };
 	}
 	where.projectId = ctx.params.projectId;
 	where.buildingId = ctx.params.buildingId;
@@ -45,13 +45,13 @@ router.get('/', async (ctx, next) => {
 });
 
 /**
-* @api {post} /api/projects/:projectId/buildings/:buildingId/floors 创建楼层
+* @api {post} /api/floors 创建楼层
 * @apiName floor-create
 * @apiGroup 楼层
 * @apiDescription 创建楼层
 * @apiPermission OE/SV
 * @apiHeader {String} authorization 登录token Bearer + token
-* @apiParam {Number} projectId 项目id
+* @apiParam {Number} [projectId] 项目id
 * @apiParam {String} buildingId 建筑id
 * @apiParam {String} name 楼层名称
 * @apiSuccess {Number} errcode 成功为0
@@ -61,15 +61,15 @@ router.get('/', async (ctx, next) => {
 */
 router.post('/', isAdmin(), async (ctx, next) => {
 	const data = ctx.request.body;
-	let building = await Buildings.findOne({ where: { projectId: ctx.params.projectId, id: ctx.params.buildingId } });
+	const where = { buildingId: data.buildingId };
+	if (data.projectId) where.projectId = data.projectId;
+	let building = await Buildings.findOne({ where });
 	if (!data.name || !building) {
 		ctx.body = ServiceResult.getFail('参数不正确');
 		return;
 	}
 
-	data.projectId = ctx.params.projectId;
 	data.projectName = building.projectName;
-	data.buildingId = ctx.params.buildingId;
 	data.buildingName = building.name;
 
 	let floor = await Floors.create(data);
@@ -78,13 +78,13 @@ router.post('/', isAdmin(), async (ctx, next) => {
 });
 
 /**
-* @api {get}  /api/projects/:id/buildings/:buildingId/floors/:id 楼层信息
+* @api {get}  /api/floors/:id?projectId=&buildingId= 楼层信息
 * @apiName floor-info
 * @apiGroup 楼层
 * @apiDescription 楼层信息
 * @apiHeader {String} authorization 登录token Bearer + token
-* @apiParam {Number} projectId 项目id
-* @apiParam {Number} buildingId 建筑id
+* @apiParam {Number} [projectId] 项目id
+* @apiParam {Number} [buildingId] 建筑id
 * @apiParam {Number} id 楼层id
 * @apiSuccess {Number} errcode 成功为0
 * @apiSuccess {Object} data 楼层信息
@@ -92,21 +92,26 @@ router.post('/', isAdmin(), async (ctx, next) => {
 * @apiError {Number} errmsg 错误消息
 */
 router.get('/:id', async (ctx, next) => {
-	let floor = await Floors.findOne({ where: { projectId: ctx.params.projectId, buildingId: ctx.params.buildingId, id: ctx.params.id } });
+	const where = { id: ctx.params.id };
+
+	if (ctx.query.projectId) where.projectId = ctx.query.projectId;
+	if (ctx.query.buildingId) where.buildingId = ctx.query.buildingId;
+
+	let floor = await Floors.findOne({ where });
 	ctx.body = ServiceResult.getSuccess(floor);
 	await next();
 });
 
 /**
-* @api {put} /api/projects/:projectId/buildings/:buildingId/floors/:id 修改楼层
+* @api {put} /api/floors/:id 修改楼层
 * @apiName floor-modify
 * @apiGroup 楼层
 * @apiDescription 修改楼层
 * @apiPermission OE/SV
 * @apiHeader {String} authorization 登录token Bearer + token
 * @apiParam {Number} id 楼层id
-* @apiParam {Number} projectId 项目id
-* @apiParam {String} buildingId 建筑id
+* @apiParam {Number} [projectId] 项目id
+* @apiParam {String} [buildingId] 建筑id
 * @apiParam {String} [name] 楼层名称
 * @apiSuccess {Number} errcode 成功为0
 * @apiSuccess {Object[]} data {}
@@ -115,22 +120,16 @@ router.get('/:id', async (ctx, next) => {
 */
 router.put('/:id', isAdmin(), async (ctx, next) => {
 	const data = ctx.request.body;
-	let floor = await Floors.findOne({
-		where: {
-			id: ctx.params.id,
-			projectId: ctx.params.projectId,
-			buildingId: ctx.params.buildingId
-		}
-	});
+	const where = { id: ctx.params.id };
+	if (data.projectId) where.projectId = data.projectId;
+	if (data.buildingId) where.buildingId = data.buildingId;
+
+	let floor = await Floors.findOne({ where });
 	if (!floor) {
 		ctx.body = ServiceResult.getFail('参数不正确');
 		return;
 	}
-	await Floors.update(data, {
-		where: {
-			id: ctx.params.id
-		}
-	});
+	await Floors.update(data, { where });
 	if (data.name) {
 		await Spaces.update({ floorName: data.name }, { where: { floorId: ctx.params.id } });
 	}
@@ -139,14 +138,14 @@ router.put('/:id', isAdmin(), async (ctx, next) => {
 });
 
 /**
-* @api {delete} /api/projects/:projectId/buildings/:buildingId/floors/:id 删除楼层
+* @api {delete} /api/floors/:id 删除楼层
 * @apiName floor-delete
 * @apiGroup 楼层
 * @apiDescription 删除楼层
 * @apiPermission OE
 * @apiHeader {String} authorization 登录token Bearer + token
-* @apiParam {Number} projectId 项目id
-* @apiParam {String} buildingId 建筑id
+* @apiParam {Number} [projectId] 项目id
+* @apiParam {String} [buildingId] 建筑id
 * @apiParam {String} id 楼层id
 * @apiSuccess {Object} data 楼层building
 * @apiSuccess {Number} errcode 成功为0
@@ -156,7 +155,12 @@ router.put('/:id', isAdmin(), async (ctx, next) => {
 */
 router.delete('/:id', isOE(), async (ctx, next) => {
 	// TODO: 楼层删除其他表处理
-	await Floors.destroy({ where: { id: ctx.params.id, projectId: ctx.params.projectId, buildingId: ctx.params.buildingId } });
+	const data = ctx.request.body;
+	const where = { id: ctx.params.id };
+	if (data.projectId) where.projectId = data.projectId;
+	if (data.buildingId) where.buildingId = data.buildingId;
+
+	await Floors.destroy({ where });
 	await next();
 });
 

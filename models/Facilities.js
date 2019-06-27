@@ -13,11 +13,12 @@ Facilities.init({
 	system: DataTypes.INTEGER, // 设备系统
 	catalog: DataTypes.INTEGER, // 设备类别
 	description: DataTypes.TEXT, // 描述信息
-	examine: DataTypes.BOOLEAN, // 是否需要巡检
+	inspect: DataTypes.BOOLEAN, // 是否需要巡检
 	buildingName: DataTypes.STRING,
 	floorName: DataTypes.STRING,
 	spaceName: DataTypes.STRING,
-	address: DataTypes.STRING // 地址
+	address: DataTypes.STRING, // 地址
+	inspectionIds: DataTypes.ARRAY(DataTypes.INTEGER) // 使用中设备id表
 }, {
 	sequelize: postgres,
 	modelName: 'facilities',

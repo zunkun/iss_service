@@ -42,11 +42,6 @@ router.get('/', isAdmin(), async (ctx, next) => {
 
 	let where = {
 		oe: { userId: user.userId }
-		// [Op.or]: [ {
-		// 	svs: {
-		// 		[Op.contains]: [ { userId: user.userId } ]
-		// 	}
-		// } ]
 	};
 
 	if (keywords && keywords !== 'undefined') {
@@ -169,6 +164,11 @@ router.get('/:id', async (ctx, next) => {
 router.put('/:id', isOE(), async (ctx, next) => {
 	let user = ctx.state.user;
 	const body = ctx.request.body;
+	let project = await Projects.findOne({ where: { id: ctx.params.id } });
+	if (!project) {
+		ctx.body = ServiceResult.getFail('参数不正确');
+		return;
+	}
 	const data = {};
 	if (body.code) {
 		data.code = body.code;
@@ -210,6 +210,7 @@ router.put('/:id', isOE(), async (ctx, next) => {
 			}
 		}
 	});
+
 	if (body.name) {
 		await Buildings.update({ projectName: body.name }, { where: { projectId: ctx.params.id } });
 		await Floors.update({ projectName: body.name }, { where: { projectId: ctx.params.id } });
