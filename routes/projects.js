@@ -4,6 +4,7 @@ const Projects = require('../models/Projects');
 const Buildings = require('../models/Buildings');
 const Floors = require('../models/Floors');
 const Spaces = require('../models/Spaces');
+const DingStaffs = require('../models/DingStaffs');
 
 const { Op } = require('sequelize');
 const Router = require('koa-router');
@@ -39,22 +40,22 @@ router.get('/', isAdmin(), async (ctx, next) => {
 	limit = Number(limit) || 10;
 	let offset = (page - 1) * limit;
 
-	let where = { $or: [] };
+	let where = {
+		oe: { userId: user.userId }
+		// [Op.or]: [ {
+		// 	svs: {
+		// 		[Op.contains]: [ { userId: user.userId } ]
+		// 	}
+		// } ]
+	};
+
 	if (keywords && keywords !== 'undefined') {
-		let regex = new RegExp(keywords, 'i');
-		where.$or = where.$or.concat([
-			{ code: { $regex: regex } },
-			{ name: { $regex: regex } },
-			{ customerName: { $regex: regex } }
+		where[Op.or] = where[Op.or].concat([
+			{ code: { [Op.iLike]: `%${keywords}%` } },
+			{ name: { [Op.iLike]: `%${keywords}%` } },
+			{ customerName: { [Op.iLike]: `%${keywords}%` } }
 		]);
 	}
-	where.$or.push({
-		'oe.userId': user.userId
-	});
-
-	where.$or.push({
-		[Op.contains]: { userId: user.userId }
-	});
 
 	if (code) { where.code = code; }
 	if (provinceCode) { where.code = provinceCode; }
@@ -93,6 +94,7 @@ router.post('/', isOE(), async (ctx, next) => {
 	let user = ctx.state.user;
 	const data = ctx.request.body;
 	let customer = await Customers.findOne({ where: { id: data.customerId } });
+
 	if (!data.customerId || !customer || !data.code || !data.name || !data.provinceCode || !data.cityCode || !data.districtCode || !data.svs || !data.svs.length) {
 		ctx.body = ServiceResult.getFail('参数不正确');
 		return;
@@ -101,7 +103,9 @@ router.post('/', isOE(), async (ctx, next) => {
 	let project = await Projects.findOne({
 		where: {
 			code: data.code,
-			'oe.userId': user.userId
+			oe: {
+				userId: user.userId
+			}
 		}
 	});
 
@@ -111,8 +115,8 @@ router.post('/', isOE(), async (ctx, next) => {
 	}
 
 	data.provinceName = areaMap.province[data.provinceCode];
-	data.cityName = areaMap.province[data.cityCode];
-	data.districtName = areaMap.province[data.districtCode];
+	data.cityName = areaMap.city[data.cityCode];
+	data.districtName = areaMap.district[data.districtCode];
 
 	data.oe = { userId: user.userId, userName: user.userName };
 
@@ -201,7 +205,9 @@ router.put('/:id', isOE(), async (ctx, next) => {
 	await Projects.update(data, {
 		where: {
 			id: ctx.params.id,
-			'oe.userId': user.userId
+			oe: {
+				userId: user.userId
+			}
 		}
 	});
 	if (body.name) {
@@ -230,6 +236,53 @@ router.put('/:id', isOE(), async (ctx, next) => {
 router.delete('/:id', isOE(), async (ctx, next) => {
 	// TODO: 项目删除其他表处理
 	await Projects.destroy({ where: { id: ctx.params.id, 'oe.userId': ctx.state.user.userId } });
+	ctx.body = ServiceResult.getSuccess({});
+	await next();
+});
+
+/**
+* @api {post} /api/projects/oe 项目移交
+* @apiName project-transfer
+* @apiGroup 项目
+* @apiDescription 项目移交, OE负责的项目移交给新的OE
+* @apiPermission OE
+* @apiHeader {String} authorization 登录token Bearer + token
+* @apiParam {String} projectId 项目Id
+* @apiParam {String} userId 接受项目的OE的userId
+* @apiSuccess {Number} errcode 成功为0
+* @apiSuccess {Object} data {}
+* @apiError {Number} errcode 失败不为0
+* @apiError {Number} errmsg 错误消息
+*/
+
+router.post('/oe', isOE(), async (ctx, next) => {
+	let body = ctx.request.body;
+	let user = ctx.state.user;
+	let dingstaff = await DingStaffs.findOne({ where: { userId: body.userId } });
+	let project = await Projects.findOne({
+		where: {
+			id: body.projectId,
+			oe: {
+				userId: user.userId
+			}
+		} });
+	if (!dingstaff || !project) {
+		ctx.body = ServiceResult.getFail('参数错误');
+		return;
+	}
+
+	await Projects.update({
+		oe: { userId: dingstaff.userId, userName: dingstaff.userName }
+	}, {
+		where: {
+			id: body.projectId,
+			oe: {
+				userId: user.userId
+			}
+		}
+	});
+
+	ctx.body = ServiceResult.getSuccess({});
 	await next();
 });
 

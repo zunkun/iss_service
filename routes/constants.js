@@ -13,7 +13,10 @@ router.prefix('/api/constants');
 * @apiGroup 常量
 * @apiDescription 常量信息
 * @apiSuccess {Number} errcode 成功为0
-* @apiSuccess {Object[]} data 项目列表
+* @apiSuccess {Object} data 常量信息
+* @apiSuccess {Object} data.industryMap 客户行业类型
+* @apiSuccess {Object} data.roleMap 角色Map
+* @apiSuccess {Object} data.systemMap 设备系统
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
@@ -28,7 +31,7 @@ router.get('/', async (ctx, next) => {
 * @apiGroup 常量
 * @apiDescription 地址信息
 * @apiSuccess {Number} errcode 成功为0
-* @apiSuccess {Object[]} data 项目列表
+* @apiSuccess {Object[]} data 地址信息
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */

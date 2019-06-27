@@ -8,6 +8,7 @@ const logger = require('koa-logger');
 const jwt = require('koa-jwt');
 const fs = require('fs');
 const path = require('path');
+const config = require('./config');
 
 app.use(bodyparser({
 	enableTypes: [ 'json', 'form', 'text' ]
@@ -15,7 +16,7 @@ app.use(bodyparser({
 app.use(json());
 app.use(logger());
 
-app.use(jwt({ secret: 'iss' }).unless({
+app.use(jwt({ secret: config.secret }).unless({
 	path: [ /^\/api\/auth/, /^\/api\/constants/, /^\/iss/ ]
 }));
 

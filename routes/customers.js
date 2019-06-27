@@ -32,22 +32,14 @@ router.get('/', isAdmin(), async (ctx, next) => {
 	limit = Number(limit) || 10;
 	let offset = (page - 1) * limit;
 
-	let where = { $or: [] };
+	let where = { oe: { userId: user.userId } };
+
 	if (keywords && keywords !== 'undefined') {
-		let regex = new RegExp(keywords, 'i');
-		where.$or = where.$or.concat([
-			{ name: { $regex: regex } },
-			{ industryName: { $regex: regex } }
+		where[Op.or] = ([
+			{ name: { [Op.like]: `%${keywords}%` } },
+			{ industryName: { [Op.like]: `%${keywords}%` } }
 		]);
 	}
-
-	where.$or.push({
-		'oe.userId': user.userId
-	});
-
-	where.$or.push({
-		[Op.contains]: { userId: user.userId }
-	});
 
 	if (industryCode) {
 		where.industryCode = industryCode;
@@ -67,9 +59,9 @@ router.get('/', isAdmin(), async (ctx, next) => {
 * @apiHeader {String} authorization 登录token Bearer + token
 * @apiParam {String} name 客户名称
 * @apiParam {String} industryCode 行业编码
-* @apiParam {String} email 邮箱
-* @apiParam {String} site  网址
-* @apiParam {String} mobile  联系方式
+* @apiParam {String} [email] 邮箱
+* @apiParam {String} [site]  网址
+* @apiParam {String} [mobile]  联系方式
 * @apiSuccess {Number} errcode 成功为0
 * @apiSuccess {Object[]} data 客户customer
 * @apiError {Number} errcode 失败不为0
@@ -79,7 +71,7 @@ router.post('/', isOE(), async (ctx, next) => {
 	let user = ctx.state.user;
 	const data = ctx.request.body;
 
-	if (!data.name || !data.industryCode || !data.site || !data.email || !data.mobile) {
+	if (!data.name || !data.industryCode) {
 		ctx.body = ServiceResult.getFail('参数不正确');
 		return;
 	}

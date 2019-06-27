@@ -17,7 +17,10 @@ Projects.init({
 	street: DataTypes.STRING,
 	svs: DataTypes.ARRAY(DataTypes.JSONB), // 主管列表 [{userId: '', userName: '', avatar: '', phone: ''}]
 	oe: DataTypes.JSONB, // 创建
-	tosv: DataTypes.BOOLEAN, // 是否下发主管
+	tosv: {
+		type: DataTypes.BOOLEAN,
+		defaultValue: false
+	}, // 是否下发主管
 	toTime: DataTypes.DATE, // 下发主管时间
 	inuse: { // 是否使用中
 		type: DataTypes.BOOLEAN,
@@ -28,7 +31,7 @@ Projects.init({
 }, {
 	getterMethods: {
 		address () {
-			return this.provinceName + this.cityName + this.districtName + this.streets;
+			return this.provinceName + this.cityName + this.districtName + this.street;
 		}
 	},
 	sequelize: postgres,
