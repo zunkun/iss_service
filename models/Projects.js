@@ -36,7 +36,8 @@ Projects.init({
 	},
 	sequelize: postgres,
 	modelName: 'projects',
-	paranoid: true
+	paranoid: true,
+	comment: '项目信息'
 });
 
 // 项目客户关系

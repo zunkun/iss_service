@@ -13,7 +13,7 @@ Syncs.init({
 		type: DataTypes.INTEGER,
 		defaultValue: 0
 	} // 0-没有同步 1-同步成功 2-同步失败
-}, { sequelize: postgres, modelName: 'syncs' });
+}, { sequelize: postgres, modelName: 'syncs', comment: '钉钉组织架构同步记录' });
 
 Syncs.sync();
 

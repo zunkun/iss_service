@@ -11,6 +11,7 @@ Buildings.init({
 }, {
 	sequelize: postgres,
 	modelName: 'buildings',
+	comment: '建筑信息',
 	paranoid: true
 });
 

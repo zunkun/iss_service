@@ -10,7 +10,7 @@ Customers.init({
 	email: DataTypes.STRING,
 	mobile: DataTypes.STRING,
 	oe: DataTypes.JSONB
-}, { sequelize: postgres, modelName: 'customers', paranoid: true });
+}, { sequelize: postgres, modelName: 'customers', paranoid: true, comment: '客户信息表' });
 
 Customers.sync();
 

@@ -17,15 +17,16 @@ Inspections.init({
 	statusD: DataTypes.STRING, // 状态D
 	normal: DataTypes.INTEGER, // 正确的状态 1-statusA 2-statusB 3-statusC 4-statusD
 	unit: DataTypes.STRING, // 录入数据单位
-	high: DataTypes.STRING, // 上限
+	high: DataTypes.INTEGER, // 上限
 	tipHigh: DataTypes.STRING, // 上限提示语
-	low: DataTypes.STRING, // 下限
+	low: DataTypes.INTEGER, // 下限
 	tipLow: DataTypes.STRING, // 下限提示语
 	remark: DataTypes.STRING // 备注
 }, {
 	sequelize: postgres,
-	modelName: 'facilities',
-	paranoid: true
+	modelName: 'inspections',
+	paranoid: true,
+	comment: '设备信息检查项目'
 });
 
 Facilities.hasMany(Inspections);

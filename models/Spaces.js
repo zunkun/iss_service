@@ -16,7 +16,8 @@ Spaces.init({
 }, {
 	sequelize: postgres,
 	modelName: 'Spaces',
-	paranoid: true
+	paranoid: true,
+	comment: '楼层内空间'
 });
 
 Projects.hasMany(Spaces);

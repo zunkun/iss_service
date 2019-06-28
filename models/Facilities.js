@@ -9,6 +9,7 @@ const Projects = require('./Projects');
 class Facilities extends Model {}
 Facilities.init({
 	code: DataTypes.STRING, // 设备编号
+	qrcode: DataTypes.STRING, // 设备二维码
 	name: DataTypes.STRING, // 设备名称
 	system: DataTypes.INTEGER, // 设备系统
 	catalog: DataTypes.INTEGER, // 设备类别
@@ -18,11 +19,12 @@ Facilities.init({
 	floorName: DataTypes.STRING,
 	spaceName: DataTypes.STRING,
 	address: DataTypes.STRING, // 地址
-	inspectionIds: DataTypes.ARRAY(DataTypes.INTEGER) // 使用中设备id表
+	inspectionIds: DataTypes.ARRAY(DataTypes.INTEGER) // 使用中设备巡检项目id表
 }, {
 	sequelize: postgres,
 	modelName: 'facilities',
-	paranoid: true
+	paranoid: true,
+	comment: '设备信息'
 });
 
 Projects.hasMany(Facilities);

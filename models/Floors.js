@@ -14,7 +14,8 @@ Floors.init({
 }, {
 	sequelize: postgres,
 	modelName: 'floors',
-	paranoid: true
+	paranoid: true,
+	comment: '楼层信息'
 });
 
 Projects.hasMany(Floors);

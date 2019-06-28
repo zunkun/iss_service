@@ -93,7 +93,6 @@ router.post('/', isAdmin(), async (ctx, next) => {
 */
 router.get('/:id', async (ctx, next) => {
 	const where = { id: ctx.params.id };
-
 	if (ctx.query.projectId) where.projectId = ctx.query.projectId;
 	if (ctx.query.buildingId) where.buildingId = ctx.query.buildingId;
 
