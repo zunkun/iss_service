@@ -130,7 +130,7 @@ router.put('/:id', isOE(), async (ctx, next) => {
 			'oe.userId': user.userId
 		}
 	});
-	if (customer) {
+	if (!customer) {
 		ctx.body = ServiceResult.getFail('参数不正确');
 		return;
 	}
@@ -171,6 +171,7 @@ router.put('/:id', isOE(), async (ctx, next) => {
 router.delete('/:id', isOE(), async (ctx, next) => {
 	// TODO: 客户删除其他表处理
 	await Customers.destroy({ where: { id: ctx.params.id, 'oe.userId': ctx.state.user.userId } });
+	ctx.body = ServiceResult.getSuccess({});
 	await next();
 });
 

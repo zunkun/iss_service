@@ -25,7 +25,7 @@ Pathways.init({
 	paranoid: true
 });
 
-Projects.hasMany(Projects);
+Projects.hasMany(Pathways);
 Pathways.belongsTo(Projects);
 
 Pathways.sync();

@@ -6,8 +6,9 @@ const Spaces = require('./Spaces');
 const Projects = require('./Projects');
 
 // 设备信息
-class Facilities extends Model {}
-Facilities.init({
+class FacilityCollections extends Model {}
+
+FacilityCollections.init({
 	uuid: { // 提交流水
 		type: DataTypes.UUID,
 		defaultValue: UUIDV4
@@ -31,14 +32,14 @@ Facilities.init({
 	comment: '设备信息'
 });
 
-Projects.hasMany(Facilities);
-Facilities.belongsTo(Projects);
-Buildings.hasMany(Facilities);
-Facilities.belongsTo(Buildings);
-Floors.hasMany(Facilities);
-Facilities.belongsTo(Floors);
-Spaces.hasMany(Facilities);
-Facilities.belongsTo(Spaces);
-Facilities.sync();
+Projects.hasMany(FacilityCollections);
+FacilityCollections.belongsTo(Projects);
+Buildings.hasMany(FacilityCollections);
+FacilityCollections.belongsTo(Buildings);
+Floors.hasMany(FacilityCollections);
+FacilityCollections.belongsTo(Floors);
+Spaces.hasMany(FacilityCollections);
+FacilityCollections.belongsTo(Spaces);
+FacilityCollections.sync();
 
-module.exports = Facilities;
+module.exports = FacilityCollections;
