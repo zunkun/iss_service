@@ -5,7 +5,8 @@
   "main": "bin/www",
   "scripts": {
     "start": "./node_modules/.bin/cross-env NODE_ENV=production node bin/www",
-    "dev": "./node_modules/.bin/cross-env NODE_ENV=development ./node_modules/.bin/nodemon bin/www --ignore ./test/"
+    "dev": "./node_modules/.bin/cross-env NODE_ENV=development ./node_modules/.bin/nodemon bin/www --ignore ./test/", 
+    "test":" ./node_modules/.bin/mocha test/"
   },
   "repository": {
     "type": "git",

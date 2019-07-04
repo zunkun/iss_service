@@ -39,3 +39,7 @@ describe('测试 /api/floors', () => {
 describe('测试 /api/spaces', () => {
 	require('./api/spaces');
 });
+
+describe('测试 /api/fcs', () => {
+	require('./api/fcs');
+});

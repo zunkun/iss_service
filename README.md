@@ -4,3 +4,9 @@
 ```
 $ node bin/www
 ```
+
+## 测试接口
+```
+$ npm run test
+
+```

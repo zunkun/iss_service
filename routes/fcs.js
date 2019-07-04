@@ -3,17 +3,17 @@ const Router = require('koa-router');
 const router = new Router();
 const { isOE } = require('../core/auth');
 const FC = require('../models/FC');
+const IC = require('../models/IC');
 const { Op } = require('sequelize');
 
 router.prefix('/api/fcs');
 
 /**
-* @api {get} /api/fcs?projectId=&limit=&page=&keywords= 设备类列表
+* @api {get} /api/fcs?limit=&page=&keywords= 设备类列表
 * @apiName fcs-query
 * @apiGroup 设备类
 * @apiDescription 设备类列表
 * @apiHeader {String} authorization 登录token Bearer + token
-* @apiParam {Number} projectId 项目id
 * @apiParam {Number} [limit] 分页条数，默认10
 * @apiParam {Number} [page] 第几页，默认1
 * @apiParam {String} [keywords] 关键词查询
@@ -26,17 +26,11 @@ router.prefix('/api/fcs');
 * @apiError {Number} errmsg 错误消息
 */
 router.get('/', async (ctx, next) => {
-	let { projectId, page, limit, keywords } = ctx.query;
+	let { page, limit, keywords } = ctx.query;
 	page = Number(page) || 1;
 	limit = Number(limit) || 10;
 	let offset = (page - 1) * limit;
-
-	const where = { projectId };
-
-	if (!projectId) {
-		ctx.body = ServiceResult.getFail('参数错误');
-		return;
-	}
+	const where = {};
 	if (keywords && keywords !== 'undefined') {
 		where.name = { [Op.like]: `%${keywords}%` };
 	}
@@ -53,7 +47,6 @@ router.get('/', async (ctx, next) => {
 * @apiDescription 创建设备类
 * @apiPermission OE
 * @apiHeader {String} authorization 登录token Bearer + token
-* @apiParam {Number} projectId 项目id
 * @apiParam {String} name 设备类别
 * @apiParam {Number} system 设备系统，参考常量中 systemMap
 * @apiParam {Number} [description] 描述信息
@@ -67,17 +60,17 @@ router.get('/', async (ctx, next) => {
 * @apiError {Number} errmsg 错误消息
 */
 router.post('/', isOE(), async (ctx, next) => {
-	const { projectId, system, name, description } = ctx.request.body;
-	if (!projectId || !system || !name) {
+	const { system, name, description } = ctx.request.body;
+	if (!system || !name) {
 		ctx.body = ServiceResult.getFail('参数不正确');
 		return;
 	}
-	const where = { projectId, system, name };
+	const where = { system, name };
 	let fc = await FC.findOne({ where });
 	if (fc) {
 		ctx.body = ServiceResult.getFail('已存在该设备类');
 	}
-	fc = await FC.create({ projectId, system, name, description });
+	fc = await FC.create({ system, name, description });
 	ctx.body = ServiceResult.getSuccess(fc);
 	await next();
 });
@@ -150,10 +143,8 @@ router.put('/:id', isOE(), async (ctx, next) => {
 * @apiError {Number} errmsg 错误消息
 */
 router.delete('/:id', isOE(), async (ctx, next) => {
-	// TODO: 设备类删除其他表处理
-	const where = { id: ctx.params.id };
-
-	await FC.destroy({ where });
+	await FC.destroy({ where: { id: ctx.params.id } });
+	await IC.destroy({ where: { fcId: ctx.params.id } });
 	await next();
 });
 
