@@ -43,3 +43,7 @@ describe('测试 /api/spaces', () => {
 describe('测试 /api/fcs', () => {
 	require('./api/fcs');
 });
+
+describe('测试 /api/ics', () => {
+	require('./api/ics');
+});
