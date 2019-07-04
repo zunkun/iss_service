@@ -66,7 +66,7 @@ router.get('/', async (ctx, next) => {
 */
 router.post('/', isAdmin(), async (ctx, next) => {
 	const data = ctx.request.body;
-	const where = { floorId: data.floorId };
+	const where = { id: data.floorId };
 
 	if (data.projectId) where.projectId = data.projectId;
 	if (data.buildingId) where.buildingId = data.buildingId;

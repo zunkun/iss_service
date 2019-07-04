@@ -26,8 +26,17 @@ const systemMap = {
 	9: '消防报警系统'
 };
 
+// 频率map
+const frequencyMap = {
+	1: '每班',
+	2: '每周',
+	3: '每月',
+	4: '每年'
+};
+
 module.exports = {
 	industryMap,
 	roleMap,
-	systemMap
+	systemMap,
+	frequencyMap
 };

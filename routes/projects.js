@@ -45,11 +45,11 @@ router.get('/', isAdmin(), async (ctx, next) => {
 	};
 
 	if (keywords && keywords !== 'undefined') {
-		where[Op.or] = where[Op.or].concat([
+		where[Op.or] = [
 			{ code: { [Op.iLike]: `%${keywords}%` } },
 			{ name: { [Op.iLike]: `%${keywords}%` } },
 			{ customerName: { [Op.iLike]: `%${keywords}%` } }
-		]);
+		];
 	}
 
 	if (code) { where.code = code; }
@@ -58,7 +58,7 @@ router.get('/', isAdmin(), async (ctx, next) => {
 	if (customerId) { where.customerId = customerId; }
 	if (inuse) { where.inuse = inuse; }
 
-	let projects = await Projects.findAndCountAll({ where, limit, offset });
+	let projects = await Projects.findAndCountAll({ where, limit, offset, include: [ { model: Customers } ] });
 	ctx.body = ServiceResult.getSuccess(projects);
 	await next();
 });
@@ -97,7 +97,7 @@ router.post('/', isOE(), async (ctx, next) => {
 
 	let project = await Projects.findOne({
 		where: {
-			code: data.code,
+			code: `${data.code}`,
 			oe: {
 				userId: user.userId
 			}

@@ -1,3 +1,3 @@
-const config = process.env.NODE_ENV === 'production' ? require('../config/production') : require('../config/development');
+const config = require(`./${process.env.NODE_ENV || 'development'}`);
 
 module.exports = config;

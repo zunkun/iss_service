@@ -15,7 +15,7 @@ Spaces.init({
 	floorName: DataTypes.STRING
 }, {
 	sequelize: postgres,
-	modelName: 'Spaces',
+	modelName: 'spaces',
 	paranoid: true,
 	comment: '楼层内空间'
 });

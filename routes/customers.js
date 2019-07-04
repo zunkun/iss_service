@@ -140,9 +140,9 @@ router.put('/:id', isOE(), async (ctx, next) => {
 		data.industryName = constants.industryMap[industryCode];
 	}
 	data.name = name || customer.name;
-	data.name = email || customer.email;
-	data.name = site || customer.site;
-	data.name = mobile || customer.mobile;
+	data.email = email || customer.email;
+	data.site = site || customer.site;
+	data.mobile = mobile || customer.mobile;
 
 	await customers.update(data, {
 		where: {

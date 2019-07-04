@@ -30,14 +30,16 @@ router.get('/', async (ctx, next) => {
 	limit = Number(limit) || 10;
 	let offset = (page - 1) * limit;
 
+	if (!buildingId) {
+		ctx.body = ServiceResult.getFail('参数不正确');
+		return;
+	}
 	let where = { buildingId };
 	if (projectId) where.projectId = projectId;
 
 	if (keywords && keywords !== 'undefined') {
 		where.name = { [Op.iLike]: `%${keywords}%` };
 	}
-	where.projectId = ctx.params.projectId;
-	where.buildingId = ctx.params.buildingId;
 
 	let floors = await Floors.findAndCountAll({ where, limit, offset });
 	ctx.body = ServiceResult.getSuccess(floors);
@@ -61,7 +63,7 @@ router.get('/', async (ctx, next) => {
 */
 router.post('/', isAdmin(), async (ctx, next) => {
 	const data = ctx.request.body;
-	const where = { buildingId: data.buildingId };
+	const where = { id: data.buildingId };
 	if (data.projectId) where.projectId = data.projectId;
 	let building = await Buildings.findOne({ where });
 	if (!data.name || !building) {
@@ -71,7 +73,6 @@ router.post('/', isAdmin(), async (ctx, next) => {
 
 	data.projectName = building.projectName;
 	data.buildingName = building.name;
-
 	let floor = await Floors.create(data);
 	ctx.body = ServiceResult.getSuccess(floor);
 	await next();
