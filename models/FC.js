@@ -1,6 +1,5 @@
 const postgres = require('../core/db/postgres');
 const { DataTypes, Model } = require('sequelize');
-const Projects = require('./Projects');
 
 // Facility Collection 设备类，OE操作时设定设备类型
 class FC extends Model {}
@@ -15,9 +14,6 @@ FC.init({
 	paranoid: true,
 	comment: 'OE设备类型'
 });
-
-Projects.hasMany(FC);
-FC.belongsTo(Projects);
 
 FC.sync();
 

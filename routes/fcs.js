@@ -35,7 +35,7 @@ router.get('/', async (ctx, next) => {
 		where.name = { [Op.like]: `%${keywords}%` };
 	}
 
-	let fcs = await FC.findAndCountAll({ where, limit, offset });
+	let fcs = await FC.findAndCountAll({ where, limit, offset, include: [ { model: IC } ] });
 	ctx.body = ServiceResult.getSuccess(fcs);
 	await next();
 });
@@ -94,7 +94,7 @@ router.post('/', isOE(), async (ctx, next) => {
 router.get('/:id', async (ctx, next) => {
 	const where = { id: ctx.params.id };
 
-	let fc = await FC.findOne({ where });
+	let fc = await FC.findOne({ where, include: [ { model: IC } ] });
 	ctx.body = ServiceResult.getSuccess(fc);
 	await next();
 });

@@ -1,5 +1,5 @@
 const should = require('should');
-
+const { Op } = require('sequelize');
 const FC = require('../../models/FC');
 describe('/api/fcs', () => {
 	let fc;
@@ -20,7 +20,9 @@ describe('/api/fcs', () => {
 	it('新增fcs POST /api/fcs', (done) => {
 		FC.destroy({
 			where: {
-				name: '复旦空调'
+				name: {
+					[Op.in]: [ '复旦空调', '复旦空调2' ]
+				}
 			}
 		}).then(() => {
 			process.request
