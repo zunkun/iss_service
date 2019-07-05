@@ -65,10 +65,14 @@ router.post('/', isAdmin(), async (ctx, next) => {
 		ctx.body = ServiceResult.getFail('参数不正确');
 		return;
 	}
-
+	let building = await Buildings.findOne({ where: { projectId: data.projectId, name: data.name } });
+	if (building) {
+		ctx.body = ServiceResult.getFail('该项目中已经存在该楼房');
+		return;
+	}
 	data.projectName = project.name;
 
-	let building = await Buildings.create(data);
+	building = await Buildings.create(data);
 	ctx.body = ServiceResult.getSuccess(building);
 	await next();
 });
@@ -121,6 +125,11 @@ router.put('/:id', isAdmin(), async (ctx, next) => {
 	let building = await Buildings.findOne({ where });
 	if (!building) {
 		ctx.body = ServiceResult.getFail('参数不正确');
+		return;
+	}
+	building = await Buildings.findOne({ where: { projectId: building.projectId, name: data.name } });
+	if (building) {
+		ctx.body = ServiceResult.getFail('该项目中已经存在该楼房');
 		return;
 	}
 	await Buildings.update(data, { where });

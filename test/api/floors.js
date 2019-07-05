@@ -1,11 +1,14 @@
 const should = require('should');
 const Buildings = require('../../models/Buildings');
 const Floors = require('../../models/Floors');
+const Projects = require('../../models/Projects');
+const { Op } = require('sequelize');
 
 describe('/api/floors', () => {
 	let floor;
 	beforeEach(async () => {
-		this.building = await Buildings.findOne({ where: { name: '复旦软件园' } });
+		this.project = await Projects.findOne({ where: { code: 'TEST0001' } });
+		this.building = await Buildings.findOne({ where: { name: '复旦软件园', projectId: this.project.id } });
 	});
 
 	it('查询floor列表 GET /api/floors?buildingId=limit=10&page=1', (done) => {
@@ -24,7 +27,9 @@ describe('/api/floors', () => {
 	it('新增floors POST /api/floors', (done) => {
 		Floors.destroy({
 			where: {
-				name: '1F',
+				name: {
+					[Op.in]: [ '1F', '2F' ]
+				},
 				buildingId: this.building.id
 			}
 		}).then(() => {
@@ -41,6 +46,11 @@ describe('/api/floors', () => {
 					let resData = res.body;
 					should.equal(resData.errcode, 0);
 					floor = resData.data;
+					should.equal(floor.name, '1F');
+					should.equal(floor.projectId, this.building.projectId);
+					should.equal(floor.projectName, this.building.projectName);
+					should.equal(floor.buildingId, this.building.id);
+					should.equal(floor.buildingName, this.building.name);
 					done();
 				});
 		}).catch(err => console.error(err));

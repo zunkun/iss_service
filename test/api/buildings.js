@@ -41,6 +41,9 @@ describe('/api/buildings', () => {
 					let resData = res.body;
 					should.equal(resData.errcode, 0);
 					building = resData.data;
+					should.equal(building.name, '上海复旦软件园');
+					should.equal(building.projectId, this.project.id);
+					should.equal(building.projectName, this.project.name);
 					done();
 				});
 		}).catch(err => console.error(err));

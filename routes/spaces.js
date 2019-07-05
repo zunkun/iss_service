@@ -75,15 +75,20 @@ router.post('/', isAdmin(), async (ctx, next) => {
 		ctx.body = ServiceResult.getFail('参数不正确');
 		return;
 	}
+	let space = await Spaces.findOne({ where: { floorId: data.floorId, name: data.name } });
+	if (space) {
+		ctx.body = ServiceResult.getFail('该楼层已经存在该房间');
+		return;
+	}
 
 	data.projectId = floor.projectId;
 	data.projectName = floor.projectName;
 	data.buildingId = floor.buildingId;
-	data.buildingName = floor.name;
-	data.floorId = floor.floorId;
-	data.floorName = floor.floorName;
+	data.buildingName = floor.buildingName;
+	data.floorId = floor.id;
+	data.floorName = floor.name;
 
-	let space = await Spaces.create(data);
+	space = await Spaces.create(data);
 	ctx.body = ServiceResult.getSuccess(space);
 	await next();
 });
@@ -143,6 +148,12 @@ router.put('/:id', isAdmin(), async (ctx, next) => {
 	let space = await Spaces.findOne({ where });
 	if (!space) {
 		ctx.body = ServiceResult.getFail('参数不正确');
+		return;
+	}
+
+	space = await Spaces.findOne({ where: { floorId: space.floorId, name: data.name } });
+	if (space) {
+		ctx.body = ServiceResult.getFail('该楼层已经存在该房间');
 		return;
 	}
 	await Spaces.update(data, { where	});

@@ -70,10 +70,15 @@ router.post('/', isAdmin(), async (ctx, next) => {
 		ctx.body = ServiceResult.getFail('参数不正确');
 		return;
 	}
-
+	let floor = await Floors.findOne({ where: { buildingId: data.buildingId, name: data.name } });
+	if (floor) {
+		ctx.body = ServiceResult.getFail('该楼房已经存在该楼层');
+		return;
+	}
+	data.projectId = building.projectId;
 	data.projectName = building.projectName;
 	data.buildingName = building.name;
-	let floor = await Floors.create(data);
+	floor = await Floors.create(data);
 	ctx.body = ServiceResult.getSuccess(floor);
 	await next();
 });
@@ -129,6 +134,11 @@ router.put('/:id', isAdmin(), async (ctx, next) => {
 		ctx.body = ServiceResult.getFail('参数不正确');
 		return;
 	}
+	floor = await Floors.findOne({ where: { buildingId: floor.buildingId, name: data.name } });
+	if (floor) {
+		ctx.body = ServiceResult.getFail('该楼房中已经存在该楼层');
+		return;
+	}
 	await Floors.update(data, { where });
 	if (data.name) {
 		await Spaces.update({ floorName: data.name }, { where: { floorId: ctx.params.id } });
@@ -154,7 +164,6 @@ router.put('/:id', isAdmin(), async (ctx, next) => {
 * @apiError {Number} errmsg 错误消息
 */
 router.delete('/:id', isOE(), async (ctx, next) => {
-	// TODO: 楼层删除其他表处理
 	const data = ctx.request.body;
 	const where = { id: ctx.params.id };
 	if (data.projectId) where.projectId = data.projectId;

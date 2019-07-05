@@ -39,6 +39,9 @@ describe('/api/fcs', () => {
 					let resData = res.body;
 					should.equal(resData.errcode, 0);
 					fc = resData.data;
+					should.equal(fc.name, '复旦空调');
+					should.equal(fc.system, 1);
+					should.equal(fc.description, '测试设备');
 					done();
 				});
 		}).catch(err => console.error(err));

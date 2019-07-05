@@ -47,3 +47,7 @@ describe('测试 /api/fcs', () => {
 describe('测试 /api/ics', () => {
 	require('./api/ics');
 });
+
+describe('测试 /api/fhsvs', () => {
+	require('./api/fhsvs');
+});

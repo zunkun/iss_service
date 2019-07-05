@@ -9,24 +9,40 @@ const { Op } = require('sequelize');
 router.prefix('/api/fcs');
 
 /**
-* @api {get} /api/fcs?limit=&page=&keywords= 设备类列表
+* @api {get} /api/fcs?name=&system=&limit=&page=&keywords= 设备类列表
 * @apiName fcs-query
 * @apiGroup 设备类
 * @apiDescription 设备类列表
 * @apiHeader {String} authorization 登录token Bearer + token
+* @apiParam {Number} [name] 设备类名称
+* @apiParam {Number} [system] 设备类系统
 * @apiParam {Number} [limit] 分页条数，默认10
 * @apiParam {Number} [page] 第几页，默认1
 * @apiParam {String} [keywords] 关键词查询
 * @apiSuccess {Number} errcode 成功为0
 * @apiSuccess {Object[]} data 设备类列表
-* @apiSuccess {String} data.name 设备类别
-* @apiSuccess {Number} data.system 设备系统，查看常量中systemMap
-* @apiSuccess {Number} data.description 设备描述
+* @apiSuccess {Object[]} data 设备类信息
+* @apiSuccess {Object} data.id 设备类id
+* @apiSuccess {Object} data.name 设备类别
+* @apiSuccess {Object} data.system 设备类系统
+* @apiSuccess {Object[]} data.ics 检查项目
+* @apiSuccess {Number} data.ics.id 检查项目id
+* @apiSuccess {String} data.ics.name 检查项目名称
+* @apiSuccess {String} data.ics.datatype 录入数据类型 1-选择项目 2-信息录入
+* @apiSuccess {String} data.ics.stateA 状态A
+* @apiSuccess {String} data.ics.stateB 状态B
+* @apiSuccess {String} data.ics.stateC 状态C
+* @apiSuccess {String} data.ics.stateD 状态D
+* @apiSuccess {String} data.ics.normal 正确的状态 1-stateA 2-stateB 3-stateC 4-stateD
+* @apiSuccess {String} data.ics.unit 录入数据单位
+* @apiSuccess {String} data.ics.high 上限
+* @apiSuccess {String} data.ics.low 下限
+* @apiSuccess {String} data.ics.remark 备注
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
 router.get('/', async (ctx, next) => {
-	let { page, limit, keywords } = ctx.query;
+	let { name, page, limit, keywords } = ctx.query;
 	page = Number(page) || 1;
 	limit = Number(limit) || 10;
 	let offset = (page - 1) * limit;
@@ -34,6 +50,7 @@ router.get('/', async (ctx, next) => {
 	if (keywords && keywords !== 'undefined') {
 		where.name = { [Op.like]: `%${keywords}%` };
 	}
+	if (name) where.name = name;
 
 	let fcs = await FC.findAndCountAll({ where, limit, offset, include: [ { model: IC } ] });
 	ctx.body = ServiceResult.getSuccess(fcs);
@@ -55,7 +72,6 @@ router.get('/', async (ctx, next) => {
 * @apiSuccess {Object} data.id 设备类id
 * @apiSuccess {Object} data.name 设备类别
 * @apiSuccess {Object} data.system 设备类系统
-* @apiSuccess {Object} data.projectId 设备类projectId
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
@@ -87,7 +103,19 @@ router.post('/', isOE(), async (ctx, next) => {
 * @apiSuccess {Object} data.id 设备类id
 * @apiSuccess {Object} data.name 设备类别
 * @apiSuccess {Object} data.system 设备类系统
-* @apiSuccess {Object} data.projectId 设备类projectId
+* @apiSuccess {Object[]} data.ics 检查项目
+* @apiSuccess {Number} data.ics.id 检查项目id
+* @apiSuccess {String} data.ics.name 检查项目名称
+* @apiSuccess {String} data.ics.datatype 录入数据类型 1-选择项目 2-信息录入
+* @apiSuccess {String} data.ics.stateA 状态A
+* @apiSuccess {String} data.ics.stateB 状态B
+* @apiSuccess {String} data.ics.stateC 状态C
+* @apiSuccess {String} data.ics.stateD 状态D
+* @apiSuccess {String} data.ics.normal 正确的状态 1-stateA 2-stateB 3-stateC 4-stateD
+* @apiSuccess {String} data.ics.unit 录入数据单位
+* @apiSuccess {String} data.ics.high 上限
+* @apiSuccess {String} data.ics.low 下限
+* @apiSuccess {String} data.ics.remark 备注
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
@@ -145,6 +173,7 @@ router.put('/:id', isOE(), async (ctx, next) => {
 router.delete('/:id', isOE(), async (ctx, next) => {
 	await FC.destroy({ where: { id: ctx.params.id } });
 	await IC.destroy({ where: { fcId: ctx.params.id } });
+	ctx.body = ServiceResult.getSuccess({});
 	await next();
 });
 

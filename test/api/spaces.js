@@ -2,11 +2,13 @@ const should = require('should');
 const Buildings = require('../../models/Buildings');
 const Floors = require('../../models/Floors');
 const Spaces = require('../../models/Spaces');
+const Projects = require('../../models/Projects');
 
 describe('/api/spaces', () => {
 	let space;
 	beforeEach(async () => {
-		this.building = await Buildings.findOne({ where: { name: '复旦软件园' } });
+		this.project = await Projects.findOne({ where: { code: 'TEST0001' } });
+		this.building = await Buildings.findOne({ where: { name: '复旦软件园', projectId: this.project.id } });
 		this.floor = await Floors.findOne({ where: { buildingId: this.building.id, name: '2F' } });
 	});
 
@@ -43,6 +45,13 @@ describe('/api/spaces', () => {
 					let resData = res.body;
 					should.equal(resData.errcode, 0);
 					space = resData.data;
+					should.equal(space.name, 'Room1');
+					should.equal(space.projectId, this.floor.projectId);
+					should.equal(space.projectName, this.floor.projectName);
+					should.equal(space.buildingId, this.floor.buildingId);
+					should.equal(space.buildingName, this.floor.buildingName);
+					should.equal(space.floorId, this.floor.id);
+					should.equal(space.floorName, this.floor.name);
 					done();
 				});
 		}).catch(err => console.error(err));

@@ -100,6 +100,7 @@ router.post('/', isOE(), async (ctx, next) => {
 	if (data.datatype === 1) {
 		if (!data.stateA && !data.stateB && !data.stateC && !data.stateD) valid = false;
 		if (!data.normal) valid = false;
+		icData.normal = data.normal;
 		[ 'stateA', 'stateB', 'stateC', 'stateD' ].map(key => {
 			icData[key] = data[key];
 		});
@@ -171,6 +172,7 @@ router.put('/:id', isOE(), async (ctx, next) => {
 	if (data.datatype === 1) {
 		if (!data.stateA && !data.stateB && !data.stateC && !data.stateD) valid = false;
 		if (!data.normal) valid = false;
+		icData.normal = data.normal;
 		[ 'stateA', 'stateB', 'stateC', 'stateD' ].map(key => {
 			icData[key] = data[key];
 		});

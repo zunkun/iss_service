@@ -41,6 +41,14 @@ describe('/api/ics', () => {
 				should.equal(resData.errcode, 0);
 				ic = resData.data;
 				should.equal(ic.name, '带电指示灯');
+				should.equal(ic.fcId, this.fc.id);
+				should.equal(ic.datatype, 1);
+				should.equal(ic.stateA, '点亮');
+				should.equal(ic.stateB, '熄灭');
+				should.equal(ic.stateC, null);
+				should.equal(ic.stateD, null);
+				should.equal(ic.normal, 1);
+				should.equal(ic.frequency, 1);
 				done();
 			});
 	});
@@ -64,6 +72,11 @@ describe('/api/ics', () => {
 				should.equal(resData.errcode, 0);
 				ic = resData.data;
 				should.equal(ic.name, '温度');
+				should.equal(ic.fcId, this.fc.id);
+				should.equal(ic.datatype, 2);
+				should.equal(ic.high, 100);
+				should.equal(ic.low, 20);
+				should.equal(ic.unit, '℃');
 				done();
 			});
 	});
@@ -86,7 +99,7 @@ describe('/api/ics', () => {
 			.put(`/api/ics/${ic.id}`)
 			.set('Authorization', process.token)
 			.send({
-				name: '温度2',
+				name: '指示灯2',
 				datatype: 1,
 				stateA: '正常',
 				stateB: '错误',
@@ -100,7 +113,7 @@ describe('/api/ics', () => {
 				should.equal(resData.errcode, 0);
 
 				IC.findOne({ where: { id: ic.id } }).then((_ic) => {
-					should.equal(_ic.name, '温度2');
+					should.equal(_ic.name, '指示灯2');
 					done();
 				});
 			});
