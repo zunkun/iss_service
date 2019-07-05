@@ -1,7 +1,7 @@
 const ServiceResult = require('../core/ServiceResult');
 const Router = require('koa-router');
 const router = new Router();
-const { isOE, isSV } = require('../core/auth');
+const { isOE } = require('../core/auth');
 const FC = require('../models/FC');
 const IC = require('../models/IC');
 const FHSV = require('../models/FHSV');

@@ -21,7 +21,9 @@ FHSV.init({
 	status: {
 		type: DataTypes.INTEGER,
 		defaultValue: 1
-	} // 审批状态 1-编辑中 2-已提交
+	}, // 审批状态 1-编辑中 2-已提交
+	fcId: DataTypes.INTEGER,
+	fcName: DataTypes.STRING
 }, {
 	sequelize: postgres,
 	modelName: 'fhsvs',
