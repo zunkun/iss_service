@@ -77,8 +77,7 @@ router.get('/login', async (ctx, next) => {
 	if (!code || code === 'undefined') {
 		let userId = ctx.query.userId || '4508346521365159';
 		let user = await DingStaffs.findOne({ where: { userId } });
-		console.log(config.secret);
-		let token = jwt.sign({ userId: user.userId, userName: user.userName, jobnumber: user.jobnumber }, config.secret);
+		let token = jwt.sign({ userId: user.userId, userName: user.userName, jobnumber: user.jobnumber, oe: !!user.oe }, config.secret);
 		ctx.body = ServiceResult.getSuccess({ user, token: 'Bearer ' + token });
 
 		return;
@@ -92,7 +91,7 @@ router.get('/login', async (ctx, next) => {
 		let user = await DingStaffs.findOne({ where: { userId: userInfo.userid } });
 
 		if (!user) {
-			let userRes = await dingding.getUse(userInfo.userid);
+			let userRes = await dingding.getUser(userInfo.userid);
 			if (userRes.errcode !== 0) {
 				ctx.body = ServiceResult.getFail(user.errmsg, user.errcode);
 				return;
@@ -101,7 +100,8 @@ router.get('/login', async (ctx, next) => {
 			user = {
 				userId: user.userid,
 				userName: user.name,
-				jobnumber: user.jobnumber
+				jobnumber: user.jobnumber,
+				oe: !!user.oe
 			};
 		}
 
@@ -110,7 +110,7 @@ router.get('/login', async (ctx, next) => {
 			return;
 		}
 
-		let token = jwt.sign({ userId: user.userId, userName: user.userName, jobnumber: user.jobnumber }, config.secret);
+		let token = jwt.sign({ userId: user.userId, userName: user.userName, jobnumber: user.jobnumber, oe: user.oe }, config.secret);
 
 		ctx.body = ServiceResult.getSuccess({ user, token: 'Bearer ' + token });
 	} catch (error) {

@@ -16,5 +16,6 @@ module.exports = {
 	appkey: 'ding9vrsww4git23xdod',
 	appsecret: 'GMVTGc5ZpnNXjqruYrucjXxqaS29Rnj6Q37tP1utg57YeUH3V-Tc4tASEcyuLIWr',
 	nonceStr: 'afasdzwe',
-	deptCron: '0 0 6 * * *'
+	deptCron: '0 0 6 * * *', // 每日6时同步部门列表
+	roleCron: '0 0 */1 * *' // 每隔1个小时同步角色列表
 };

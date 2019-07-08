@@ -17,7 +17,14 @@ DingStaffs.init({
 	isBoss: DataTypes.BOOLEAN,
 	position: DataTypes.STRING,
 	email: DataTypes.STRING,
-	role: DataTypes.INTEGER, // 1-技术员 2-SV 3-OE 4-超级管理员
+	oe: {
+		type: DataTypes.BOOLEAN,
+		defaultValue: false
+	},
+	role: {
+		type: DataTypes.INTEGER,
+		defaultValue: 1
+	}, // 1-用户 2-管理员 3-超级管理员
 	depts: DataTypes.ARRAY(DataTypes.JSONB) // 用户部门信息 [{deptId: DataTypes.String, deptName: DataTypes.String}]
 }, { sequelize: postgres, modelName: 'dingstaffs', paranoid: true, comment: '钉钉用户' });
 

@@ -18,14 +18,12 @@ class StructureSchedule {
 	}
 
 	async start () {
-		setTimeout(async () => {
-			await this.sync();
-		}, 2000);
+		await this.sync();
 		const task = cron.schedule(config.deptCron, async () => {
 			this.date = moment().format('YYYY-MM-DD');
 			await this.sync();
 		});
-		task.start();
+		return task.start();
 	}
 
 	async sync () {
