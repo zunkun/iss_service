@@ -3,7 +3,7 @@ const Router = require('koa-router');
 const router = new Router();
 const { isOE } = require('../core/auth');
 const FC = require('../models/FC');
-const IC = require('../models/IC');
+const FIC = require('../models/FIC');
 const { Op } = require('sequelize');
 
 router.prefix('/api/fcs');
@@ -25,19 +25,19 @@ router.prefix('/api/fcs');
 * @apiSuccess {Object} data.id 设备类id
 * @apiSuccess {Object} data.name 设备类别
 * @apiSuccess {Object} data.system 设备类系统
-* @apiSuccess {Object[]} data.ics 检查项目
-* @apiSuccess {Number} data.ics.id 检查项目id
-* @apiSuccess {String} data.ics.name 检查项目名称
-* @apiSuccess {String} data.ics.datatype 录入数据类型 1-选择项目 2-信息录入
-* @apiSuccess {String} data.ics.stateA 状态A
-* @apiSuccess {String} data.ics.stateB 状态B
-* @apiSuccess {String} data.ics.stateC 状态C
-* @apiSuccess {String} data.ics.stateD 状态D
-* @apiSuccess {String} data.ics.normal 正确的状态 1-stateA 2-stateB 3-stateC 4-stateD
-* @apiSuccess {String} data.ics.unit 录入数据单位
-* @apiSuccess {String} data.ics.high 上限
-* @apiSuccess {String} data.ics.low 下限
-* @apiSuccess {String} data.ics.remark 备注
+* @apiSuccess {Object[]} data.fics 检查项目
+* @apiSuccess {Number} data.fics.id 检查项目id
+* @apiSuccess {String} data.fics.name 检查项目名称
+* @apiSuccess {String} data.fics.datatype 录入数据类型 1-选择项目 2-信息录入
+* @apiSuccess {String} data.fics.stateA 状态A
+* @apiSuccess {String} data.fics.stateB 状态B
+* @apiSuccess {String} data.fics.stateC 状态C
+* @apiSuccess {String} data.fics.stateD 状态D
+* @apiSuccess {String} data.fics.normal 正确的状态 1-stateA 2-stateB 3-stateC 4-stateD
+* @apiSuccess {String} data.fics.unit 录入数据单位
+* @apiSuccess {String} data.fics.high 上限
+* @apiSuccess {String} data.fics.low 下限
+* @apiSuccess {String} data.fics.remark 备注
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
@@ -52,7 +52,7 @@ router.get('/', async (ctx, next) => {
 	}
 	if (name) where.name = name;
 
-	let fcs = await FC.findAndCountAll({ where, limit, offset, include: [ { model: IC } ] });
+	let fcs = await FC.findAndCountAll({ where, limit, offset, include: [ { model: FIC } ] });
 	ctx.body = ServiceResult.getSuccess(fcs);
 	await next();
 });
@@ -103,26 +103,26 @@ router.post('/', isOE(), async (ctx, next) => {
 * @apiSuccess {Object} data.id 设备类id
 * @apiSuccess {Object} data.name 设备类别
 * @apiSuccess {Object} data.system 设备类系统
-* @apiSuccess {Object[]} data.ics 检查项目
-* @apiSuccess {Number} data.ics.id 检查项目id
-* @apiSuccess {String} data.ics.name 检查项目名称
-* @apiSuccess {String} data.ics.datatype 录入数据类型 1-选择项目 2-信息录入
-* @apiSuccess {String} data.ics.stateA 状态A
-* @apiSuccess {String} data.ics.stateB 状态B
-* @apiSuccess {String} data.ics.stateC 状态C
-* @apiSuccess {String} data.ics.stateD 状态D
-* @apiSuccess {String} data.ics.normal 正确的状态 1-stateA 2-stateB 3-stateC 4-stateD
-* @apiSuccess {String} data.ics.unit 录入数据单位
-* @apiSuccess {String} data.ics.high 上限
-* @apiSuccess {String} data.ics.low 下限
-* @apiSuccess {String} data.ics.remark 备注
+* @apiSuccess {Object[]} data.fics 检查项目
+* @apiSuccess {Number} data.fics.id 检查项目id
+* @apiSuccess {String} data.fics.name 检查项目名称
+* @apiSuccess {String} data.fics.datatype 录入数据类型 1-选择项目 2-信息录入
+* @apiSuccess {String} data.fics.stateA 状态A
+* @apiSuccess {String} data.fics.stateB 状态B
+* @apiSuccess {String} data.fics.stateC 状态C
+* @apiSuccess {String} data.fics.stateD 状态D
+* @apiSuccess {String} data.fics.normal 正确的状态 1-stateA 2-stateB 3-stateC 4-stateD
+* @apiSuccess {String} data.fics.unit 录入数据单位
+* @apiSuccess {String} data.fics.high 上限
+* @apiSuccess {String} data.fics.low 下限
+* @apiSuccess {String} data.fics.remark 备注
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
 router.get('/:id', async (ctx, next) => {
 	const where = { id: ctx.params.id };
 
-	let fc = await FC.findOne({ where, include: [ { model: IC } ] });
+	let fc = await FC.findOne({ where, include: [ { model: FIC } ] });
 	ctx.body = ServiceResult.getSuccess(fc);
 	await next();
 });
@@ -172,7 +172,7 @@ router.put('/:id', isOE(), async (ctx, next) => {
 */
 router.delete('/:id', isOE(), async (ctx, next) => {
 	await FC.destroy({ where: { id: ctx.params.id } });
-	await IC.destroy({ where: { fcId: ctx.params.id } });
+	await FIC.destroy({ where: { fcId: ctx.params.id } });
 	ctx.body = ServiceResult.getSuccess({});
 	await next();
 });

@@ -3,8 +3,8 @@ const { DataTypes, Model } = require('sequelize');
 const FC = require('./FC');
 
 // 设备信息检查项目类，OE选择是操作
-class IC extends Model {}
-IC.init({
+class FIC extends Model {}
+FIC.init({
 	name: DataTypes.STRING, // 检查项目名称
 	frequency: DataTypes.INTEGER, // 建议频率 1-每班 2-每周 3-每月 4-每年
 	datatype: {
@@ -24,14 +24,14 @@ IC.init({
 	remark: DataTypes.STRING // 备注
 }, {
 	sequelize: postgres,
-	modelName: 'ics',
+	modelName: 'fics',
 	paranoid: true,
 	comment: '设备检查项目类'
 });
 
-FC.hasMany(IC);
-IC.belongsTo(FC);
+FC.hasMany(FIC);
+FIC.belongsTo(FC);
 
-IC.sync();
+FIC.sync();
 
-module.exports = IC;
+module.exports = FIC;

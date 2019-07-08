@@ -1,19 +1,19 @@
 const should = require('should');
 const { Op } = require('sequelize');
 const FC = require('../../models/FC');
-const FHSV = require('../../models/FHSV');
+const Facilities = require('../../models/Facilities');
 const Spaces = require('../../models/Spaces');
-describe('/api/fhsvs', () => {
-	let fhsv;
+describe('/api/facilities', () => {
+	let facility;
 
 	beforeEach(async () => {
 		this.space = await Spaces.findOne({ where: { name: 'Room2' } });
 		this.fc = await FC.findOne({ where: { name: '复旦空调2' } });
 	});
 
-	it('查询fhsvs列表 GET /api/fhsvs?code=&name=&system=&fcId=&projectId=&buildingId=&floorId=&spaceId=&limit=&page=&keywords=&status=', (done) => {
+	it('查询facilities列表 GET /api/facilities?code=&name=&system=&fcId=&projectId=&buildingId=&floorId=&spaceId=&limit=&page=&keywords=&status=', (done) => {
 		process.request
-			.get('/api/fhsvs?limit=10&page=1')
+			.get('/api/facilities?limit=10&page=1')
 			.set('Authorization', process.token)
 			.expect(200)
 			.end((err, res) => {
@@ -24,8 +24,8 @@ describe('/api/fhsvs', () => {
 			});
 	});
 
-	it('新增fhsvs POST /api/fhsvs', (done) => {
-		FHSV.destroy({
+	it('新增facilities POST /api/facilities', (done) => {
+		Facilities.destroy({
 			where: {
 				name: {
 					[Op.in]: [ '美的空调', '美的空调2' ]
@@ -33,7 +33,7 @@ describe('/api/fhsvs', () => {
 			}
 		}).then(() => {
 			process.request
-				.post('/api/fhsvs')
+				.post('/api/facilities')
 				.set('Authorization', process.token)
 				.send({
 					code: 'F0001',
@@ -47,29 +47,30 @@ describe('/api/fhsvs', () => {
 					should.not.exist(err);
 					let resData = res.body;
 					should.equal(resData.errcode, 0);
-					fhsv = resData.data;
+					facility = resData.data;
 					done();
 				});
 		}).catch(err => console.error(err));
 	});
 
-	it('查询fhsv GET /api/fhsvs/:id', (done) => {
+	it('查询facility GET /api/facilities/:id', (done) => {
 		process.request
-			.get(`/api/fhsvs/${fhsv.id}`)
+			.get(`/api/facilities/${facility.id}`)
 			.set('Authorization', process.token)
 			.expect(200)
 			.end((err, res) => {
 				should.not.exist(err);
 				should.equal(res.body.errcode, 0);
+
 				should.equal(res.body.data.name, '美的空调');
-				should.exist(res.body.data.ihsvs);
+				should.exist(res.body.data.fis);
 				done();
 			});
 	});
 
-	it('修改fhsv PUT /api/fhsvs/:id', (done) => {
+	it('修改facility PUT /api/facilities/:id', (done) => {
 		process.request
-			.put(`/api/fhsvs/${fhsv.id}`)
+			.put(`/api/facilities/${facility.id}`)
 			.set('Authorization', process.token)
 			.send({
 				name: '美的空调2'
@@ -80,8 +81,8 @@ describe('/api/fhsvs', () => {
 				let resData = res.body;
 				should.equal(resData.errcode, 0);
 
-				FHSV.findOne({ where: { id: fhsv.id } }).then((_fhsv) => {
-					should.equal(_fhsv.name, '美的空调2');
+				Facilities.findOne({ where: { id: facility.id } }).then((_facility) => {
+					should.equal(_facility.name, '美的空调2');
 					done();
 				});
 			});

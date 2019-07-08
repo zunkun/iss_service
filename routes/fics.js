@@ -3,13 +3,13 @@ const Router = require('koa-router');
 const router = new Router();
 const { isOE } = require('../core/auth');
 const FC = require('../models/FC');
-const IC = require('../models/IC');
+const FIC = require('../models/FIC');
 
-router.prefix('/api/ics');
+router.prefix('/api/fics');
 
 /**
-* @api {get}/api/ics?fcId= 检查项列表
-* @apiName ic-query
+* @api {get}/api/fics?fcId= 检查项列表
+* @apiName fic-query
 * @apiGroup 检查项
 * @apiDescription 检查项列表，datatype=1时有数据 [stateA,stateB,stateC,stateD,normal], datatype=2时有数据 [high,low,unit]
 * @apiHeader {String} authorization 登录token Bearer + token
@@ -39,22 +39,22 @@ router.get('/', async (ctx, next) => {
 		return;
 	}
 
-	const ics = await IC.findAll({ where: { fcId } });
+	const fics = await FIC.findAll({ where: { fcId } });
 	let res = [];
-	for (let ic of ics) {
+	for (let fic of fics) {
 		let data = {
-			name: ic.name,
-			frequency: ic.frequency,
-			datatype: ic.datatype,
-			remark: ic.remark
+			name: fic.name,
+			frequency: fic.frequency,
+			datatype: fic.datatype,
+			remark: fic.remark
 		};
-		if (ic.datatype === 1) {
+		if (fic.datatype === 1) {
 			[ 'stateA', 'stateB', 'stateC', 'stateD', 'normal' ].map(key => {
-				data[key] = ic[key];
+				data[key] = fic[key];
 			});
 		} else {
 			[ 'high', 'low', 'unit' ].map(key => {
-				data[key] = ic[key];
+				data[key] = fic[key];
 			});
 		}
 		res.push(data);
@@ -64,8 +64,8 @@ router.get('/', async (ctx, next) => {
 });
 
 /**
-* @api {post}/api/ics 创建检查项
-* @apiName ic-create
+* @api {post}/api/fics 创建检查项
+* @apiName fic-create
 * @apiGroup 检查项
 * @apiDescription 创建检查项
 * @apiPermission OE
@@ -114,14 +114,14 @@ router.post('/', isOE(), async (ctx, next) => {
 		ctx.body = ServiceResult.getFail('参数不正确');
 		return;
 	}
-	let ic = await IC.create(icData);
-	ctx.body = ServiceResult.getSuccess(ic);
+	let fic = await FIC.create(icData);
+	ctx.body = ServiceResult.getSuccess(fic);
 	await next();
 });
 
 /**
-* @api {get}/api/ics/:id 检查项信息
-* @apiName ic-info
+* @api {get}/api/fics/:id 检查项信息
+* @apiName fic-info
 * @apiGroup 检查项
 * @apiDescription 检查项信息
 * @apiHeader {String} authorization 登录token Bearer + token
@@ -134,14 +134,14 @@ router.post('/', isOE(), async (ctx, next) => {
 router.get('/:id', async (ctx, next) => {
 	const where = { id: ctx.params.id };
 
-	let ic = await IC.findOne({ where });
-	ctx.body = ServiceResult.getSuccess(ic);
+	let fic = await FIC.findOne({ where });
+	ctx.body = ServiceResult.getSuccess(fic);
 	await next();
 });
 
 /**
-* @api {put}/api/fcs/:fcId/ics/:id 修改检查项
-* @apiName ic-modify
+* @api {put}/api/fcs/:fcId/fics/:id 修改检查项
+* @apiName fic-modify
 * @apiGroup 检查项
 * @apiDescription 修改检查项
 * @apiPermission OE
@@ -189,14 +189,14 @@ router.put('/:id', isOE(), async (ctx, next) => {
 		ctx.body = ServiceResult.getFail('参数不正确');
 		return;
 	}
-	await IC.update(icData, { where: { id: ctx.params.id }	});
+	await FIC.update(icData, { where: { id: ctx.params.id }	});
 	ctx.body = ServiceResult.getSuccess({});
 	await next();
 });
 
 /**
-* @api {delete}/api/ics/:id 删除检查项
-* @apiName ic-delete
+* @api {delete}/api/fics/:id 删除检查项
+* @apiName fic-delete
 * @apiGroup 检查项
 * @apiDescription 删除检查项
 * @apiPermission OE
@@ -211,7 +211,7 @@ router.delete('/:id', isOE(), async (ctx, next) => {
 	// TODO: 检查项删除其他表处理
 	const where = { id: ctx.params.id };
 
-	await IC.destroy({ where });
+	await FIC.destroy({ where });
 	await next();
 });
 

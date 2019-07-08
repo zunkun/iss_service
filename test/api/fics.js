@@ -1,16 +1,16 @@
 const should = require('should');
 const FC = require('../../models/FC');
-const IC = require('../../models/IC');
+const FIC = require('../../models/FIC');
 
-describe('/api/ics', () => {
-	let ic;
+describe('/api/fics', () => {
+	let fic;
 	beforeEach(async () => {
 		this.fc = await FC.findOne({ where: { name: '复旦空调2' } });
 	});
 
-	it('查询ic列表 GET /api/ics?fcId=limit=10&page=1', (done) => {
+	it('查询fic列表 GET /api/fics?fcId=limit=10&page=1', (done) => {
 		process.request
-			.get(`/api/ics?fcId=${this.fc.id}&limit=10&page=1`)
+			.get(`/api/fics?fcId=${this.fc.id}&limit=10&page=1`)
 			.set('Authorization', process.token)
 			.expect(200)
 			.end((err, res) => {
@@ -21,9 +21,9 @@ describe('/api/ics', () => {
 			});
 	});
 
-	it('新增ics 选择项目 POST /api/ics', (done) => {
+	it('新增ics 选择项目 POST /api/fics', (done) => {
 		process.request
-			.post('/api/ics')
+			.post('/api/fics')
 			.set('Authorization', process.token)
 			.send({
 				fcId: this.fc.id,
@@ -39,23 +39,23 @@ describe('/api/ics', () => {
 				should.not.exist(err);
 				let resData = res.body;
 				should.equal(resData.errcode, 0);
-				ic = resData.data;
-				should.equal(ic.name, '带电指示灯');
-				should.equal(ic.fcId, this.fc.id);
-				should.equal(ic.datatype, 1);
-				should.equal(ic.stateA, '点亮');
-				should.equal(ic.stateB, '熄灭');
-				should.equal(ic.stateC, null);
-				should.equal(ic.stateD, null);
-				should.equal(ic.normal, 1);
-				should.equal(ic.frequency, 1);
+				fic = resData.data;
+				should.equal(fic.name, '带电指示灯');
+				should.equal(fic.fcId, this.fc.id);
+				should.equal(fic.datatype, 1);
+				should.equal(fic.stateA, '点亮');
+				should.equal(fic.stateB, '熄灭');
+				should.equal(fic.stateC, null);
+				should.equal(fic.stateD, null);
+				should.equal(fic.normal, 1);
+				should.equal(fic.frequency, 1);
 				done();
 			});
 	});
 
-	it('新增ics 输入数据 POST /api/ics', (done) => {
+	it('新增fics 输入数据 POST /api/fics', (done) => {
 		process.request
-			.post('/api/ics')
+			.post('/api/fics')
 			.set('Authorization', process.token)
 			.send({
 				fcId: this.fc.id,
@@ -70,20 +70,20 @@ describe('/api/ics', () => {
 				should.not.exist(err);
 				let resData = res.body;
 				should.equal(resData.errcode, 0);
-				ic = resData.data;
-				should.equal(ic.name, '温度');
-				should.equal(ic.fcId, this.fc.id);
-				should.equal(ic.datatype, 2);
-				should.equal(ic.high, 100);
-				should.equal(ic.low, 20);
-				should.equal(ic.unit, '℃');
+				fic = resData.data;
+				should.equal(fic.name, '温度');
+				should.equal(fic.fcId, this.fc.id);
+				should.equal(fic.datatype, 2);
+				should.equal(fic.high, 100);
+				should.equal(fic.low, 20);
+				should.equal(fic.unit, '℃');
 				done();
 			});
 	});
 
-	it('查询ic GET /api/ics/:id', (done) => {
+	it('查询fic GET /api/fics/:id', (done) => {
 		process.request
-			.get(`/api/ics/${ic.id}`)
+			.get(`/api/fics/${fic.id}`)
 			.set('Authorization', process.token)
 			.expect(200)
 			.end((err, res) => {
@@ -94,9 +94,9 @@ describe('/api/ics', () => {
 			});
 	});
 
-	it('修改ic 修改datatype PUT /api/ics/:id', (done) => {
+	it('修改fic 修改datatype PUT /api/fics/:id', (done) => {
 		process.request
-			.put(`/api/ics/${ic.id}`)
+			.put(`/api/fics/${fic.id}`)
 			.set('Authorization', process.token)
 			.send({
 				name: '指示灯2',
@@ -112,7 +112,7 @@ describe('/api/ics', () => {
 				let resData = res.body;
 				should.equal(resData.errcode, 0);
 
-				IC.findOne({ where: { id: ic.id } }).then((_ic) => {
+				FIC.findOne({ where: { id: fic.id } }).then((_ic) => {
 					should.equal(_ic.name, '指示灯2');
 					done();
 				});

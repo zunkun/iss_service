@@ -44,10 +44,10 @@ describe('测试 /api/fcs', () => {
 	require('./api/fcs');
 });
 
-describe('测试 /api/ics', () => {
-	require('./api/ics');
+describe('测试 /api/fics', () => {
+	require('./api/fics');
 });
 
-describe('测试 /api/fhsvs', () => {
-	require('./api/fhsvs');
+describe('测试 /api/facilities', () => {
+	require('./api/facilities');
 });

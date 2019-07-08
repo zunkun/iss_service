@@ -4,6 +4,7 @@ const router = new Router();
 const { isOE } = require('../core/auth');
 const Projects = require('../models/Projects');
 const Buildings = require('../models/Buildings');
+
 const Floors = require('../models/Floors');
 const Spaces = require('../models/Spaces');
 
@@ -17,6 +18,7 @@ router.prefix('/api/buildings');
 * @apiDescription 建筑列表
 * @apiHeader {String} authorization 登录token Bearer + token
 * @apiParam {Number} projectId 项目id
+* @apiParam {String} oesv 查询类型 sv-SV编辑中的楼房列表, oe-OE审核通过的楼房列表
 * @apiParam {Number} [limit] 分页条数，默认10
 * @apiParam {Number} [page] 第几页，默认1
 * @apiParam {String} [keywords] 关键词查询
@@ -26,7 +28,7 @@ router.prefix('/api/buildings');
 * @apiError {Number} errmsg 错误消息
 */
 router.get('/', async (ctx, next) => {
-	let { page, limit, keywords, projectId } = ctx.query;
+	let { page, oesv, limit, keywords, projectId } = ctx.query;
 
 	page = Number(page) || 1;
 	limit = Number(limit) || 10;
@@ -39,6 +41,7 @@ router.get('/', async (ctx, next) => {
 	if (keywords && keywords !== 'undefined') {
 		where.name = { [Op.like]: `%${keywords}%` };
 	}
+	where.oesv = oesv === 'oe' ? 'oe' : 'sv';
 	let buildings = await Buildings.findAndCountAll({ where, limit, offset });
 	ctx.body = ServiceResult.getSuccess(buildings);
 	await next();
@@ -71,6 +74,7 @@ router.post('/', async (ctx, next) => {
 		return;
 	}
 	data.projectName = project.name;
+	data.oesv = 'sv';
 
 	building = await Buildings.create(data);
 	ctx.body = ServiceResult.getSuccess(building);

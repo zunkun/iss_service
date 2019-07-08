@@ -1,10 +1,11 @@
 const postgres = require('../core/db/postgres');
 const { DataTypes, Model } = require('sequelize');
-const FH = require('./FH');
+const Facilities = require('./Facilities');
 
-// 设备信息检查项目类，OE选择是操作
-class IU extends Model {}
-IU.init({
+// 设备信息检查项目类 Facility Inspections，OE选择是操作
+class FIs extends Model {}
+
+FIs.init({
 	name: DataTypes.STRING, // 检查项目名称
 	frequency: DataTypes.INTEGER, // 建议频率 1-每班 2-每周 3-每月 4-每年
 	datatype: {
@@ -18,20 +19,24 @@ IU.init({
 	normal: DataTypes.INTEGER, // 正确的状态 1-stateA 2-stateB 3-stateC 4-stateD
 	unit: DataTypes.STRING, // 录入数据单位
 	high: DataTypes.INTEGER, // 上限
-	tipHigh: DataTypes.STRING, // 上限提示语
+	// tipHigh: DataTypes.STRING, // 上限提示语
 	low: DataTypes.INTEGER, // 下限
-	tipLow: DataTypes.STRING, // 下限提示语
-	remark: DataTypes.STRING // 备注
+	// tipLow: DataTypes.STRING, // 下限提示语
+	remark: DataTypes.STRING, // 备注
+	oesv: { // sv-SV编辑中的数据 oe-OE审核通过的数据
+		type: DataTypes.STRING,
+		defaultValue: 'sv'
+	}
 }, {
 	sequelize: postgres,
-	modelName: 'iu',
+	modelName: 'fis',
 	paranoid: true,
-	comment: '审核通过的检查项'
+	comment: '设备信息检查项目类 Facility Inspections'
 });
 
-FH.hasMany(IU);
-IU.belongsTo(FH);
+Facilities.hasMany(FIs);
+FIs.belongsTo(Facilities);
 
-IU.sync();
+FIs.sync();
 
-module.exports = IU;
+module.exports = FIs;

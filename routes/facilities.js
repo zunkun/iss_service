@@ -1,20 +1,19 @@
 const ServiceResult = require('../core/ServiceResult');
 const Router = require('koa-router');
 const router = new Router();
-const { isOE } = require('../core/auth');
 const FC = require('../models/FC');
-const IC = require('../models/IC');
-const FHSV = require('../models/FHSV');
-const IHSV = require('../models/IHSV');
+const FIC = require('../models/FIC');
+const Facilities = require('../models/Facilities');
+const FIs = require('../models/FIs');
 const Spaces = require('../models/Spaces');
 const { Op } = require('sequelize');
 
-// SV设备录入
-router.prefix('/api/fhsvs');
+// 设备录入管理
+router.prefix('/api/facilities');
 
 /**
-* @api {get} /api/fhsvs?code=&name=&system=&fcId=&projectId=&buildingId=&floorId=&spaceId=&limit=&page=&keywords=&status= 设备录入列表
-* @apiName fhsvs-query
+* @api {get} /api/facilities?code=&name=&system=&fcId=&projectId=&buildingId=&floorId=&spaceId=&limit=&page=&keywords=&status= 设备录入列表
+* @apiName facilities-query
 * @apiGroup 设备录入
 * @apiDescription 设备录入列表
 * @apiHeader {String} authorization 登录token Bearer + token
@@ -40,19 +39,19 @@ router.prefix('/api/fhsvs');
 * @apiSuccess {Number} data.fcId 设备类id
 * @apiSuccess {String} data.fcName 设备类别
 * @apiSuccess {Number} data.status 状态 1-编辑中 2-已提交
-* @apiSuccess {Object[]} data.ihsvs 检查项目
-* @apiSuccess {Number} data.ihsvs.id 检查项目id
-* @apiSuccess {String} data.ihsvs.name 检查项目名称
-* @apiSuccess {String} data.ihsvs.datatype 录入数据类型 1-选择项目 2-信息录入
-* @apiSuccess {String} data.ihsvs.stateA 状态A
-* @apiSuccess {String} data.ihsvs.stateB 状态B
-* @apiSuccess {String} data.ihsvs.stateC 状态C
-* @apiSuccess {String} data.ihsvs.stateD 状态D
-* @apiSuccess {String} data.ihsvs.normal 正确的状态 1-stateA 2-stateB 3-stateC 4-stateD
-* @apiSuccess {String} data.ihsvs.unit 录入数据单位
-* @apiSuccess {String} data.ihsvs.high 上限
-* @apiSuccess {String} data.ihsvs.low 下限
-* @apiSuccess {String} data.ihsvs.remark 备注
+* @apiSuccess {Object[]}data.fis 检查项目
+* @apiSuccess {Number}data.fis.id 检查项目id
+* @apiSuccess {String}data.fis.name 检查项目名称
+* @apiSuccess {String}data.fis.datatype 录入数据类型 1-选择项目 2-信息录入
+* @apiSuccess {String}data.fis.stateA 状态A
+* @apiSuccess {String}data.fis.stateB 状态B
+* @apiSuccess {String}data.fis.stateC 状态C
+* @apiSuccess {String}data.fis.stateD 状态D
+* @apiSuccess {String}data.fis.normal 正确的状态 1-stateA 2-stateB 3-stateC 4-stateD
+* @apiSuccess {String}data.fis.unit 录入数据单位
+* @apiSuccess {String}data.fis.high 上限
+* @apiSuccess {String}data.fis.low 下限
+* @apiSuccess {String}data.fis.remark 备注
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
@@ -69,14 +68,14 @@ router.get('/', async (ctx, next) => {
 		if (ctx.query[key]) where[key] = ctx.query[key];
 	});
 
-	let fhsvs = await FHSV.findAndCountAll({ where, limit, offset, include: [ { model: IHSV } ] });
-	ctx.body = ServiceResult.getSuccess(fhsvs);
+	let facilities = await Facilities.findAndCountAll({ where, limit, offset, include: [ { model: FIs } ] });
+	ctx.body = ServiceResult.getSuccess(facilities);
 	await next();
 });
 
 /**
-* @api {post} /api/fhsvs 创建设备录入
-* @apiName fhsvs-create
+* @api {post} /api/facilities 创建设备录入
+* @apiName facilities-create
 * @apiGroup 设备录入
 * @apiDescription 创建设备录入
 * @apiPermission OE
@@ -96,19 +95,19 @@ router.get('/', async (ctx, next) => {
 * @apiSuccess {Number} data.fcId 设备类id
 * @apiSuccess {String} data.fcName 设备类别
 * @apiSuccess {Number} data.status 状态 1-编辑中 2-已提交
-* @apiSuccess {Object[]} data.ihsvs 检查项目
-* @apiSuccess {Number} data.ihsvs.id 检查项目id
-* @apiSuccess {String} data.ihsvs.name 检查项目名称
-* @apiSuccess {String} data.ihsvs.datatype 录入数据类型 1-选择项目 2-信息录入
-* @apiSuccess {String} data.ihsvs.stateA 状态A
-* @apiSuccess {String} data.ihsvs.stateB 状态B
-* @apiSuccess {String} data.ihsvs.stateC 状态C
-* @apiSuccess {String} data.ihsvs.stateD 状态D
-* @apiSuccess {String} data.ihsvs.normal 正确的状态 1-stateA 2-stateB 3-stateC 4-stateD
-* @apiSuccess {String} data.ihsvs.unit 录入数据单位
-* @apiSuccess {String} data.ihsvs.high 上限
-* @apiSuccess {String} data.ihsvs.low 下限
-* @apiSuccess {String} data.ihsvs.remark 备注
+* @apiSuccess {Object[]}data.fis 检查项目
+* @apiSuccess {Number}data.fis.id 检查项目id
+* @apiSuccess {String}data.fis.name 检查项目名称
+* @apiSuccess {String}data.fis.datatype 录入数据类型 1-选择项目 2-信息录入
+* @apiSuccess {String}data.fis.stateA 状态A
+* @apiSuccess {String}data.fis.stateB 状态B
+* @apiSuccess {String}data.fis.stateC 状态C
+* @apiSuccess {String}data.fis.stateD 状态D
+* @apiSuccess {String}data.fis.normal 正确的状态 1-stateA 2-stateB 3-stateC 4-stateD
+* @apiSuccess {String}data.fis.unit 录入数据单位
+* @apiSuccess {String}data.fis.high 上限
+* @apiSuccess {String}data.fis.low 下限
+* @apiSuccess {String}data.fis.remark 备注
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
@@ -121,13 +120,13 @@ router.post('/', async (ctx, next) => {
 		ctx.body = ServiceResult.getFail('参数不正确');
 		return;
 	}
-	let fhsv = await FHSV.findOne({ where: { code } });
-	if (fhsv) {
+	let facility = await Facilities.findOne({ where: { code } });
+	if (facility) {
 		ctx.body = ServiceResult.getFail('已存在该设备录入');
 	}
-	let ics = await IC.findAll({ where: { fcId }, raw: true });
+	let fics = await FIC.findAll({ where: { fcId }, raw: true });
 
-	fhsv = await FHSV.create({
+	facility = await Facilities.create({
 		code,
 		name,
 		inspect,
@@ -139,27 +138,28 @@ router.post('/', async (ctx, next) => {
 		projectId: space.projectId,
 		buildingId: space.buildingId,
 		floorId: space.floorId,
-		spaceId
+		spaceId,
+		oesv: 'sv'
 	});
 
-	let ihsvs = [];
-	for (let ic of ics) {
-		delete ic.id;
-		delete ic.createdAt;
-		delete ic.updatedAt;
-		ic.fhsvId = fhsv.id;
-		ihsvs.push(ic);
+	let fis = [];
+	for (let fic of fics) {
+		delete fic.id;
+		delete fic.createdAt;
+		delete fic.updatedAt;
+		fic.facilityId = facility.id;
+		fis.push(fic);
 	}
-	await IHSV.bulkCreate(ihsvs);
+	await FIs.bulkCreate(fis);
 
-	fhsv = await FHSV.findOne({ where: { code }, include: [ { model: IHSV } ] });
-	ctx.body = ServiceResult.getSuccess(fhsv);
+	facility = await Facilities.findOne({ where: { code }, include: [ { model: FIs } ] });
+	ctx.body = ServiceResult.getSuccess(facility);
 	await next();
 });
 
 /**
-* @api {get} /api/fhsvs/:id 设备录入信息
-* @apiName fhsvs-info
+* @api {get} /api/facilities/:id 设备录入信息
+* @apiName facilities-info
 * @apiGroup 设备录入
 * @apiDescription 设备录入信息
 * @apiHeader {String} authorization 登录token Bearer + token
@@ -174,31 +174,31 @@ router.post('/', async (ctx, next) => {
 * @apiSuccess {Number} data.fcId 设备类id
 * @apiSuccess {String} data.fcName 设备类别
 * @apiSuccess {Number} data.status 状态 1-编辑中 2-已提交
-* @apiSuccess {Object[]} data.ihsvs 检查项目
-* @apiSuccess {Number} data.ihsvs.id 检查项目id
-* @apiSuccess {String} data.ihsvs.name 检查项目名称
-* @apiSuccess {String} data.ihsvs.datatype 录入数据类型 1-选择项目 2-信息录入
-* @apiSuccess {String} data.ihsvs.stateA 状态A
-* @apiSuccess {String} data.ihsvs.stateB 状态B
-* @apiSuccess {String} data.ihsvs.stateC 状态C
-* @apiSuccess {String} data.ihsvs.stateD 状态D
-* @apiSuccess {String} data.ihsvs.normal 正确的状态 1-stateA 2-stateB 3-stateC 4-stateD
-* @apiSuccess {String} data.ihsvs.unit 录入数据单位
-* @apiSuccess {String} data.ihsvs.high 上限
-* @apiSuccess {String} data.ihsvs.low 下限
-* @apiSuccess {String} data.ihsvs.remark 备注
+* @apiSuccess {Object[]}data.fis 检查项目
+* @apiSuccess {Number}data.fis.id 检查项目id
+* @apiSuccess {String}data.fis.name 检查项目名称
+* @apiSuccess {String}data.fis.datatype 录入数据类型 1-选择项目 2-信息录入
+* @apiSuccess {String}data.fis.stateA 状态A
+* @apiSuccess {String}data.fis.stateB 状态B
+* @apiSuccess {String}data.fis.stateC 状态C
+* @apiSuccess {String}data.fis.stateD 状态D
+* @apiSuccess {String}data.fis.normal 正确的状态 1-stateA 2-stateB 3-stateC 4-stateD
+* @apiSuccess {String}data.fis.unit 录入数据单位
+* @apiSuccess {String}data.fis.high 上限
+* @apiSuccess {String}data.fis.low 下限
+* @apiSuccess {String}data.fis.remark 备注
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
 router.get('/:id', async (ctx, next) => {
-	let fhsv = await FHSV.findOne({ where: { id: ctx.params.id }, include: [ { model: IHSV } ] });
-	ctx.body = ServiceResult.getSuccess(fhsv);
+	let facility = await Facilities.findOne({ where: { id: ctx.params.id }, include: [ { model: FIs } ] });
+	ctx.body = ServiceResult.getSuccess(facility);
 	await next();
 });
 
 /**
-* @api {put} /api/fhsvs/:id 修改设备录入
-* @apiName fhsvs-modify
+* @api {put} /api/facilities/:id 修改设备录入
+* @apiName facilities-modify
 * @apiGroup 设备录入
 * @apiDescription 修改设备录入
 * @apiPermission OE
@@ -218,78 +218,78 @@ router.get('/:id', async (ctx, next) => {
 * @apiSuccess {Object} data.fcId 设备类id
 * @apiSuccess {Object} data.fcName 设备类别
 * @apiSuccess {Number} data.status 状态 1-编辑中 2-已提交
-* @apiSuccess {Object[]} data.ihsvs 检查项目
-* @apiSuccess {Number} data.ihsvs.id 检查项目id
-* @apiSuccess {String} data.ihsvs.name 检查项目名称
-* @apiSuccess {String} data.ihsvs.datatype 录入数据类型 1-选择项目 2-信息录入
-* @apiSuccess {String} data.ihsvs.stateA 状态A
-* @apiSuccess {String} data.ihsvs.stateB 状态B
-* @apiSuccess {String} data.ihsvs.stateC 状态C
-* @apiSuccess {String} data.ihsvs.stateD 状态D
-* @apiSuccess {String} data.ihsvs.normal 正确的状态 1-stateA 2-stateB 3-stateC 4-stateD
-* @apiSuccess {String} data.ihsvs.unit 录入数据单位
-* @apiSuccess {String} data.ihsvs.high 上限
-* @apiSuccess {String} data.ihsvs.low 下限
-* @apiSuccess {String} data.ihsvs.remark 备注
+* @apiSuccess {Object[]}data.fis 检查项目
+* @apiSuccess {Number}data.fis.id 检查项目id
+* @apiSuccess {String}data.fis.name 检查项目名称
+* @apiSuccess {String}data.fis.datatype 录入数据类型 1-选择项目 2-信息录入
+* @apiSuccess {String}data.fis.stateA 状态A
+* @apiSuccess {String}data.fis.stateB 状态B
+* @apiSuccess {String}data.fis.stateC 状态C
+* @apiSuccess {String}data.fis.stateD 状态D
+* @apiSuccess {String}data.fis.normal 正确的状态 1-stateA 2-stateB 3-stateC 4-stateD
+* @apiSuccess {String}data.fis.unit 录入数据单位
+* @apiSuccess {String}data.fis.high 上限
+* @apiSuccess {String}data.fis.low 下限
+* @apiSuccess {String}data.fis.remark 备注
 * @apiSuccess {Number} errcode 成功为0
 * @apiSuccess {Object[]} data {}
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
-router.put('/:id', isOE(), async (ctx, next) => {
+router.put('/:id', async (ctx, next) => {
 	const data = ctx.request.body;
-	let fhsv = await FHSV.findOne({ where: { id: ctx.params.id } });
-	if (!fhsv) {
+	let facility = await Facilities.findOne({ where: { id: ctx.params.id } });
+	if (!facility) {
 		ctx.body = ServiceResult.getFail('参数不正确');
 		return;
 	}
 
-	let fhsvData = {};
-	if (data.name) fhsvData.name = data.name;
+	let facilityData = {};
+	if (data.name) facilityData.name = data.name;
 	if (data.code) {
-		let fhsv2 = await FHSV.findOne({ where: { code: data.code } });
-		if (fhsv2) {
+		let facility2 = await Facilities.findOne({ where: { code: data.code } });
+		if (facility2) {
 			ctx.body = ServiceResult.getFail(`已存在code=${data.code}的设备，不可修改为该code`);
 			return;
 		}
-		fhsvData.code = data.code;
+		facilityData.code = data.code;
 	}
 
 	// 修改了设备类型
-	if (data.fcId && fhsv.fcId !== data.fcId) {
+	if (data.fcId && facility.fcId !== data.fcId) {
 		let fc = await FC.findOne({ where: { id: data.fcId } });
 		if (!fc) {
 			ctx.body = ServiceResult.getFail('参数不正确');
 			return;
 		}
-		fhsvData.fcId = data.fcId;
-		fhsvData.fcName = fc.name;
+		facilityData.fcId = data.fcId;
+		facilityData.fcName = fc.name;
 
-		let ics = await IC.findAll({ where: { fcId: data.fcId }, raw: true });
+		let fics = await FIC.findAll({ where: { fcId: data.fcId }, raw: true });
 
-		let ihsvs = [];
-		for (let ic of ics) {
-			delete ic.id;
-			delete ic.createdAt;
-			delete ic.updatedAt;
-			ic.fhsvId = fhsv.id;
-			ihsvs.push(ic);
+		let fis = [];
+		for (let fic of fics) {
+			delete fic.id;
+			delete fic.createdAt;
+			delete fic.updatedAt;
+			fic.facilityId = facility.id;
+			fis.push(fic);
 		}
 		// 删除旧的检查项，创建新的检查项
-		await IHSV.destroy({ where: { fhsvId: fhsv.id } });
-		await IHSV.bulkCreate(ihsvs);
+		await FIs.destroy({ where: { facilityId: facility.id } });
+		await FIs.bulkCreate(fis);
 	}
 
-	// 更新fhsv信息
-	await FHSV.update(fhsvData, { where: { id: ctx.params.id } });
+	// 更新facility信息
+	await Facilities.update(facilityData, { where: { id: ctx.params.id } });
 
 	ctx.body = ServiceResult.getSuccess({});
 	await next();
 });
 
 /**
-* @api {delete} /api/fhsvs/:id 删除设备录入
-* @apiName fhsvs-delete
+* @api {delete} /api/facilities/:id 删除设备录入
+* @apiName facilities-delete
 * @apiGroup 设备录入
 * @apiDescription 删除设备录入
 * @apiPermission OE
@@ -300,9 +300,9 @@ router.put('/:id', isOE(), async (ctx, next) => {
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
-router.delete('/:id', isOE(), async (ctx, next) => {
-	await FHSV.destroy({ where: { id: ctx.params.id } });
-	await IHSV.destroy({ where: { fhsv: ctx.params.id } });
+router.delete('/:id', async (ctx, next) => {
+	await Facilities.destroy({ where: { id: ctx.params.id } });
+	await FIs.destroy({ where: { facility: ctx.params.id } });
 	ctx.body = ServiceResult.getSuccess({});
 	await next();
 });

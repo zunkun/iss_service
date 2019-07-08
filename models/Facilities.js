@@ -1,44 +1,51 @@
 const postgres = require('../core/db/postgres');
-const { DataTypes, Model, UUIDV4 } = require('sequelize');
-const Buildings = require('./Spaces');
-const Floors = require('./Spaces');
-const Spaces = require('./Spaces');
+const { DataTypes, Model } = require('sequelize');
 const Projects = require('./Projects');
+const Buildings = require('./Buildings');
+const Floors = require('./Floors');
+const Spaces = require('./Spaces');
 
-// 设备信息
+// Facility 设备信息
 class Facilities extends Model {}
+
 Facilities.init({
-	uuid: { // 提交流水
-		type: DataTypes.UUID,
-		defaultValue: UUIDV4
-	},
 	code: DataTypes.STRING, // 设备编号
-	qrcode: DataTypes.STRING, // 设备二维码
-	name: DataTypes.STRING, // 设备名称
-	system: DataTypes.INTEGER, // 设备系统
-	catalog: DataTypes.INTEGER, // 设备类别
+	name: DataTypes.STRING, // 设备名称，比如高压开关柜、高压电容补偿柜、变压器，低压开关柜等
+	system: DataTypes.INTEGER, // 设备系统，参考常量中 systemMap
 	description: DataTypes.TEXT, // 描述信息
-	inspect: DataTypes.BOOLEAN, // 是否需要巡检
-	buildingName: DataTypes.STRING,
-	floorName: DataTypes.STRING,
-	spaceName: DataTypes.STRING,
-	address: DataTypes.STRING, // 地址
-	inspectionIds: DataTypes.ARRAY(DataTypes.INTEGER) // 使用中设备巡检项目id表
+	inspect: { // 是否需要巡检
+		type: DataTypes.BOOLEAN,
+		defaultValue: false
+	},
+	status: {
+		type: DataTypes.INTEGER,
+		defaultValue: 1
+	}, // 审批状态 1-编辑中 2-已提交
+	fcId: DataTypes.INTEGER,
+	fcName: DataTypes.STRING,
+	oesv: { // sv-SV编辑中的数据 oe-OE审核通过的数据
+		type: DataTypes.STRING,
+		defaultValue: 'sv'
+	}
 }, {
 	sequelize: postgres,
 	modelName: 'facilities',
 	paranoid: true,
-	comment: '设备信息'
+	comment: 'SV选择录入设备信息'
 });
 
-Projects.hasMany(Facilities);
 Facilities.belongsTo(Projects);
-Buildings.hasMany(Facilities);
+Projects.hasMany(Facilities);
+
 Facilities.belongsTo(Buildings);
-Floors.hasMany(Facilities);
+Buildings.hasMany(Facilities);
+
 Facilities.belongsTo(Floors);
-Spaces.hasMany(Facilities);
+Floors.hasMany(Facilities);
+
 Facilities.belongsTo(Spaces);
+Spaces.hasMany(Facilities);
+
 Facilities.sync();
 
 module.exports = Facilities;

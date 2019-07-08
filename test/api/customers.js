@@ -3,18 +3,18 @@ const Customers = require('../../models/Customers');
 
 describe('/api/customers', () => {
 	let customer;
-	// it('查询customer列表 GET /api/customers?limit=10&page=1', (done) => {
-	// 	process.request
-	// 		.get('/api/customers?limit=10&page=1')
-	// 		.set('Authorization', process.token)
-	// 		.expect(200)
-	// 		.end((err, res) => {
-	// 			should.not.exist(err);
-	// 			should.exist(res.body.data.count);
-	// 			should.exist(res.body.data.rows);
-	// 			done();
-	// 		});
-	// });
+	it('查询customer列表 GET /api/customers?limit=10&page=1', (done) => {
+		process.request
+			.get('/api/customers?limit=10&page=1')
+			.set('Authorization', process.token)
+			.expect(200)
+			.end((err, res) => {
+				should.not.exist(err);
+				should.exist(res.body.data.count);
+				should.exist(res.body.data.rows);
+				done();
+			});
+	});
 
 	it('新增customers POST /api/customers', (done) => {
 		Customers.destroy({ where: { mobile: '15618871298' } }).then(() => {
