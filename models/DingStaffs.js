@@ -17,6 +17,7 @@ DingStaffs.init({
 	isBoss: DataTypes.BOOLEAN,
 	position: DataTypes.STRING,
 	email: DataTypes.STRING,
+	pids: DataTypes.ARRAY(DataTypes.INTEGER), // sv所管理的projectId
 	oe: {
 		type: DataTypes.BOOLEAN,
 		defaultValue: false

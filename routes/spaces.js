@@ -1,7 +1,7 @@
 const ServiceResult = require('../core/ServiceResult');
 const Router = require('koa-router');
 const router = new Router();
-const { isAdmin, isOE } = require('../core/auth');
+const { isOE } = require('../core/auth');
 const Floors = require('../models/Floors');
 const Spaces = require('../models/Spaces');
 const { Op } = require('sequelize');
@@ -64,7 +64,7 @@ router.get('/', async (ctx, next) => {
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
-router.post('/', isAdmin(), async (ctx, next) => {
+router.post('/', async (ctx, next) => {
 	const data = ctx.request.body;
 	const where = { id: data.floorId };
 
@@ -137,7 +137,7 @@ router.get('/:id', async (ctx, next) => {
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
-router.put('/:id', isAdmin(), async (ctx, next) => {
+router.put('/:id', async (ctx, next) => {
 	const data = ctx.request.body;
 	const where = { id: ctx.params.id };
 	const { projectId, buildingId, floorId } = ctx.request.body;

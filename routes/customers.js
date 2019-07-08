@@ -3,7 +3,7 @@ const customers = require('../models/customers');
 const { Op } = require('sequelize');
 const Router = require('koa-router');
 const router = new Router();
-const { isAdmin, isOE } = require('../core/auth');
+const { isOE } = require('../core/auth');
 const Customers = require('../models/Customers');
 // const customers = require('../models/customers');
 const constants = require('../config/constants');
@@ -25,7 +25,7 @@ router.prefix('/api/customers');
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
-router.get('/', isAdmin(), async (ctx, next) => {
+router.get('/', async (ctx, next) => {
 	let user = ctx.state.user;
 	let { page, limit, keywords, industryCode } = ctx.query;
 	page = Number(page) || 1;

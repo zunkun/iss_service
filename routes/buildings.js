@@ -1,7 +1,7 @@
 const ServiceResult = require('../core/ServiceResult');
 const Router = require('koa-router');
 const router = new Router();
-const { isAdmin, isOE } = require('../core/auth');
+const { isOE } = require('../core/auth');
 const Projects = require('../models/Projects');
 const Buildings = require('../models/Buildings');
 const Floors = require('../models/Floors');
@@ -58,7 +58,7 @@ router.get('/', async (ctx, next) => {
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
-router.post('/', isAdmin(), async (ctx, next) => {
+router.post('/', async (ctx, next) => {
 	const data = ctx.request.body;
 	let project = await Projects.findOne({ where: { id: data.projectId } });
 	if (!data.name || !data.projectId || !project) {
@@ -107,7 +107,7 @@ router.get('/:id', async (ctx, next) => {
 * @apiDescription 修改建筑
 * @apiPermission OE/SV
 * @apiHeader {String} authorization 登录token Bearer + token
-* @apiParam {Number} [projectId] 项目id
+* @apiParam {Number} projectId 项目id
 * @apiParam {Number} id 建筑id
 * @apiParam {String} name 建筑名称
 * @apiSuccess {Number} errcode 成功为0
@@ -115,7 +115,7 @@ router.get('/:id', async (ctx, next) => {
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
-router.put('/:id', isAdmin(), async (ctx, next) => {
+router.put('/:id', async (ctx, next) => {
 	const data = ctx.request.body;
 	const where = { id: ctx.params.id };
 	if (data.projectId) {
