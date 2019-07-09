@@ -1,7 +1,6 @@
 const ServiceResult = require('../core/ServiceResult');
 const Customers = require('../models/Customers');
 const Projects = require('../models/Projects');
-const Reviews = require('../models/Reviews');
 const Buildings = require('../models/Buildings');
 const Floors = require('../models/Floors');
 const Spaces = require('../models/Spaces');
@@ -10,7 +9,6 @@ const { Op } = require('sequelize');
 const Router = require('koa-router');
 const { isOE } = require('../core/auth');
 const areaMap = require('../config/areaMap');
-const projectService = require('../services/projects');
 
 const router = new Router();
 router.prefix('/api/projects');
@@ -233,36 +231,4 @@ router.delete('/:id', isOE(), async (ctx, next) => {
 	await next();
 });
 
-/**
-* @api {post} /api/projects/:id/commit SV项目提交
-* @apiName project-commit
-* @apiGroup 项目
-* @apiDescription SV项目提交
-* @apiPermission SV
-* @apiHeader {String} authorization 登录token Bearer + token
-* @apiParam {String} id 项目id
-* @apiSuccess {Object} data {}
-* @apiSuccess {Number} errcode 成功为0
-* @apiError {Number} errcode 失败不为0
-* @apiError {Number} errmsg 错误消息
-*/
-router.post('/:id/commit', async (ctx, next) => {
-	let project = await Projects.findOne({ where: { id: ctx.params.id }, raw: true });
-	if (!project) {
-		ctx.body = ServiceResult.getFail('参数错误');
-		return;
-	}
-	let review = await Reviews.findOne({ where: { projectId: ctx.params.id, status: 0 } });
-	if (review) {
-		ctx.body = ServiceResult.getFail('系统存在正在审核的该项目提交');
-		return;
-	}
-	try {
-		await projectService.commit(ctx.params.id);
-		ctx.body = ServiceResult.getSuccess({});
-	} catch (error) {
-		ctx.body = ServiceResult.getFail(error);
-	}
-	await next();
-});
 module.exports = router;

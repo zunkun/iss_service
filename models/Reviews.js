@@ -1,12 +1,32 @@
 const postgres = require('../core/db/postgres');
-const { DataTypes, Model } = require('sequelize');
+const { DataTypes, Model, UUIDV4 } = require('sequelize');
 const Customers = require('./Customers');
 const Projects = require('./Projects');
 
 class Reviews extends Model {}
 // SV提交的项目核验信息
 Reviews.init({
-	project: DataTypes.JSONB, // 项目日志
+	uuid: {
+		type: DataTypes.UUID,
+		defaultValue: UUIDV4
+	},
+	code: DataTypes.STRING, // 项目编号
+	name: DataTypes.STRING, // 项目名称
+	customerName: DataTypes.STRING, // 客户名称
+	provinceCode: DataTypes.STRING, // 省
+	provinceName: DataTypes.STRING,
+	cityCode: DataTypes.STRING, // 市
+	cityName: DataTypes.STRING,
+	districtCode: DataTypes.STRING, // 区县
+	districtName: DataTypes.STRING,
+	street: DataTypes.STRING,
+	svs: DataTypes.ARRAY(DataTypes.JSONB), // 主管列表 [{userId: '', userName: '', avatar: '', phone: ''}]
+	oe: DataTypes.JSONB, // 创建
+	tosv: {
+		type: DataTypes.BOOLEAN,
+		defaultValue: false
+	}, // 是否下发主管
+	toTime: DataTypes.DATE, // 下发主管时间
 	status: {
 		type: DataTypes.INTEGER,
 		defaultValue: 0

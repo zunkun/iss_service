@@ -53,5 +53,5 @@ describe('测试 /api/facilities', () => {
 });
 
 describe('测试項目提交審批', () => {
-	require('./api/commit');
+	require('./api/reviews');
 });

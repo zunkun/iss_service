@@ -21,11 +21,24 @@ class Project {
 
 		// 创建审核信息
 		let review = await Reviews.create({
-			projectId,
-			project,
-			status: 0,
+			uuid: project.uuid,
+			code: project.code,
+			name: project.name,
 			customerId: project.customerId,
-			projecthistoryId: project.id
+			customerName: project.customerName,
+			provinceCode: project.provinceCode,
+			cityCode: project.cityCode,
+			cityName: project.cityName,
+			districtCode: project.districtCode,
+			districtName: project.districtName,
+			street: project.street,
+			svs: project.svs,
+			tosv: project.tosv,
+			toTime: project.toTime,
+			status: 0,
+			projecthistoryId: project.id,
+			createdAt: project.createdAt,
+			updatedAt: project.updatedAt
 		});
 
 		this.reviewId = review.id;
@@ -72,7 +85,6 @@ class Project {
 					_spaceSV.oesv = 'oe';
 					let spaceOE = await Spaces.create(_spaceSV);
 
-					console.log(spaceSV.id, spaceSV);
 					// 复制设备信息
 					let facilitySVs = await Facilities.findAll({ where: { spaceId: spaceSV.id, oesv: 'sv' }, raw: true });
 
