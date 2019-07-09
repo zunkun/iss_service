@@ -1,6 +1,7 @@
 const postgres = require('../core/db/postgres');
-const { DataTypes, Model } = require('sequelize');
+const { DataTypes, Model, UUIDV4 } = require('sequelize');
 const Projects = require('./Projects');
+const Reviews = require('./Reviews');
 const Buildings = require('./Buildings');
 const Floors = require('./Floors');
 const Spaces = require('./Spaces');
@@ -9,6 +10,10 @@ const Spaces = require('./Spaces');
 class Facilities extends Model {}
 
 Facilities.init({
+	uuid: {
+		type: DataTypes.UUID,
+		defaultValue: UUIDV4
+	},
 	code: DataTypes.STRING, // 设备编号
 	name: DataTypes.STRING, // 设备名称，比如高压开关柜、高压电容补偿柜、变压器，低压开关柜等
 	system: DataTypes.INTEGER, // 设备系统，参考常量中 systemMap
@@ -36,6 +41,9 @@ Facilities.init({
 
 Facilities.belongsTo(Projects);
 Projects.hasMany(Facilities);
+
+Facilities.belongsTo(Reviews);
+Reviews.hasMany(Facilities);
 
 Facilities.belongsTo(Buildings);
 Buildings.hasMany(Facilities);

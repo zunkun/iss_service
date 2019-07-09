@@ -78,7 +78,7 @@ router.post('/', async (ctx, next) => {
 	data.projectId = building.projectId;
 	data.projectName = building.projectName;
 	data.buildingName = building.name;
-	data.oesv = 'oe';
+	data.oesv = 'sv';
 	floor = await Floors.create(data);
 	ctx.body = ServiceResult.getSuccess(floor);
 	await next();

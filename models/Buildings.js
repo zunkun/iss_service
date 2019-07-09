@@ -1,6 +1,7 @@
 const postgres = require('../core/db/postgres');
 const { DataTypes, Model, UUIDV4 } = require('sequelize');
 const Projects = require('./Projects');
+const Reviews = require('./Reviews');
 
 // 建筑信息
 class Buildings extends Model {}
@@ -25,6 +26,9 @@ Buildings.init({
 
 Projects.hasMany(Buildings);
 Buildings.belongsTo(Projects);
+
+Reviews.hasMany(Buildings);
+Buildings.belongsTo(Reviews);
 Buildings.sync();
 
 module.exports = Buildings;

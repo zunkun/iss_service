@@ -4,6 +4,7 @@ const { DataTypes, Model, UUIDV4 } = require('sequelize');
 const Buildings = require('./Buildings');
 const Floors = require('./Floors');
 const Projects = require('./Projects');
+const Reviews = require('./Reviews');
 
 // 楼层内空间
 class Spaces extends Model {}
@@ -30,8 +31,13 @@ Spaces.init({
 
 Projects.hasMany(Spaces);
 Spaces.belongsTo(Projects);
+
+Reviews.hasMany(Spaces);
+Spaces.belongsTo(Reviews);
+
 Buildings.hasMany(Spaces);
 Spaces.belongsTo(Buildings);
+
 Floors.hasMany(Spaces);
 Spaces.belongsTo(Floors);
 

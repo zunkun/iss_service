@@ -3,6 +3,7 @@ const Buildings = require('../../models/Buildings');
 const Floors = require('../../models/Floors');
 const Spaces = require('../../models/Spaces');
 const Projects = require('../../models/Projects');
+const { Op } = require('sequelize');
 
 describe('/api/spaces', () => {
 	let space;
@@ -28,8 +29,7 @@ describe('/api/spaces', () => {
 	it('新增spaces POST /api/spaces', (done) => {
 		Spaces.destroy({
 			where: {
-				name: 'Room1',
-				floorId: this.floor.id
+				name: { [Op.in]: [ 'Room1', 'Room2' ] }
 			}
 		}).then(() => {
 			process.request

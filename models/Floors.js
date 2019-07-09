@@ -3,6 +3,7 @@ const { DataTypes, Model, UUIDV4 } = require('sequelize');
 
 const Buildings = require('./Buildings');
 const Projects = require('./Projects');
+const Reviews = require('./Reviews');
 
 // 楼层信息
 class Floors extends Model {}
@@ -28,6 +29,9 @@ Floors.init({
 
 Projects.hasMany(Floors);
 Floors.belongsTo(Projects);
+
+Reviews.hasMany(Floors);
+Floors.belongsTo(Reviews);
 
 Buildings.hasMany(Floors);
 Floors.belongsTo(Buildings);

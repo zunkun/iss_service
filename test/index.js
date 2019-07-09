@@ -51,3 +51,7 @@ describe('测试 /api/fics', () => {
 describe('测试 /api/facilities', () => {
 	require('./api/facilities');
 });
+
+describe('测试項目提交審批', () => {
+	require('./api/commit');
+});

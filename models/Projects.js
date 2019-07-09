@@ -1,10 +1,14 @@
 const postgres = require('../core/db/postgres');
-const { DataTypes, Model } = require('sequelize');
+const { DataTypes, Model, UUIDV4 } = require('sequelize');
 const Customers = require('./Customers');
 
 class Projects extends Model {}
-// 系统用户
+// 项目
 Projects.init({
+	uuid: {
+		type: DataTypes.UUID,
+		defaultValue: UUIDV4
+	},
 	code: DataTypes.STRING, // 项目编号
 	name: DataTypes.STRING, // 项目名称
 	customerName: DataTypes.STRING, // 客户名称
