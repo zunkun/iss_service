@@ -6,10 +6,13 @@ class DingDepts extends Model {}
 DingDepts.init({
 	deptId: {
 		type: DataTypes.INTEGER,
-		unique: true
+		unique: true,
+		comment: '钉钉部门id'
 	}, // 钉钉部门deptId
-	deptName: DataTypes.STRING, // 部门名称
-	managers: DataTypes.ARRAY(DataTypes.JSONB) // 部门主管
+	deptName: {
+		type: DataTypes.STRING,
+		comment: '部门名称'
+	} // 部门名称
 }, { sequelize: postgres, modelName: 'dingdepts', paranoid: true, comment: '钉钉组织架构' });
 
 DingDepts.sync();

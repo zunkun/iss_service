@@ -1,5 +1,5 @@
 const dingding = require('../core/dingding');
-const Roles = require('../models/Roles');
+const DingRoles = require('../models/DingRoles');
 const DingStaffs = require('../models/DingStaffs');
 const cron = require('node-cron');
 const { Op } = require('sequelize');
@@ -19,7 +19,7 @@ class RoleSchedule {
 	}
 
 	async sync () {
-		let role = await Roles.findOne({ where: { name: 'OE' } });
+		let role = await DingRoles.findOne({ where: { name: 'OE' } });
 		if (!role) {
 			await this.getRoleLists();
 		}
@@ -32,7 +32,7 @@ class RoleSchedule {
 		for (let group of roleGroups) {
 			for (let item of group.roles) {
 				console.log(`【保存】角色 ${item.name}`);
-				await Roles.upsert({
+				await DingRoles.upsert({
 					roleId: item.id,
 					name: item.name,
 					groupId: group.id,
@@ -58,7 +58,7 @@ class RoleSchedule {
 	}
 
 	async setOE () {
-		let role = await Roles.findOne({ where: { name: 'OE' } });
+		let role = await DingRoles.findOne({ where: { name: 'OE' } });
 		if (!role) {
 			return;
 		}
