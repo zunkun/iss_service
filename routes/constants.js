@@ -1,17 +1,19 @@
 const ServiceResult = require('../core/ServiceResult');
 const Router = require('koa-router');
 const router = new Router();
-
-const constants = require('../config/constants');
+const Constants = require('../models/Constants');
 const areaLists = require('../config/areaLists');
+const { Op } = require('sequelize');
 
 router.prefix('/api/constants');
 
 /**
-* @api {get} /api/constants 常量信息
+* @api {get} /api/constants?classfication=&name= 常量信息
 * @apiName constants-query
 * @apiGroup 常量
 * @apiDescription 常量信息
+* @apiParam {String} [classfication] 分类
+* @apiParam {String} [name] 分类名称
 * @apiSuccess {Number} errcode 成功为0
 * @apiSuccess {Object} data 常量信息
 * @apiSuccess {Object} data.industryMap 客户行业类型
@@ -21,8 +23,21 @@ router.prefix('/api/constants');
 * @apiError {Number} errmsg 错误消息
 */
 router.get('/', async (ctx, next) => {
-	ctx.body = ServiceResult.getSuccess(constants);
-	await next();
+	const { classfication, name } = ctx.query;
+	const where = {};
+	if (classfication) { where.classfication = classfication; }
+	if (name) { where.name = { [Op.iLike]: `%${name}%` }; }
+	return Constants.findAll({
+		attributes: [ 'id', 'classfication', 'name' ],
+		where,
+		raw: true
+	}).then(constants => {
+		ctx.body = ServiceResult.getSuccess(constants);
+		next();
+	}).catch(() => {
+		ctx.body = ServiceResult.getSuccess([]);
+		next();
+	});
 });
 
 /**
