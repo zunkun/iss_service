@@ -20,38 +20,38 @@ process.user = {
 
 console.log('-------------API 测试-------------');
 
-describe('测试 /api/customers', () => {
-	require('./api/customers');
+describe('测试 /api/companies', () => {
+	require('./api/companies');
 });
 
-describe('测试 /api/projects', () => {
-	require('./api/projects');
-});
+// describe('测试 /api/projects', () => {
+// 	require('./api/projects');
+// });
 
-describe('测试 /api/buildings', () => {
-	require('./api/buildings');
-});
+// describe('测试 /api/buildings', () => {
+// 	require('./api/buildings');
+// });
 
-describe('测试 /api/floors', () => {
-	require('./api/floors');
-});
+// describe('测试 /api/floors', () => {
+// 	require('./api/floors');
+// });
 
-describe('测试 /api/spaces', () => {
-	require('./api/spaces');
-});
+// describe('测试 /api/spaces', () => {
+// 	require('./api/spaces');
+// });
 
-describe('测试 /api/fcs', () => {
-	require('./api/fcs');
-});
+// describe('测试 /api/fcs', () => {
+// 	require('./api/fcs');
+// });
 
-describe('测试 /api/fics', () => {
-	require('./api/fics');
-});
+// describe('测试 /api/fics', () => {
+// 	require('./api/fics');
+// });
 
-describe('测试 /api/facilities', () => {
-	require('./api/facilities');
-});
+// describe('测试 /api/facilities', () => {
+// 	require('./api/facilities');
+// });
 
-describe('测试項目提交審批', () => {
-	require('./api/reviews');
-});
+// describe('测试項目提交審批', () => {
+// 	require('./api/reviews');
+// });
