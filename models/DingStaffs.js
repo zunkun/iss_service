@@ -6,27 +6,40 @@ class DingStaffs extends Model {}
 DingStaffs.init({
 	userId: {
 		type: DataTypes.STRING,
-		unique: true
+		unique: true,
+		comment: '钉钉用户userId'
 	}, // 钉钉用户userId
-	userName: DataTypes.STRING, // 姓名
-	jobnumber: DataTypes.STRING, // 工号
-	gender: DataTypes.STRING, // 性别
-	avatar: DataTypes.STRING, // 人物图像
-	mobile: DataTypes.STRING,
-	isAdmin: DataTypes.BOOLEAN,
-	isBoss: DataTypes.BOOLEAN,
-	position: DataTypes.STRING,
-	email: DataTypes.STRING,
+	userName: {
+		type: DataTypes.STRING,
+		comment: '姓名'
+	}, // 姓名
+	jobnumber: {
+		type: DataTypes.STRING,
+		comment: '工号'
+	}, // 工号
+	avatar: {
+		type: DataTypes.STRING,
+		comment: '人物图像'
+	}, // 人物图像
+	mobile: {
+		type: DataTypes.STRING,
+		comment: '手机'
+	},
 	pids: DataTypes.ARRAY(DataTypes.INTEGER), // sv所管理的projectId
 	oe: {
 		type: DataTypes.BOOLEAN,
-		defaultValue: false
+		defaultValue: false,
+		comment: '是否是oe角色'
 	},
 	role: {
 		type: DataTypes.INTEGER,
-		defaultValue: 1
+		defaultValue: 1,
+		comment: '系统角色，1-用户 2-管理员 3-超级管理员，该角色不是指OE/SV/执行人等角色，而是作为后期系统管理使用'
 	}, // 1-用户 2-管理员 3-超级管理员
-	depts: DataTypes.ARRAY(DataTypes.JSONB) // 用户部门信息 [{deptId: DataTypes.String, deptName: DataTypes.String}]
+	depts: {
+		type: DataTypes.ARRAY(DataTypes.JSONB),
+		comment: '用户部门信息 [{deptId: DataTypes.String, deptName: DataTypes.String}]'
+	} //
 }, { sequelize: postgres, modelName: 'dingstaffs', paranoid: true, comment: '钉钉用户' });
 
 DingStaffs.sync();
