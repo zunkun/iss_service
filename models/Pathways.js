@@ -1,32 +1,45 @@
 const postgres = require('../core/db/postgres');
-const { DataTypes, Model } = require('sequelize');
-const Projects = require('./Projects');
+const { DataTypes, Model, UUIDV4 } = require('sequelize');
+const Companies = require('./Companies');
 
-// 巡检路线
 class Pathways extends Model {}
+// 巡检路线信息
 Pathways.init({
-	name: DataTypes.STRING, // 路线名称
-	description: DataTypes.STRING, // 路线描述
-	date: DataTypes.DATEONLY, // 巡检时间
-	weekends: DataTypes.STRING, // 星期几
-	inspector: DataTypes.ARRAY(DataTypes.JSONB), // 巡检员 [{userId: '', userName: ''}]
-	startTime: DataTypes.DATE, // 开始时间(保留)
-	endTime: DataTypes.DATE, // 结束时间(保留)
-	oe: DataTypes.JSON, // 当前路线的OE
-	svs: DataTypes.ARRAY(DataTypes.JSONB), // 当前路线的svs 和projects同步
-	inuse: { // 是否启用
-		type: DataTypes.BOOLEAN,
-		defaultValue: false
+	uuid: {
+		type: DataTypes.UUID,
+		defaultValue: UUIDV4,
+		comment: '用来标识属于哪个巡检路线，其与pathcode对应关系为 1:N'
+	},
+	pathcode: {
+		type: DataTypes.STRING,
+		comment: '巡检路线方案流水code'
+	},
+	name: {
+		type: DataTypes.STRING,
+		comment: '巡检路线名称'
+	},
+	description: {
+		type: DataTypes.TEXT,
+		comment: '巡检路线描述'
+	},
+	locationUuid: {
+		type: DataTypes.UUID,
+		comment: 'Location的uuid该标识标书属于哪个巡检路线'
+	},
+	category: {
+		type: DataTypes.INTEGER,
+		defaultValue: 0,
+		comment: '1-使用的数据 2-被替换的历史数据'
 	}
 }, {
 	sequelize: postgres,
 	modelName: 'pathways',
-	comment: '巡检路线',
-	paranoid: true
+	paranoid: true,
+	comment: '巡检路线信息'
 });
 
-Projects.hasMany(Pathways);
-Pathways.belongsTo(Projects);
+Companies.hasMany(Pathways);
+Pathways.belongsTo(Companies);
 
 Pathways.sync();
 
