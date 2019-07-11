@@ -24,9 +24,9 @@ describe('测试 /api/companies', () => {
 	require('./api/companies');
 });
 
-// describe('测试 /api/projects', () => {
-// 	require('./api/projects');
-// });
+describe('测试 /api/locations', () => {
+	require('./api/locations');
+});
 
 // describe('测试 /api/buildings', () => {
 // 	require('./api/buildings');
