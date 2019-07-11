@@ -1,9 +1,9 @@
 const postgres = require('../core/db/postgres');
 const { DataTypes, Model } = require('sequelize');
 // 组织信息表
-class Company extends Model {}
+class Companies extends Model {}
 
-Company.init({
+Companies.init({
 	name: {
 		type: DataTypes.STRING,
 		comment: '客户名称'
@@ -51,6 +51,6 @@ Company.init({
 	oe: DataTypes.JSONB
 }, { sequelize: postgres, modelName: 'company', paranoid: true, comment: '组织信息表' });
 
-Company.sync();
+Companies.sync();
 
-module.exports = Company;
+module.exports = Companies;
