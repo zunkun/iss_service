@@ -1,17 +1,14 @@
 const ServiceResult = require('../core/ServiceResult');
-const customers = require('../models/customers');
 const { Op } = require('sequelize');
 const Router = require('koa-router');
 const router = new Router();
 const { isOE } = require('../core/auth');
-const Customers = require('../models/Customers');
-// const customers = require('../models/customers');
-const constants = require('../config/constants');
+const Companies = require('../models/Companies');
 
-router.prefix('/api/customers');
+router.prefix('/api/companies');
 /**
-* @api {get} /api/customers?limit=&page=&keywords=&industryCode= 客户列表
-* @apiName customers-query
+* @api {get} /api/companies?limit=&page=&keywords=&industryCode= 客户列表
+* @apiName companies-query
 * @apiGroup 客户
 * @apiDescription 客户列表
 * @apiPermission OE/SV
@@ -45,47 +42,49 @@ router.get('/', async (ctx, next) => {
 		where.industryCode = industryCode;
 	}
 
-	let customers = await Customers.findAndCountAll({ where, limit, offset });
-	ctx.body = ServiceResult.getSuccess(customers);
+	let companies = await Companies.findAndCountAll({ where, limit, offset });
+	ctx.body = ServiceResult.getSuccess(companies);
 	await next();
 });
 
 /**
-* @api {post} /api/customers 创建客户
-* @apiName customer-create
+* @api {post} /api/companies 创建客户
+* @apiName company-create
 * @apiGroup 客户
 * @apiDescription 创建客户
 * @apiPermission OE
 * @apiHeader {String} authorization 登录token Bearer + token
 * @apiParam {String} name 客户名称
-* @apiParam {String} industryCode 行业编码
-* @apiParam {String} [email] 邮箱
+* @apiParam {String} [costcenter] 成本中心
+* @apiParam {String} [address] 地址
+* @apiParam {String} [apcompanycode] 项目代码
+* @apiParam {String} [email] email
+* @apiParam {String} [mainfax] 传真
+* @apiParam {String} [mainphone] 电话总机
+* @apiParam {String} [shortname] 名称缩写
+* @apiParam {String} [zippostal] 邮编
+* @apiParam {String} [email] email
 * @apiParam {String} [site]  网址
-* @apiParam {String} [mobile]  联系方式
 * @apiSuccess {Number} errcode 成功为0
 * @apiSuccess {Object[]} data 客户customer
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
 router.post('/', isOE(), async (ctx, next) => {
-	let user = ctx.state.user;
 	const data = ctx.request.body;
 
-	if (!data.name || !data.industryCode) {
+	if (!data.name) {
 		ctx.body = ServiceResult.getFail('参数不正确');
 		return;
 	}
 
-	data.industryName = constants.industryMap[data.industryCode];
-	data.oe = { userId: user.userId, userName: user.userName };
-
-	let customer = await Customers.create(data);
-	ctx.body = ServiceResult.getSuccess(customer);
+	let company = await Companies.create(data);
+	ctx.body = ServiceResult.getSuccess(company);
 	await next();
 });
 
 /**
-* @api {get} /api/customers/:id 客户信息
+* @api {get} /api/companies/:id 客户信息
 * @apiName projects-info
 * @apiGroup 客户
 * @apiDescription 客户信息
@@ -97,66 +96,55 @@ router.post('/', isOE(), async (ctx, next) => {
 * @apiError {Number} errmsg 错误消息
 */
 router.get('/:id', async (ctx, next) => {
-	let customer = await Customers.findOne({ where: { id: ctx.params.id } });
-	ctx.body = ServiceResult.getSuccess(customer);
+	let company = await Companies.findOne({ where: { id: ctx.params.id } });
+	ctx.body = ServiceResult.getSuccess(company);
 	await next();
 });
 
 /**
-* @api {put} /api/customers/:id 修改客户
-* @apiName customer-modify
+* @api {put} /api/companies/:id 修改客户
+* @apiName company-modify
 * @apiGroup 客户
 * @apiDescription 修改客户
 * @apiPermission OE
 * @apiHeader {String} authorization 登录token Bearer + token
 * @apiParam {Number} id 客户id
-* @apiParam {String} name 客户名称
-* @apiParam {String} industryCode 行业编码
-* @apiParam {String} email 邮箱
-* @apiParam {String} site  网址
-* @apiParam {String} mobile  联系方式
+* @apiParam {String} [name] 客户名称
+* @apiParam {String} [costcenter] 成本中心
+* @apiParam {String} [address] 地址
+* @apiParam {String} [apcompanycode] 项目代码
+* @apiParam {String} [email] email
+* @apiParam {String} [mainfax] 传真
+* @apiParam {String} [mainphone] 电话总机
+* @apiParam {String} [shortname] 名称缩写
+* @apiParam {String} [zippostal] 邮编
+* @apiParam {String} [site]  网址
+* @apiParam {String} [industryCode]  行业类型id
 * @apiSuccess {Number} errcode 成功为0
 * @apiSuccess {Object[]} data {}
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
 router.put('/:id', isOE(), async (ctx, next) => {
-	let user = ctx.state.user;
-	const { name, industryCode, email, site, mobile } = ctx.request.body;
-	const data = {};
-	let customer = await Customers.findOne({
-		where: {
-			id: ctx.params.id,
-			'oe.userId': user.userId
-		}
-	});
-	if (!customer) {
+	const body = ctx.request.body;
+	let company = await Companies.findOne({ where: { id: ctx.params.id } });
+	if (!company) {
 		ctx.body = ServiceResult.getFail('参数不正确');
 		return;
 	}
-
-	if (industryCode) {
-		data.industryCode = industryCode;
-		data.industryName = constants.industryMap[industryCode];
-	}
-	data.name = name || customer.name;
-	data.email = email || customer.email;
-	data.site = site || customer.site;
-	data.mobile = mobile || customer.mobile;
-
-	await customers.update(data, {
-		where: {
-			id: ctx.params.id,
-			'oe.userId': user.userId
-		}
+	const data = {};
+	[ 'name', 'costcenter', 'address', 'apcompanycode', 'email', 'mainfax', 'mainphone', 'shortname', 'zippostal', 'site', 'industryCode' ].map(key => {
+		if (body[key]) data[key] = body[key];
 	});
+
+	await Companies.update(data, { where: { id: ctx.params.id } });
 	ctx.body = ServiceResult.getSuccess({});
 	await next();
 });
 
 /**
-* @api {delete} /api/customers/:id 删除客户
-* @apiName customer-delete
+* @api {delete} /api/companies/:id 删除客户
+* @apiName company-delete
 * @apiGroup 客户
 * @apiDescription 删除客户
 * @apiPermission OE
@@ -170,7 +158,7 @@ router.put('/:id', isOE(), async (ctx, next) => {
 */
 router.delete('/:id', isOE(), async (ctx, next) => {
 	// TODO: 客户删除其他表处理
-	await Customers.destroy({ where: { id: ctx.params.id, 'oe.userId': ctx.state.user.userId } });
+	await Companies.destroy({ where: { id: ctx.params.id, 'oe.userId': ctx.state.user.userId } });
 	ctx.body = ServiceResult.getSuccess({});
 	await next();
 });
