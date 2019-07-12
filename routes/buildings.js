@@ -2,49 +2,76 @@ const ServiceResult = require('../core/ServiceResult');
 const Router = require('koa-router');
 const router = new Router();
 const { isOE } = require('../core/auth');
-const Projects = require('../models/Projects');
+const Locations = require('../models/Locations');
 const Buildings = require('../models/Buildings');
-
-const Floors = require('../models/Floors');
-const Spaces = require('../models/Spaces');
-
+const Constants = require('../models/Constants');
 const { Op } = require('sequelize');
 
 router.prefix('/api/buildings');
 /**
-* @api {get} /api/buildings?projectId=&limit=&page=&keywords= 建筑列表
+* @api {get} /api/buildings?locationId=&limit=&page=&keywords= 建筑列表
 * @apiName buildings-query
 * @apiGroup 建筑
 * @apiDescription 建筑列表
 * @apiHeader {String} authorization 登录token Bearer + token
-* @apiParam {Number} projectId 项目id
-* @apiParam {String} oesv 查询类型 sv-SV编辑中的楼房列表, oe-OE审核通过的楼房列表
+* @apiParam {Number} locationId 项目点id
 * @apiParam {Number} [limit] 分页条数，默认10
 * @apiParam {Number} [page] 第几页，默认1
 * @apiParam {String} [keywords] 关键词查询
 * @apiSuccess {Number} errcode 成功为0
-* @apiSuccess {Object[]} data 建筑列表
+* @apiSuccess {Object} data 建筑列表
+* @apiSuccess {Number} data.count 建筑列表count
+* @apiSuccess {Object} data.rows 建筑building
+* @apiSuccess {Number} data.rows.id 建筑building id
+* @apiSuccess {String} data.rows.name 建筑名称
+* @apiSuccess {Number}  data.rows.buildingClassId 建筑类别Id
+* @apiSuccess {Object}  data.rows.buildingClass 建筑类别
+* @apiSuccess {Date}  data.rows.activeStartDate 开始时间
+* @apiSuccess {String}  data.rows.address 地址信息
+* @apiSuccess {String}  data.rows.commonName 通用名称
+* @apiSuccess {String}  data.rows.costcenter 成本中心
+* @apiSuccess {String}  data.rows.description 描述
+* @apiSuccess {String}  data.rows.legalName 法律名称
+* @apiSuccess {String}  data.rows.mainfax 传真
+* @apiSuccess {String}  data.rows.mainphone 电话总机
+* @apiSuccess {Number}  data.rows.parkingOpen 停车位数量
+* @apiSuccess {String}  data.rows.primaryUseId 主要用途Id
+* @apiSuccess {Object}  data.rows.primaryUse 主要用途
+* @apiSuccess {Number}  data.rows.category 当前数据分类 0-sv编辑的数据 1-审批中的数据 2-使用的数据 3-被替换的历史数据
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
 router.get('/', async (ctx, next) => {
-	let { page, oesv, limit, keywords, projectId } = ctx.query;
+	let { page, limit, keywords, locationId } = ctx.query;
 
 	page = Number(page) || 1;
 	limit = Number(limit) || 10;
 	let offset = (page - 1) * limit;
-	if (!projectId) {
+	if (!locationId) {
 		ctx.body = ServiceResult.getFail('参数不正确');
 		return;
 	}
-	let where = { projectId };
+	let where = { locationId };
 	if (keywords && keywords !== 'undefined') {
 		where.name = { [Op.like]: `%${keywords}%` };
 	}
-	where.oesv = oesv === 'oe' ? 'oe' : 'sv';
-	let buildings = await Buildings.findAndCountAll({ where, limit, offset });
-	ctx.body = ServiceResult.getSuccess(buildings);
-	await next();
+
+	return Buildings.findAndCountAll({
+		where,
+		limit,
+		offset,
+		include: [
+			{ model: Constants, as: 'buildingClass' },
+			{ model: Constants, as: 'primaryUse' }
+		]
+	}).then(buildings => {
+		ctx.body = ServiceResult.getSuccess(buildings);
+		next();
+	}).catch((error) => {
+		console.log('查询building失败', error);
+		ctx.body = ServiceResult.getFail('查询失败');
+		next();
+	});
 });
 
 /**
@@ -54,54 +81,118 @@ router.get('/', async (ctx, next) => {
 * @apiDescription 创建建筑
 * @apiPermission OE/SV
 * @apiHeader {String} authorization 登录token Bearer + token
-* @apiParam {Number} projectId 项目id
+* @apiParam {Number} locationId 项目点id
 * @apiParam {String} name 建筑名称
+* @apiParam {Number} [buildingClassId] 建筑类别Id
+* @apiParam {Date} [activeStartDate] 开始时间
+* @apiParam {String} [address] 地址信息
+* @apiParam {String} [commonName] 通用名称
+* @apiParam {String} [costcenter] 成本中心
+* @apiParam {String} [description] 描述
+* @apiParam {String} [legalName] 法律名称
+* @apiParam {String} [mainfax] 传真
+* @apiParam {String} [mainphone] 电话总机
+* @apiParam {Number} [parkingOpen] 停车位数量
+* @apiParam {String} [primaryUseId] 主要用途Id
 * @apiSuccess {Number} errcode 成功为0
-* @apiSuccess {Object[]} data 建筑building
+* @apiSuccess {Object} data 建筑building
+* @apiSuccess {Number} data.id 建筑building id
+* @apiSuccess {String} data.name 建筑名称
+* @apiSuccess {Number} data.buildingClassId 建筑类别Id
+* @apiSuccess {Object} data.buildingClass 建筑类别
+* @apiSuccess {Date} data.activeStartDate 开始时间
+* @apiSuccess {String} data.address 地址信息
+* @apiSuccess {String} data.commonName 通用名称
+* @apiSuccess {String} data.costcenter 成本中心
+* @apiSuccess {String} data.description 描述
+* @apiSuccess {String} data.legalName 法律名称
+* @apiSuccess {String} data.mainfax 传真
+* @apiSuccess {String} data.mainphone 电话总机
+* @apiSuccess {Number} data.parkingOpen 停车位数量
+* @apiSuccess {String} data.primaryUseId 主要用途Id
+* @apiSuccess {Object} data.primaryUse 主要用途
+* @apiSuccess {Number} data.category 当前数据分类 0-sv编辑的数据 1-审批中的数据 2-使用的数据 3-被替换的历史数据
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
 router.post('/', async (ctx, next) => {
 	const data = ctx.request.body;
-	let project = await Projects.findOne({ where: { id: data.projectId } });
-	if (!data.name || !data.projectId || !project) {
+	let location = await Locations.findOne({ where: { id: data.locationId || null } });
+	if (!data.name || !data.locationId || !location) {
 		ctx.body = ServiceResult.getFail('参数不正确');
 		return;
 	}
-	let building = await Buildings.findOne({ where: { projectId: data.projectId, name: data.name } });
-	if (building) {
-		ctx.body = ServiceResult.getFail('该项目中已经存在该楼房');
-		return;
-	}
-	data.projectName = project.name;
-	data.oesv = 'sv';
+	let buildingData = { locationId: data.locationId, name: data.name, category: 0 };
 
-	building = await Buildings.create(data);
-	ctx.body = ServiceResult.getSuccess(building);
-	await next();
+	[ 'activeStartDate', 'buildingClassId', 'address',
+		'commonName', 'costcenter', 'description', 'legalName',
+		'mainfax', 'mainphone', 'parkingOpen', 'primaryUseId'
+	].map(key => {
+		if (data[key]) { buildingData[key] = data[key]; }
+	});
+
+	return Buildings.create(buildingData)
+		.then(building => {
+			return Buildings.findOne({
+				where: { id: building.id },
+				include: [
+					{ model: Constants, as: 'buildingClass' },
+					{ model: Constants, as: 'primaryUse' }
+				]
+			}).then(res => {
+				ctx.body = ServiceResult.getSuccess(res);
+				next();
+			});
+		}).catch(error => {
+			console.log('创建building失败', error);
+			ctx.body = ServiceResult.getFail('执行错误');
+			next();
+		});
 });
 
 /**
-* @api {get} /api/buildings/:id?projectId= 建筑信息
+* @api {get} /api/buildings/:id 建筑信息
 * @apiName building-info
 * @apiGroup 建筑
 * @apiDescription 建筑信息
 * @apiHeader {String} authorization 登录token Bearer + token
-* @apiParam {Number} [projectId] 项目id
 * @apiParam {Number} id 建筑id
 * @apiSuccess {Number} errcode 成功为0
-* @apiSuccess {Object} data 建筑信息
+* @apiSuccess {Object} data 建筑building
+* @apiSuccess {Number} data.id 建筑building id
+* @apiSuccess {String} data.name 建筑名称
+* @apiSuccess {Number} data.buildingClassId 建筑类别Id
+* @apiSuccess {Object} data.buildingClass 建筑类别
+* @apiSuccess {Date} data.activeStartDate 开始时间
+* @apiSuccess {String} data.address 地址信息
+* @apiSuccess {String} data.commonName 通用名称
+* @apiSuccess {String} data.costcenter 成本中心
+* @apiSuccess {String} data.description 描述
+* @apiSuccess {String} data.legalName 法律名称
+* @apiSuccess {String} data.mainfax 传真
+* @apiSuccess {String} data.mainphone 电话总机
+* @apiSuccess {Number} data.parkingOpen 停车位数量
+* @apiSuccess {String} data.primaryUseId 主要用途Id
+* @apiSuccess {Object} data.primaryUse 主要用途
+* @apiSuccess {Number} data.category 当前数据分类 0-sv编辑的数据 1-审批中的数据 2-使用的数据 3-被替换的历史数据
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
 router.get('/:id', async (ctx, next) => {
-	const where = { id: ctx.params.id };
-	if (ctx.query.projectId) {
-		where.projectId = ctx.query.projectId;
-	}
-	let building = await Buildings.findOne({ where });
-	ctx.body = ServiceResult.getSuccess(building);
-	await next();
+	return Buildings.findOne({
+		where: { id: ctx.params.id },
+		include: [
+			{ model: Constants, as: 'buildingClass' },
+			{ model: Constants, as: 'primaryUse' }
+		]
+	}).then(res => {
+		ctx.body = ServiceResult.getSuccess(res);
+		next();
+	}).catch(error => {
+		console.log('查询building失败', error);
+		ctx.body = ServiceResult.getFail('执行错误');
+		next();
+	});
 });
 
 /**
@@ -111,38 +202,51 @@ router.get('/:id', async (ctx, next) => {
 * @apiDescription 修改建筑
 * @apiPermission OE/SV
 * @apiHeader {String} authorization 登录token Bearer + token
-* @apiParam {Number} projectId 项目id
 * @apiParam {Number} id 建筑id
+* @apiParam {String} [name] 建筑名称
+* @apiParam {Number} [buildingClassId] 建筑类别Id
+* @apiParam {Date} [activeStartDate] 开始时间
+* @apiParam {String} [address] 地址信息
+* @apiParam {String} [commonName] 通用名称
+* @apiParam {String} [costcenter] 成本中心
+* @apiParam {String} [description] 描述
+* @apiParam {String} [legalName] 法律名称
+* @apiParam {String} [mainfax] 传真
+* @apiParam {String} [mainphone] 电话总机
+* @apiParam {Number} [parkingOpen] 停车位数量
+* @apiParam {String} [primaryUseId] 主要用途Id
 * @apiParam {String} name 建筑名称
 * @apiSuccess {Number} errcode 成功为0
-* @apiSuccess {Object[]} data {}
+* @apiSuccess {Object} data {}
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
 router.put('/:id', async (ctx, next) => {
 	const data = ctx.request.body;
-	const where = { id: ctx.params.id };
-	if (data.projectId) {
-		where.projectId = data.projectId;
-	}
 
-	let building = await Buildings.findOne({ where });
-	if (!building) {
-		ctx.body = ServiceResult.getFail('参数不正确');
-		return;
-	}
-	building = await Buildings.findOne({ where: { projectId: building.projectId, name: data.name } });
-	if (building) {
-		ctx.body = ServiceResult.getFail('该项目中已经存在该楼房');
-		return;
-	}
-	await Buildings.update(data, { where });
-	if (data.name) {
-		await Floors.update({ buildingName: data.name }, { where: { buildingId: ctx.params.id } });
-		await Spaces.update({ buildingName: data.name }, { where: { buildingId: ctx.params.id } });
-	}
-	ctx.body = ServiceResult.getSuccess({});
-	await next();
+	let buildingData = {};
+	[ 'name', 'activeStartDate', 'buildingClassId', 'address',
+		'commonName', 'costcenter', 'description', 'legalName',
+		'mainfax', 'mainphone', 'parkingOpen', 'primaryUseId'
+	].map(key => {
+		if (data[key]) { buildingData[key] = data[key]; }
+	});
+
+	return Buildings.findOne({ where: { id: ctx.params.id } })
+		.then(building => {
+			if (!building) {
+				ctx.body = ServiceResult.getFail('');
+				next();
+			}
+			return Buildings.update(buildingData, { where: { id: ctx.params.id } });
+		}).then(() => {
+			ctx.body = ServiceResult.getSuccess({});
+			next();
+		}).catch(error => {
+			console.log('更新building失败', error);
+			ctx.body = ServiceResult.getFail('执行错误');
+			next();
+		});
 });
 
 /**
@@ -152,22 +256,24 @@ router.put('/:id', async (ctx, next) => {
 * @apiDescription 删除建筑
 * @apiPermission OE
 * @apiHeader {String} authorization 登录token Bearer + token
-* @apiParam {Number} [projectId] 项目id
 * @apiParam {String} id 建筑id
 * @apiSuccess {Object} data 建筑building
 * @apiSuccess {Number} errcode 成功为0
-* @apiSuccess {Object[]} data {}
+* @apiSuccess {Object} data {}
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
 router.delete('/:id', isOE(), async (ctx, next) => {
-	// TODO: 建筑删除其他表处理
 	const where = { id: ctx.params.id };
-	if (ctx.request.body.projectId) {
-		where.projectId = ctx.request.body.projectId;
-	}
-	await Buildings.destroy({ where });
-	await next();
+
+	return Buildings.destroy({ where }).then(() => {
+		ctx.body = ServiceResult.getSuccess({});
+		next();
+	}).catch(error => {
+		console.log('删除building失败', error);
+		ctx.body = ServiceResult.getFail('执行错误');
+		next();
+	});
 });
 
 module.exports = router;

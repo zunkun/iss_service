@@ -25,7 +25,7 @@ router.prefix('/api/constants');
 router.get('/', async (ctx, next) => {
 	const { classfication, name } = ctx.query;
 	const where = {};
-	if (classfication) { where.classfication = classfication; }
+	if (classfication) { where.classfication = { [Op.iLike]: `%${classfication}%` }; }
 	if (name) { where.name = { [Op.iLike]: `%${name}%` }; }
 	return Constants.findAll({
 		attributes: [ 'id', 'classfication', 'name' ],
