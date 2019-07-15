@@ -140,7 +140,7 @@ router.post('/', async (ctx, next) => {
 });
 
 /**
-* @api {delete} /api/personnels 删除项目点人员
+* @api {delete} /api/personnels/role 删除项目点人员
 * @apiName personnels-delete
 * @apiGroup 项目点人员
 * @apiDescription 删除项目点人员
@@ -153,9 +153,9 @@ router.post('/', async (ctx, next) => {
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
-router.delete('/', async (ctx, next) => {
-	const { userId, role } = ctx.request.body;
-	return Locations.findOne({ where: { id: ctx.query.locationId || null } })
+router.delete('/role', async (ctx, next) => {
+	const { locationId, userId, role } = ctx.request.body;
+	return Locations.findOne({ where: { id: locationId || null } })
 		.then(location => {
 			if (!location) {
 				return Promise.reject('参数错误');
@@ -207,7 +207,7 @@ router.get('/role', async (ctx, next) => {
 					for (let personnel of (personnels || [])) {
 						roleSet.add(personnel.role);
 					}
-					ctx.body = ServiceResult.getSuccess({ locationId: location.id, role: Array.from(roleSet) });
+					ctx.body = ServiceResult.getSuccess({ locationId: location.id, roles: Array.from(roleSet) });
 					next();
 				});
 		}).catch((error) => {

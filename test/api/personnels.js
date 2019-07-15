@@ -83,9 +83,27 @@ describe('/api/personnels', () => {
 			.expect(200)
 			.end((err, res) => {
 				should.not.exist(err);
+				should.equal(res.body.errcode, 0);
+				should.exist(res.body.data.locationId);
+				should.exist(res.body.data.roles);
+				done();
+			});
+	});
+
+	it('删除用户在项目点中角色 DELETE /api/personnels/role', (done) => {
+		process.request
+			.delete('/api/personnels/role')
+			.set('Authorization', process.token)
+			.send({
+				locationId: location.id,
+				userId: '280441575021784807',
+				role: 2
+			})
+			.expect(200)
+			.end((err, res) => {
+				should.not.exist(err);
 				console.log(res.body);
 				should.equal(res.body.errcode, 0);
-				should.exist(res.body.data.length);
 				done();
 			});
 	});
