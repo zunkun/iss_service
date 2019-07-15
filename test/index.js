@@ -32,9 +32,9 @@ describe('测试 /api/personnels', () => {
 	require('./api/personnels');
 });
 
-// describe('测试 /api/buildings', () => {
-// 	require('./api/buildings');
-// });
+describe('测试 /api/buildings', () => {
+	require('./api/buildings');
+});
 
 // describe('测试 /api/floors', () => {
 // 	require('./api/floors');

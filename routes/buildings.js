@@ -1,7 +1,6 @@
 const ServiceResult = require('../core/ServiceResult');
 const Router = require('koa-router');
 const router = new Router();
-const { isOE } = require('../core/auth');
 const Locations = require('../models/Locations');
 const Buildings = require('../models/Buildings');
 const Constants = require('../models/Constants');
@@ -263,7 +262,7 @@ router.put('/:id', async (ctx, next) => {
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
-router.delete('/:id', isOE(), async (ctx, next) => {
+router.delete('/:id', async (ctx, next) => {
 	const where = { id: ctx.params.id };
 
 	return Buildings.destroy({ where }).then(() => {
