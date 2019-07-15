@@ -64,10 +64,20 @@ router.get('/signature', async (ctx, next) => {
 * @apiGroup 鉴权
 * @apiDescription 用户登录
 * @apiParam {String} code 钉钉免登code
-* @apiParam {String} userId 测试环境中使用，没有code,携带钉钉用户的userId
+* @apiParam {String} [userId] 测试环境中使用，没有code,携带钉钉用户的userId
 * @apiSuccess {Number} errcode 成功为0
 * @apiSuccess {Object} data 项目列表
 * @apiSuccess {Object} data.user 钉钉获取当前用户信息
+* @apiSuccess {String} data.user.userId 用户userId
+* @apiSuccess {String} data.user.userName 用户userName
+* @apiSuccess {String} data.user.jobnumber 工号
+* @apiSuccess {Boolean} data.user.oe 当前登录用户是否是oe角色
+* @apiSuccess {String} data.user.avatar 图像
+* @apiSuccess {String} data.user.mobile 手机
+* @apiSuccess {String} data.user.role 系统角色字段，默认为1，该字段为保留字段
+* @apiSuccess {Object[]} data.user.depts 部门信息
+* @apiSuccess {Number} data.user.depts.deptId 部门deptId
+* @apiSuccess {String} data.user.depts.deptName 部门名称
 * @apiSuccess {String} data.token token信息,需要鉴权的api中请在header中携带此token
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
