@@ -12,6 +12,11 @@ Constants.init({
 	classfication: {
 		type: DataTypes.STRING,
 		comment: '常量的分类'
+	},
+	category: {
+		type: DataTypes.INTEGER,
+		defaultValue: 1,
+		comment: '数据分类 1-使用中 2-归档常量'
 	}
 }, { sequelize: postgres, modelName: 'constants', paranoid: true, comment: '常量信息表' });
 
