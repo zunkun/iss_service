@@ -291,7 +291,6 @@ router.put('/:id', async (ctx, next) => {
 * @apiError {Number} errmsg 错误消息
 */
 router.delete('/:id', async (ctx, next) => {
-	// TODO: 位置删除其他表处理
 	await Locations.destroy({ where: { id: ctx.params.id } });
 	ctx.body = ServiceResult.getSuccess({});
 	await next();
