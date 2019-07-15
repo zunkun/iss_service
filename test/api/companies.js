@@ -1,11 +1,11 @@
 const should = require('should');
-const Company = require('../../models/Company');
+const Companies = require('../../models/Companies');
 
 describe('/api/companies', () => {
 	let company;
 
 	it('新增companys POST /api/companies', (done) => {
-		Company.destroy({ where: { mainphone: '15618871298' } }).then(() => {
+		Companies.destroy({ where: { mainphone: '15618871298' } }).then(() => {
 			process.request
 				.post('/api/companies')
 				.set('Authorization', process.token)
@@ -69,7 +69,7 @@ describe('/api/companies', () => {
 				let resData = res.body;
 				should.equal(resData.errcode, 0);
 
-				let _company = await Company.findOne({ where: { id: company.id } });
+				let _company = await Companies.findOne({ where: { id: company.id } });
 				should.equal(_company.name, '上海铭悦软件有限公司');
 				done();
 			});

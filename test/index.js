@@ -28,6 +28,10 @@ describe('测试 /api/locations', () => {
 	require('./api/locations');
 });
 
+describe('测试 /api/personnels', () => {
+	require('./api/personnels');
+});
+
 // describe('测试 /api/buildings', () => {
 // 	require('./api/buildings');
 // });

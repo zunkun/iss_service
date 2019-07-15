@@ -25,7 +25,6 @@ DingStaffs.init({
 		type: DataTypes.STRING,
 		comment: '手机'
 	},
-	pids: DataTypes.ARRAY(DataTypes.INTEGER), // sv所管理的projectId
 	oe: {
 		type: DataTypes.BOOLEAN,
 		defaultValue: false,

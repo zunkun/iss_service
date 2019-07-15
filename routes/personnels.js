@@ -2,6 +2,7 @@ const ServiceResult = require('../core/ServiceResult');
 const Locations = require('../models/Locations');
 const Personnels = require('../models/Personnels');
 const DingStaffs = require('../models/DingStaffs');
+const jwt = require('jsonwebtoken');
 
 const { Op } = require('sequelize');
 const Router = require('koa-router');
@@ -11,7 +12,7 @@ router.prefix('/api/personnels');
 
 /**
 * @api {get} /api/personnels?locationId=&role=&name= 项目点人员信息
-* @apiName personals-query
+* @apiName personnels-query
 * @apiGroup 项目点人员
 * @apiDescription 项目点人员列表
 * @apiPermission OE/SV
@@ -22,7 +23,6 @@ router.prefix('/api/personnels');
 * @apiSuccess {Number} errcode 成功为0
 * @apiSuccess {Object[]} data 项目点人员location列表
 * @apiSuccess {Number} data.id 项目组人员id
-* @apiSuccess {Number} data.locationId location id
 * @apiSuccess {String} data.userId 人员userId
 * @apiSuccess {Object} data.userName 人员姓名
 * @apiSuccess {String} data.role 角色 1-执行者operator 2-sv 3-manager
@@ -32,7 +32,7 @@ router.prefix('/api/personnels');
 router.get('/', async (ctx, next) => {
 	// 通过loction中uuid 对用 Personnels 中 locationUuid
 	// category=1 标识为当前使用中的人员
-	let locationId = ctx.params.locationId;
+	let locationId = ctx.query.locationId;
 	let role = ctx.query.role || [];
 	let roleArray = [];
 	for (let item of role) {
@@ -46,26 +46,27 @@ router.get('/', async (ctx, next) => {
 		where.userName = { [Op.iLike]: `%${name}%` };
 	}
 
-	let location = await Locations.findOne({ where: { id: locationId } });
+	let location = await Locations.findOne({ where: { id: locationId || null } });
 	if (!location) {
 		ctx.body = ServiceResult.getSuccess('参数错误');
 		return;
 	}
 	where.locationUuid = location.uuid;
 
-	let personals = await Personnels.findAll({
+	let personnels = await Personnels.findAll({
 		where,
-		attributes: [ 'id', 'userId', 'userName', 'role', 'locationId' ]
+		attributes: [ 'id', 'userId', 'userName', 'role' ],
+		raw: true
 	});
-	ctx.body = ServiceResult.getSuccess(personals);
+	ctx.body = ServiceResult.getSuccess(personnels);
 	await next();
 });
 
 /**
-* @api {post} /api/personnels 创建项目点人员
-* @apiName location-create
+* @api {post} /api/personnels 设置项目点人员
+* @apiName personnels-settings
 * @apiGroup 项目点人员
-* @apiDescription 创建项目点人员
+* @apiDescription 设置项目点人员
 * @apiHeader {String} authorization 登录token Bearer + token
 * @apiParam {String} locationId 项目点id
 * @apiParam {String[]} userIds 人员userId列表
@@ -90,13 +91,13 @@ router.post('/', async (ctx, next) => {
 		if (!location) {
 			return Promise.reject('参数错误');
 		}
-		return DingStaffs.findOne({ where: { userId: { [Op.in]: userIds } } })
+		return DingStaffs.findAll({ where: { userId: { [Op.in]: userIds } }, raw: true })
 			.then(dingstaffs => {
 				let promiseArray = [];
 				for (let dingstaff of dingstaffs) {
 					let promise = Personnels.findOne({
 						where: {
-							locationId,
+							locationUuid: location.uuid,
 							userId: dingstaff.userId,
 							role,
 							category: 1
@@ -106,7 +107,7 @@ router.post('/', async (ctx, next) => {
 							return Promise.resolve(personnel);
 						}
 						return Personnels.create({
-							locationId,
+							locationUuid: location.uuid,
 							userId: dingstaff.userId,
 							userName: dingstaff.userName,
 							role,
@@ -132,6 +133,7 @@ router.post('/', async (ctx, next) => {
 		ctx.body = ServiceResult.getSuccess(res);
 		next();
 	}).catch(error => {
+		console.log({ error });
 		ctx.body = ServiceResult.getFail(error);
 		next();
 	});
@@ -139,7 +141,7 @@ router.post('/', async (ctx, next) => {
 
 /**
 * @api {delete} /api/personnels 删除项目点人员
-* @apiName location-delete
+* @apiName personnels-delete
 * @apiGroup 项目点人员
 * @apiDescription 删除项目点人员
 * @apiHeader {String} authorization 登录token Bearer + token
@@ -152,17 +154,63 @@ router.post('/', async (ctx, next) => {
 * @apiError {Number} errmsg 错误消息
 */
 router.delete('/', async (ctx, next) => {
-	const { locationId, userId, role } = ctx.request.body;
-	return Personnels.findOne({ where: { locationId, userId, role, category: 1 } })
-		.then(personnel => {
-			if (!personnel) {
+	const { userId, role } = ctx.request.body;
+	return Locations.findOne({ where: { id: ctx.query.locationId || null } })
+		.then(location => {
+			if (!location) {
 				return Promise.reject('参数错误');
 			}
-			return Personnels.update({ category: 2 }, { where: { locationId, userId, role, category: 1 } });
-		}).then(() => {
-			ctx.body = ServiceResult.getSuccess({});
-			next();
+			return Personnels.findOne({ where: { locationUuid: location.uuid, userId, role, category: 1 } })
+				.then(personnel => {
+					if (!personnel) {
+						return Promise.reject('参数错误');
+					}
+					return Personnels.update({ category: 2 }, { where: { id: personnel.id } });
+				}).then(() => {
+					ctx.body = ServiceResult.getSuccess({});
+					next();
+				});
 		}).catch(error => {
+			ctx.body = ServiceResult.getFail(error);
+			next();
+		});
+});
+
+/**
+* @api {get} /api/personnels/role?locationId= 用户项目点角色
+* @apiName personnels-role
+* @apiGroup 项目点人员
+* @apiDescription 获取当前登录用户在项目点中角色
+* @apiHeader {String} authorization 登录token Bearer + token
+* @apiParam {Number} locationId 项目点id
+* @apiSuccess {Object} data 角色数据
+* @apiSuccess {Number} data.locationId 项目点id
+* @apiSuccess {Boolean} data.roles 当前用户的角色列表[1, 2, 3] 1-执行者operator 2-sv 3-manager
+* @apiSuccess {Number} errcode 成功为0
+* @apiError {Number} errcode 失败不为0
+* @apiError {Number} errmsg 错误消息
+*/
+router.get('/role', async (ctx, next) => {
+	let user = jwt.decode(ctx.header.authorization.substr(7));
+	const roleSet = new Set();
+	if (!ctx.query.locationId) {
+		ctx.body = ServiceResult.getFail('参数错误');
+		return;
+	}
+	return Locations.findOne({ where: { id: ctx.query.locationId || null } })
+		.then(location => {
+			if (!location) {
+				return Promise.reject('参数错误');
+			}
+			return Personnels.findAll({ where: { locationUuid: location.uuid, userId: user.userId } })
+				.then(personnels => {
+					for (let personnel of (personnels || [])) {
+						roleSet.add(personnel.role);
+					}
+					ctx.body = ServiceResult.getSuccess({ locationId: location.id, role: Array.from(roleSet) });
+					next();
+				});
+		}).catch((error) => {
 			ctx.body = ServiceResult.getFail(error);
 			next();
 		});

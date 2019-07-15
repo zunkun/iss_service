@@ -5,7 +5,6 @@ const Constants = require('../models/Constants');
 
 const { Op } = require('sequelize');
 const Router = require('koa-router');
-const { isOE } = require('../core/auth');
 const areaMap = require('../config/areaMap');
 
 const router = new Router();
@@ -171,7 +170,7 @@ router.get('/', async (ctx, next) => {
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
-router.post('/', isOE(), async (ctx, next) => {
+router.post('/', async (ctx, next) => {
 	const data = ctx.request.body;
 	let company = await Companies.findOne({ where: { id: data.companyId || null } });
 	if (!data.companyId || !company || !data.name) {
@@ -260,7 +259,7 @@ router.get('/:id', async (ctx, next) => {
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
-router.put('/:id', isOE(), async (ctx, next) => {
+router.put('/:id', async (ctx, next) => {
 	const body = ctx.request.body;
 	let location = await Locations.findOne({ where: { id: ctx.params.id } });
 	if (!location) {
@@ -291,7 +290,7 @@ router.put('/:id', isOE(), async (ctx, next) => {
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
-router.delete('/:id', isOE(), async (ctx, next) => {
+router.delete('/:id', async (ctx, next) => {
 	// TODO: 位置删除其他表处理
 	await Locations.destroy({ where: { id: ctx.params.id } });
 	ctx.body = ServiceResult.getSuccess({});
