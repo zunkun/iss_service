@@ -149,7 +149,7 @@ router.put('/:id', async (ctx, next) => {
 * @apiError {Number} errcode 失败不为0
 * @apiError {String} errmsg 错误消息
 */
-router.put('/:id', async (ctx, next) => {
+router.post('/:id/archive', async (ctx, next) => {
 	return Constants.update({ category: 2 }, { where: { id: ctx.params.id } }).then(() => {
 		ctx.body = ServiceResult.getSuccess({});
 		next();
@@ -179,7 +179,7 @@ router.put('/:id', async (ctx, next) => {
 */
 router.get('/area', async (ctx, next) => {
 	ctx.body = ServiceResult.getSuccess(areaLists);
-	await next();
+	next();
 });
 
 /**
@@ -204,7 +204,7 @@ router.get('/:id', async (ctx, next) => {
 		ctx.body = ServiceResult.getSuccess(constant);
 		next();
 	}).catch(() => {
-		ctx.body = ServiceResult.getFail('修改错误');
+		ctx.body = ServiceResult.getFail('获取失败');
 		next();
 	});
 });

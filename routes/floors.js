@@ -18,19 +18,21 @@ router.prefix('/api/floors');
 * @apiParam {Number} [page] 第几页，默认1
 * @apiParam {String} [keywords] 关键词查询
 * @apiSuccess {Number} errcode 成功为0
-* @apiSuccess {Object[]} data 楼层列表
-* @apiSuccess {Number} data.id 楼层floor id
-* @apiSuccess {String} data.name 楼层名称
-* @apiSuccess {Number} data.floorClassId 楼层类别Id
-* @apiSuccess {Object} data.floorClassId 楼层类别
-* @apiSuccess {Date} data.activeStartDate 开始时间
-* @apiSuccess {Boolean} data.floorMaintained 是否维护
-* @apiSuccess {String} data.description 描述
-* @apiSuccess {Number} data.grossarea 总面积
-* @apiSuccess {Number} data.grossexternarea 外部面积
-* @apiSuccess {Number} data.grossinternalarea 内部面积
-* @apiSuccess {Number} data.level 楼层
-* @apiSuccess {Number} data.category 当前数据分类 0-sv编辑的数据 1-审批中的数据 2-使用的数据 3-被替换的历史数据
+* @apiSuccess {Object} data 楼层列表
+* @apiSuccess {Number} data.count 楼层总数
+* @apiSuccess {Object[]} data.rows 楼层列表
+* @apiSuccess {Number} data.rows.id 楼层floor id
+* @apiSuccess {String} data.rows.name 楼层名称
+* @apiSuccess {Number} data.rows.floorClassId 楼层类别Id
+* @apiSuccess {Object} data.rows.floorClassId 楼层类别
+* @apiSuccess {Date} data.rows.activeStartDate 开始时间
+* @apiSuccess {Boolean} data.rows.floorMaintained 是否维护
+* @apiSuccess {String} data.rows.description 描述
+* @apiSuccess {Number} data.rows.grossarea 总面积
+* @apiSuccess {Number} data.rows.grossexternarea 外部面积
+* @apiSuccess {Number} data.rows.grossinternalarea 内部面积
+* @apiSuccess {Number} data.rows.level 楼层
+* @apiSuccess {Number} data.rows.category 当前数据分类 0-sv编辑的数据 1-审批中的数据 2-使用的数据 3-被替换的历史数据
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */

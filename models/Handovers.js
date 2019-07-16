@@ -1,6 +1,5 @@
 const postgres = require('../core/db/postgres');
 const { DataTypes, Model } = require('sequelize');
-const Personnels = require('./Personnels');
 const DingStaffs = require('./DingStaffs');
 
 // 工作交接记录
@@ -14,6 +13,10 @@ Handovers.init({
 	fromUserId: {
 		type: DataTypes.STRING,
 		comment: '发起人userId'
+	},
+	fromUserName: {
+		type: DataTypes.STRING,
+		comment: '发起人姓名'
 	},
 	fromGps: {
 		type: DataTypes.STRING,
@@ -35,6 +38,10 @@ Handovers.init({
 		type: DataTypes.STRING,
 		comment: '接收人userId'
 	},
+	toUserName: {
+		type: DataTypes.STRING,
+		comment: '接收人姓名'
+	},
 	toGps: {
 		type: DataTypes.STRING,
 		comment: '接收人位置信息'
@@ -47,6 +54,10 @@ Handovers.init({
 		type: DataTypes.TEXT,
 		comment: '接收人填写备注信息'
 	},
+	date: {
+		type: DataTypes.DATEONLY,
+		comment: '交接日期'
+	},
 	category: {
 		type: DataTypes.INTEGER,
 		comment: '工作交接状态 1-交接中 2-交接成功 3-撤回 4-拒绝'
@@ -57,9 +68,6 @@ Handovers.init({
 	comment: '工作交接',
 	paranoid: true
 });
-
-Personnels.hasMany(Handovers);
-Handovers.belongsTo(Personnels);
 
 Handovers.belongsTo(DingStaffs, { as: 'fromStaff' });
 Handovers.belongsTo(DingStaffs, { as: 'toStaff' });

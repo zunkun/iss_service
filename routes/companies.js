@@ -17,7 +17,9 @@ router.prefix('/api/companies');
 * @apiParam {String} [keywords] 关键词查询
 * @apiParam {String} [industryCode] 行业编码
 * @apiSuccess {Number} errcode 成功为0
-* @apiSuccess {Object[]} data 客户列表
+* @apiSuccess {Object} data 客户列表
+* @apiSuccess {Number} data.count 客户总数
+* @apiSuccess {Object[]} data.rows 当前页客户列表
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
@@ -65,7 +67,7 @@ router.get('/', async (ctx, next) => {
 * @apiParam {String} [email] email
 * @apiParam {String} [site]  网址
 * @apiSuccess {Number} errcode 成功为0
-* @apiSuccess {Object[]} data 客户customer
+* @apiSuccess {Object} data 客户customer
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
@@ -120,7 +122,7 @@ router.get('/:id', async (ctx, next) => {
 * @apiParam {String} [site]  网址
 * @apiParam {String} [industryCode]  行业类型id
 * @apiSuccess {Number} errcode 成功为0
-* @apiSuccess {Object[]} data {}
+* @apiSuccess {Object} data {}
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */

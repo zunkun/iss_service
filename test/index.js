@@ -52,9 +52,9 @@ describe('测试 /api/inspections', () => {
 	require('./api/inspections');
 });
 
-// describe('测试 /api/facilities', () => {
-// 	require('./api/facilities');
-// });
+describe('测试 /api/handovers', () => {
+	require('./api/handovers');
+});
 
 // describe('测试項目提交審批', () => {
 // 	require('./api/reviews');
