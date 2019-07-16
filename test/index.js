@@ -44,13 +44,13 @@ describe('测试 /api/spaces', () => {
 	require('./api/spaces');
 });
 
-// describe('测试 /api/fcs', () => {
-// 	require('./api/fcs');
-// });
+describe('测试 /api/specs', () => {
+	require('./api/specs');
+});
 
-// describe('测试 /api/fics', () => {
-// 	require('./api/fics');
-// });
+describe('测试 /api/inspections', () => {
+	require('./api/inspections');
+});
 
 // describe('测试 /api/facilities', () => {
 // 	require('./api/facilities');
