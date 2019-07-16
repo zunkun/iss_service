@@ -36,9 +36,9 @@ describe('测试 /api/buildings', () => {
 	require('./api/buildings');
 });
 
-// describe('测试 /api/floors', () => {
-// 	require('./api/floors');
-// });
+describe('测试 /api/floors', () => {
+	require('./api/floors');
+});
 
 // describe('测试 /api/spaces', () => {
 // 	require('./api/spaces');
