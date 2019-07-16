@@ -17,13 +17,13 @@ Spaces.init({
 		type: DataTypes.STRING,
 		comment: '空间名称'
 	},
-	area: {
-		type: DataTypes.FLOAT,
-		comment: '面积'
-	},
 	barcodeentry: {
 		type: DataTypes.STRING,
 		comment: '编号'
+	},
+	area: {
+		type: DataTypes.FLOAT,
+		comment: '面积'
 	},
 	extwindowarea: {
 		type: DataTypes.FLOAT,
