@@ -24,13 +24,12 @@ router.prefix('/api/companies');
 * @apiError {Number} errmsg 错误消息
 */
 router.get('/', async (ctx, next) => {
-	let user = ctx.state.user;
 	let { page, limit, keywords, industryCode } = ctx.query;
 	page = Number(page) || 1;
 	limit = Number(limit) || 10;
 	let offset = (page - 1) * limit;
 
-	let where = { oe: { userId: user.userId } };
+	let where = { };
 
 	if (keywords && keywords !== 'undefined') {
 		where[Op.or] = ([
@@ -38,7 +37,6 @@ router.get('/', async (ctx, next) => {
 			{ industryName: { [Op.like]: `%${keywords}%` } }
 		]);
 	}
-
 	if (industryCode) {
 		where.industryCode = industryCode;
 	}
@@ -158,8 +156,7 @@ router.put('/:id', async (ctx, next) => {
 * @apiError {Number} errmsg 错误消息
 */
 router.delete('/:id', async (ctx, next) => {
-	// TODO: 客户删除其他表处理
-	await Companies.destroy({ where: { id: ctx.params.id, 'oe.userId': ctx.state.user.userId } });
+	await Companies.destroy({ where: { id: ctx.params.id } });
 	ctx.body = ServiceResult.getSuccess({});
 	await next();
 });

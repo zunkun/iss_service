@@ -62,7 +62,7 @@ let paranoid = true;
 * @apiSuccess {Number} data.rows.propertyClassId  类别Id
 * @apiSuccess {Object} data.rows.propertyClass  类别
 * @apiSuccess {String} data.rows.description  描述
-* @apiSuccess {String} data.rows.legalName  地址详细
+* @apiSuccess {String} data.rows.legalName  法律名称
 * @apiSuccess {String} data.rows.zippostal  邮编
 * @apiSuccess {String} data.rows.mainphone  电话总机
 * @apiSuccess {String} data.rows.parkingOpen  停车位数量
@@ -135,7 +135,7 @@ router.get('/', async (ctx, next) => {
 * @apiParam {Number} [primaryUseId]  主要用途Id
 * @apiParam {Number} [propertyClassId]  类别Id
 * @apiParam {String} [description]  描述
-* @apiParam {String} [legalName]  地址详细
+* @apiParam {String} [legalName]  法律名称
 * @apiParam {String} [zippostal]  邮编
 * @apiParam {String} [mainphone]  电话总机
 * @apiParam {String} [parkingOpen]  停车位数量
@@ -165,7 +165,7 @@ router.get('/', async (ctx, next) => {
 * @apiSuccess {Number} data.propertyClassId  类别Id
 * @apiSuccess {Object} data.propertyClass  类别
 * @apiSuccess {String} data.description  描述
-* @apiSuccess {String} data.legalName  地址详细
+* @apiSuccess {String} data.legalName  法律名称
 * @apiSuccess {String} data.zippostal  邮编
 * @apiSuccess {String} data.mainphone  电话总机
 * @apiSuccess {String} data.parkingOpen  停车位数量
@@ -252,7 +252,7 @@ router.get('/:id', async (ctx, next) => {
 * @apiParam {Number} [primaryUseId]  主要用途Id
 * @apiParam {Number} [propertyClassId]  类别Id
 * @apiParam {String} [description]  描述
-* @apiParam {String} [legalName]  地址详细
+* @apiParam {String} [legalName]  法律名称
 * @apiParam {String} [zippostal]  邮编
 * @apiParam {String} [mainphone]  电话总机
 * @apiParam {String} [parkingOpen]  停车位数量

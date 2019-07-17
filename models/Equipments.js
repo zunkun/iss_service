@@ -2,7 +2,6 @@ const postgres = require('../core/db/postgres');
 const { DataTypes, Model, UUIDV4 } = require('sequelize');
 const Constants = require('./Constants');
 const Locations = require('./Locations');
-const Reviews = require('./Reviews');
 const Buildings = require('./Buildings');
 const Floors = require('./Floors');
 const Spaces = require('./Spaces');
@@ -52,10 +51,7 @@ Equipments.init({
 		type: DataTypes.STRING,
 		comment: '功率'
 	},
-	primaryLocation: {
-		type: DataTypes.STRING,
-		comment: '空间名称（位置信息）'
-	},
+
 	quantity: {
 		type: DataTypes.INTEGER,
 		comment: '数量'
@@ -72,6 +68,10 @@ Equipments.init({
 		type: DataTypes.INTEGER,
 		defaultValue: 0,
 		comment: '当前数据分类 0-sv编辑的数据 1-审批中的数据 2-使用的数据 3-被替换的历史数据'
+	},
+	inspect: {
+		type: DataTypes.BOOLEAN,
+		defaultValue: false
 	}
 }, {
 	sequelize: postgres,
@@ -80,28 +80,28 @@ Equipments.init({
 	comment: '设备信息'
 });
 
-Equipments.belongsTo(Locations);
 Locations.hasMany(Equipments);
+Equipments.belongsTo(Locations);
 
-Equipments.belongsTo(Reviews);
-Reviews.hasMany(Equipments);
+// Equipments.belongsTo(Reviews);
+// Reviews.hasMany(Equipments);
 
-Equipments.belongsTo(Buildings);
 Buildings.hasMany(Equipments);
+Equipments.belongsTo(Buildings);
 
-Equipments.belongsTo(Floors);
 Floors.hasMany(Equipments);
+Equipments.belongsTo(Floors);
 
-Equipments.belongsTo(Spaces);
 Spaces.hasMany(Equipments);
+Equipments.belongsTo(Spaces);
 
 Equipments.belongsTo(Specs);
 Specs.hasMany(Equipments);
 
-Equipments.hasMany(Equipments, { as: 'SonAssets', sourceKey: 'parentAssetId' });
-Equipments.belongsTo(Equipments, { as: 'ParentAssert', targetKey: 'parentAssetId' });
+Equipments.belongsTo(Equipments, { as: 'parentAsset' });
 
-Equipments.hasOne(Constants, { as: 'grpassetcriticality' });
+Equipments.belongsTo(Constants, { as: 'condition' });
+Equipments.belongsTo(Constants, { as: 'grpassetcriticality' });
 
 Equipments.sync();
 

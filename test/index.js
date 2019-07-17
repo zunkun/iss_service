@@ -56,6 +56,10 @@ describe('测试 /api/handovers', () => {
 	require('./api/handovers');
 });
 
+describe('测试 /api/equipments', () => {
+	require('./api/equipments');
+});
+
 // describe('测试項目提交審批', () => {
 // 	require('./api/reviews');
 // });

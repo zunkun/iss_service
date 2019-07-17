@@ -126,7 +126,6 @@ describe('/api/handovers', () => {
 			.expect(200)
 			.end((err, res) => {
 				should.not.exist(err);
-				console.log(res.body);
 				should.equal(res.body.errcode, 0);
 
 				Handovers.findOne({ where: { id: handover2.id } }).then(_handover => {

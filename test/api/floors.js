@@ -2,7 +2,6 @@ const should = require('should');
 const Buildings = require('../../models/Buildings');
 const Floors = require('../../models/Floors');
 const Locations = require('../../models/Locations');
-const { Op } = require('sequelize');
 
 describe('/api/floors', () => {
 	let floor;
