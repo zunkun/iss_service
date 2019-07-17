@@ -10,10 +10,23 @@ Reviews.init({
 		type: DataTypes.UUID,
 		defaultValue: UUIDV4
 	},
+	locationUuid: {
+		type: DataTypes.UUID,
+		comment: 'location 的uuid'
+	},
 	status: {
 		type: DataTypes.INTEGER,
-		defaultValue: 0
+		defaultValue: 0,
+		comment: '审核状态 0-待审核 1-已通过 2-已驳回'
 	}, // 0-待审核 1-已通过 2-已驳回
+	managers: {
+		type: DataTypes.ARRAY(DataTypes.JSONB),
+		comment: 'managers记录'
+	},
+	svs: {
+		type: DataTypes.ARRAY(DataTypes.JSONB),
+		comment: 'svs记录'
+	},
 	reviewTime: DataTypes.DATE // 审核时间
 }, {
 	sequelize: postgres,

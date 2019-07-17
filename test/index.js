@@ -60,6 +60,6 @@ describe('测试 /api/equipments', () => {
 	require('./api/equipments');
 });
 
-// describe('测试項目提交審批', () => {
-// 	require('./api/reviews');
-// });
+describe('测试項目提交審批', () => {
+	require('./api/reviews');
+});
