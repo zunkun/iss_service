@@ -155,6 +155,7 @@ router.post('/', (ctx, next) => {
 				fromGps: data.fromGps,
 				fromImages: data.fromImages,
 				fromRemark: data.fromRemark,
+				startTime: new Date(),
 				date: moment().format('YYYY-MM-DD'),
 				category: 1
 			};
@@ -297,7 +298,7 @@ router.post('/:id/receiver', (ctx, next) => {
 			if (handover.category !== 1) {
 				return Promise.reject('当前交班已经被接收人处理，无法操作');
 			}
-			let updateData = { category };
+			let updateData = { category, endTime: new Date() };
 			[ 'toRemark', 'toGps', 'toImages' ].map(key => {
 				if (data[key]) updateData[key] = data[key];
 			});

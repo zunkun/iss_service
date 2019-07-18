@@ -63,3 +63,7 @@ describe('测试 /api/equipments', () => {
 describe('测试項目提交審批', () => {
 	require('./api/reviews');
 });
+
+describe('巡检路线', () => {
+	require('./api/pathways');
+});

@@ -14,6 +14,19 @@ router.prefix('/api/constants');
 * @apiDescription 常量分类表
 * @apiSuccess {Number} errcode 成功为0
 * @apiSuccess {String[]} data 常量分类表
+*		brand: brandId 使用,
+*		grpassetcriticality: grpassetcriticalityId使用,
+*		propertyClass: propertyClassId使用,
+*		primaryUse : primaryUseId使用,
+*		buildingClass: buildingClassId使用,
+*		plansc: planscId使用
+*		specNature： planscId使用,
+*		specClass: specClassId使用,
+*		floorClass: floorClassId使用,
+*		areaUnit: areaUnit使用,
+*		serviceClass: serviceClassId使用,
+*		buildingSystem: buildingClassId使用,
+*		condition: conditionId使用,
 * @apiError {Number} errcode 失败不为0
 * @apiError {String} errmsg 错误消息
 */
@@ -36,15 +49,15 @@ router.get('/classfication', async (ctx, next) => {
 });
 
 /**
-* @api {get} /api/constants?classfication=&name=&category= 常量信息
+* @api {get} /api/constants?classfication=&name=&category= 常量列表
 * @apiName constants-query
 * @apiGroup 常量
-* @apiDescription 常量信息
+* @apiDescription 常量列表
 * @apiParam {String} [classfication] 分类
 * @apiParam {String} [name] 分类名称
 * @apiParam {String} category 数据分类 1-使用中常量 2-归档常量，默认1
 * @apiSuccess {Number} errcode 成功为0
-* @apiSuccess {Object} data 常量信息
+* @apiSuccess {Object[]} data 常量信息
 * @apiSuccess {Number} data.id 常量id
 * @apiSuccess {String} data.classfication 常量分类
 * @apiSuccess {String} data.name 常量名称

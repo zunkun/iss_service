@@ -58,6 +58,14 @@ Handovers.init({
 		type: DataTypes.DATEONLY,
 		comment: '交接日期'
 	},
+	startTime: {
+		type: DataTypes.DATE,
+		comment: '开始交接时间'
+	},
+	endTime: {
+		type: DataTypes.DATE,
+		comment: '接收时间'
+	},
 	category: {
 		type: DataTypes.INTEGER,
 		comment: '工作交接状态 1-交接中 2-交接成功 3-撤回 4-拒绝'

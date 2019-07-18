@@ -1,5 +1,5 @@
 const postgres = require('../core/db/postgres');
-const { DataTypes, Model, UUIDV4 } = require('sequelize');
+const { DataTypes, Model } = require('sequelize');
 const Companies = require('./Companies');
 const Pathways = require('./Pathways');
 const Equipents = require('./Equipments');
@@ -7,10 +7,6 @@ const Equipents = require('./Equipments');
 class PathEquipments extends Model {}
 // 巡检路线设备信息
 PathEquipments.init({
-	uuid: {
-		type: DataTypes.UUID,
-		defaultValue: UUIDV4
-	},
 	category: {
 		type: DataTypes.INTEGER,
 		defaultValue: 0,

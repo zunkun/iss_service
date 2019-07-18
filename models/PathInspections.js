@@ -1,15 +1,12 @@
 const postgres = require('../core/db/postgres');
-const { DataTypes, Model, UUIDV4 } = require('sequelize');
+const { DataTypes, Model } = require('sequelize');
 const PathEquipments = require('./PathEquipments');
 const Inspections = require('./Inspections');
+const Pathways = require('./Pathways');
 
 class PathInspections extends Model {}
 // 巡检路线设备检查项信息
 PathInspections.init({
-	uuid: {
-		type: DataTypes.UUID,
-		defaultValue: UUIDV4
-	},
 	category: {
 		type: DataTypes.INTEGER,
 		defaultValue: 0,
@@ -24,6 +21,9 @@ PathInspections.init({
 
 PathEquipments.hasMany(PathInspections);
 PathInspections.belongsTo(PathEquipments);
+
+Pathways.hasMany(PathInspections);
+PathInspections.belongsTo(Pathways);
 
 Inspections.hasMany(PathInspections);
 PathInspections.belongsTo(Inspections);

@@ -7,8 +7,7 @@ class Pathways extends Model {}
 Pathways.init({
 	uuid: {
 		type: DataTypes.UUID,
-		defaultValue: UUIDV4,
-		comment: '用来标识属于哪个巡检路线，其与pathcode对应关系为 1:N'
+		defaultValue: UUIDV4
 	},
 	pathcode: {
 		type: DataTypes.STRING,
@@ -25,6 +24,11 @@ Pathways.init({
 	locationUuid: {
 		type: DataTypes.UUID,
 		comment: 'Location的uuid该标识标书属于哪个巡检路线'
+	},
+	inuse: {
+		type: DataTypes.BOOLEAN,
+		defaultValue: true,
+		comment: '是否启用'
 	},
 	category: {
 		type: DataTypes.INTEGER,
