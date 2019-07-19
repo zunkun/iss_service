@@ -15,6 +15,22 @@ Equipments.init({
 		type: DataTypes.UUID,
 		defaultValue: UUIDV4
 	},
+	locationUuid: {
+		type: DataTypes.UUID,
+		comment: '项目点uuid'
+	},
+	buildingUuid: {
+		type: DataTypes.UUID,
+		comment: 'Building uuid'
+	},
+	floorUuid: {
+		type: DataTypes.UUID,
+		comment: '楼层uuid'
+	},
+	spaceUuid: {
+		type: DataTypes.UUID,
+		comment: '空间uuid'
+	},
 	name: {
 		type: DataTypes.STRING,
 		comment: '设备名称'
@@ -51,7 +67,6 @@ Equipments.init({
 		type: DataTypes.STRING,
 		comment: '功率'
 	},
-
 	quantity: {
 		type: DataTypes.INTEGER,
 		comment: '数量'
@@ -82,9 +97,6 @@ Equipments.init({
 
 Locations.hasMany(Equipments);
 Equipments.belongsTo(Locations);
-
-// Equipments.belongsTo(Reviews);
-// Reviews.hasMany(Equipments);
 
 Buildings.hasMany(Equipments);
 Equipments.belongsTo(Buildings);

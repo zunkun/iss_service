@@ -12,10 +12,10 @@ router.prefix('/api/locations');
 let paranoid = true;
 
 /**
-* @api {get} /api/locations?limit=&page=&keywords=&provinceCode=&cityCode=&districtCode=&inuse= 位置列表
+* @api {get} /api/locations?limit=&page=&keywords=&provinceCode=&cityCode=&districtCode=&inuse= 项目点列表
 * @apiName locations-query
-* @apiGroup 位置
-* @apiDescription 位置列表
+* @apiGroup 项目点
+* @apiDescription 项目点列表
 * @apiPermission OE/SV
 * @apiHeader {String} authorization 登录token Bearer + token
 * @apiParam {Number} [limit] 分页条数，默认10
@@ -35,9 +35,9 @@ let paranoid = true;
 * @apiParam {String} [zippostal]  邮编
 * @apiParam {String} [mainphone]  电话总机
 * @apiSuccess {Number} errcode 成功为0
-* @apiSuccess {Object} data 位置location列表
-* @apiSuccess {Number} data.count 位置location总数
-* @apiSuccess {Object[]} data.rows 位置location列表
+* @apiSuccess {Object} data 项目点Location列表
+* @apiSuccess {Number} data.count 项目点Location总数
+* @apiSuccess {Object[]} data.rows 项目点Location列表
 * @apiSuccess {String} data.rows.companyId 客户id
 * @apiSuccess {Object} data.rows.company 客户信息
 * @apiSuccess {String} data.rows.name 项目点名称
@@ -81,7 +81,9 @@ router.get('/', async (ctx, next) => {
 		where[Op.or] = [
 			{ code: { [Op.iLike]: `%${keywords}%` } },
 			{ name: { [Op.iLike]: `%${keywords}%` } },
-			{ companyName: { [Op.iLike]: `%${keywords}%` } }
+			{ commonName: { [Op.iLike]: `%${keywords}%` } },
+			{ description: { [Op.iLike]: `%${keywords}%` } },
+			{ legalName: { [Op.iLike]: `%${keywords}%` } }
 		];
 	}
 
@@ -114,10 +116,10 @@ router.get('/', async (ctx, next) => {
 });
 
 /**
-* @api {post} /api/locations 创建位置
+* @api {post} /api/locations 创建项目点
 * @apiName location-create
-* @apiGroup 位置
-* @apiDescription 创建位置
+* @apiGroup 项目点
+* @apiDescription 创建项目点
 * @apiPermission OE
 * @apiHeader {String} authorization 登录token Bearer + token
 * @apiParam {String} companyId 客户id
@@ -140,7 +142,8 @@ router.get('/', async (ctx, next) => {
 * @apiParam {String} [mainphone]  电话总机
 * @apiParam {String} [parkingOpen]  停车位数量
 * @apiSuccess {Number} errcode 成功为0
-* @apiSuccess {Object} data 位置location
+* @apiSuccess {Object} data 项目点Location
+* @apiSuccess {String} data.id 项目点id标识
 * @apiSuccess {String} data.companyId 客户id
 * @apiSuccess {Object} data.company 客户信息
 * @apiSuccess {String} data.name 项目点名称
@@ -202,14 +205,14 @@ router.post('/', async (ctx, next) => {
 });
 
 /**
-* @api {get} /api/locations/:id 位置信息
+* @api {get} /api/locations/:id 项目点信息
 * @apiName locations-info
-* @apiGroup 位置
-* @apiDescription 位置信息
+* @apiGroup 项目点
+* @apiDescription 项目点信息
 * @apiHeader {String} authorization 登录token Bearer + token
-* @apiParam {Number} id 位置id
+* @apiParam {Number} id 项目点id
 * @apiSuccess {Number} errcode 成功为0
-* @apiSuccess {Object} data 位置信息
+* @apiSuccess {Object} data 项目点信息
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
@@ -230,13 +233,13 @@ router.get('/:id', async (ctx, next) => {
 });
 
 /**
-* @api {put} /api/locations/:id 修改位置
+* @api {put} /api/locations/:id 修改项目点
 * @apiName location-modify
-* @apiGroup 位置
-* @apiDescription 修改位置
+* @apiGroup 项目点
+* @apiDescription 修改项目点
 * @apiPermission OE
 * @apiHeader {String} authorization 登录token Bearer + token
-* @apiParam {String} id 位置id
+* @apiParam {String} id 项目点id
 * @apiParam {String} [companyId] 客户id
 * @apiParam {String} [name] 项目点名称
 * @apiParam {String} [provinceCode] 省份编码
@@ -268,7 +271,15 @@ router.put('/:id', async (ctx, next) => {
 		ctx.body = ServiceResult.getFail('参数不正确');
 		return;
 	}
-
+	if (body.provinceCode) {
+		body.provinceName = areaMap.province[body.provinceCode];
+	}
+	if (body.cityCode) {
+		body.cityName = areaMap.city[body.cityCode];
+	}
+	if (body.districtCode) {
+		body.districtName = areaMap.district[body.districtCode];
+	}
 	await Locations.update(body, {
 		where: {
 			id: ctx.params.id
@@ -280,14 +291,14 @@ router.put('/:id', async (ctx, next) => {
 });
 
 /**
-* @api {delete} /api/locations/:id 删除位置
+* @api {delete} /api/locations/:id 删除项目点
 * @apiName location-delete
-* @apiGroup 位置
-* @apiDescription 删除位置
+* @apiGroup 项目点
+* @apiDescription 删除项目点
 * @apiPermission OE
 * @apiHeader {String} authorization 登录token Bearer + token
-* @apiParam {String} id 位置id
-* @apiSuccess {Object} data 位置location
+* @apiParam {String} id 项目点id
+* @apiSuccess {Object} data 项目点Location
 * @apiSuccess {Number} errcode 成功为0
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息

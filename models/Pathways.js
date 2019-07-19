@@ -1,6 +1,7 @@
 const postgres = require('../core/db/postgres');
 const { DataTypes, Model, UUIDV4 } = require('sequelize');
 const Companies = require('./Companies');
+const Locations = require('./Locations');
 
 class Pathways extends Model {}
 // 巡检路线信息
@@ -8,6 +9,10 @@ Pathways.init({
 	uuid: {
 		type: DataTypes.UUID,
 		defaultValue: UUIDV4
+	},
+	locationUuid: {
+		type: DataTypes.UUID,
+		comment: 'Location的uuid该标识标书属于哪个巡检路线'
 	},
 	pathcode: {
 		type: DataTypes.STRING,
@@ -20,10 +25,6 @@ Pathways.init({
 	description: {
 		type: DataTypes.TEXT,
 		comment: '巡检路线描述'
-	},
-	locationUuid: {
-		type: DataTypes.UUID,
-		comment: 'Location的uuid该标识标书属于哪个巡检路线'
 	},
 	inuse: {
 		type: DataTypes.BOOLEAN,
@@ -44,6 +45,9 @@ Pathways.init({
 
 Companies.hasMany(Pathways);
 Pathways.belongsTo(Companies);
+
+Locations.hasMany(Pathways);
+Pathways.belongsTo(Locations);
 
 Pathways.sync();
 

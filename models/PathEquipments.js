@@ -3,10 +3,23 @@ const { DataTypes, Model } = require('sequelize');
 const Companies = require('./Companies');
 const Pathways = require('./Pathways');
 const Equipents = require('./Equipments');
+const Locations = require('./Locations');
 
 class PathEquipments extends Model {}
 // 巡检路线设备信息
 PathEquipments.init({
+	pathwayUuid: {
+		type: DataTypes.UUID,
+		comment: 'pathway uuid'
+	},
+	equipmentUuid: {
+		type: DataTypes.UUID,
+		comment: 'equipment uuid'
+	},
+	locationUuid: {
+		type: DataTypes.UUID,
+		comment: 'location uuid'
+	},
 	category: {
 		type: DataTypes.INTEGER,
 		defaultValue: 0,
@@ -19,14 +32,15 @@ PathEquipments.init({
 	comment: '巡检路线设备信息'
 });
 
-Companies.hasMany(PathEquipments);
 PathEquipments.belongsTo(Companies);
 
 Pathways.hasMany(PathEquipments);
 PathEquipments.belongsTo(Pathways);
 
-Equipents.hasMany(PathEquipments);
 PathEquipments.belongsTo(Equipents);
+
+Locations.hasMany(PathEquipments);
+PathEquipments.belongsTo(Locations);
 
 PathEquipments.sync();
 

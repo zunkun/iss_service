@@ -2,10 +2,15 @@ const postgres = require('../core/db/postgres');
 const { DataTypes, Model } = require('sequelize');
 const Pathways = require('./Pathways');
 const Personnels = require('./Personnels');
+const Locations = require('./Locations');
 
-class PathOperate extends Model {}
+class OperatePaths extends Model {}
 // 巡检员巡检信息主表
-PathOperate.init({
+OperatePaths.init({
+	locationUuid: {
+		type: DataTypes.UUID,
+		comment: '项目点uuid'
+	},
 	pathwayUuid: {
 		type: DataTypes.UUID,
 		comment: '用来标识属于哪个巡检路线，pathway uuid'
@@ -23,7 +28,7 @@ PathOperate.init({
 		comment: '巡检开始时间'
 	},
 	endTime: {
-		type: Date.DATE,
+		type: DataTypes.DATE,
 		comment: '巡检结束时间'
 	},
 	accomplished: {
@@ -31,24 +36,35 @@ PathOperate.init({
 		defaultValue: false,
 		comment: '当前巡检路线是否已经巡检所有项'
 	},
+	userId: {
+		type: DataTypes.STRING,
+		comment: '巡检员userId'
+	},
+	userName: {
+		type: DataTypes.STRING,
+		comment: '巡检员姓名'
+	},
 	category: {
 		type: DataTypes.INTEGER,
-		defaultValue: 0,
+		defaultValue: 1,
 		comment: '1-巡检中 2-巡检数据已提交'
 	}
 }, {
 	sequelize: postgres,
-	modelName: 'pathequipments',
+	modelName: 'operatepaths',
 	paranoid: true,
-	comment: '巡检路线设备信息'
+	comment: '巡检中路线信息, locationId标识同一locationUuid下location版本，同理可以理解pathwayId和pathwayUuid'
 });
 
-Personnels.hasMany(PathOperate);
-PathOperate.belongsTo(Personnels);
+Personnels.hasMany(OperatePaths);
+OperatePaths.belongsTo(Personnels);
 
-Pathways.hasMany(PathOperate);
-PathOperate.belongsTo(Pathways);
+Locations.hasMany(OperatePaths);
+OperatePaths.belongsTo(Locations);
 
-PathOperate.sync();
+Pathways.hasMany(OperatePaths);
+OperatePaths.belongsTo(Pathways);
 
-module.exports = PathOperate;
+OperatePaths.sync();
+
+module.exports = OperatePaths;

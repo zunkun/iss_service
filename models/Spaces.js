@@ -4,7 +4,6 @@ const { DataTypes, Model, UUIDV4 } = require('sequelize');
 const Locations = require('./Locations');
 const Buildings = require('./Buildings');
 const Floors = require('./Floors');
-// const Reviews = require('./Reviews');
 
 // 楼层内空间
 class Spaces extends Model {}
@@ -12,6 +11,18 @@ Spaces.init({
 	uuid: {
 		type: DataTypes.UUID,
 		defaultValue: UUIDV4
+	},
+	locationUuid: {
+		type: DataTypes.UUID,
+		comment: '项目点uuid'
+	},
+	buildingUuid: {
+		type: DataTypes.UUID,
+		comment: 'Building uuid'
+	},
+	floorUuid: {
+		type: DataTypes.UUID,
+		comment: '楼层uuid'
 	},
 	name: {
 		type: DataTypes.STRING,
@@ -51,9 +62,6 @@ Spaces.init({
 
 Locations.hasMany(Spaces);
 Spaces.belongsTo(Locations);
-
-// Reviews.hasMany(Spaces);
-// Spaces.belongsTo(Reviews);
 
 Buildings.hasMany(Spaces);
 Spaces.belongsTo(Buildings);

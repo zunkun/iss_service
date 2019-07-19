@@ -13,6 +13,14 @@ Floors.init({
 		type: DataTypes.UUID,
 		defaultValue: UUIDV4
 	},
+	locationUuid: {
+		type: DataTypes.UUID,
+		comment: '项目点uuid'
+	},
+	buildingUuid: {
+		type: DataTypes.UUID,
+		comment: 'Building uuid'
+	},
 	name: {
 		type: DataTypes.STRING,
 		comment: '楼层名称'
@@ -63,9 +71,6 @@ Floors.belongsTo(Locations);
 
 Buildings.hasMany(Floors);
 Floors.belongsTo(Buildings);
-
-// Reviews.hasMany(Floors);
-// Floors.belongsTo(Reviews);
 
 Floors.belongsTo(Constants, { as: 'floorClass' });
 

@@ -4,7 +4,7 @@ const Companies = require('./Companies');
 const Constants = require('./Constants');
 
 class Locations extends Model {}
-// 位置Location信息
+// 项目点Location信息
 Locations.init({
 	uuid: {
 		type: DataTypes.UUID,
@@ -108,7 +108,7 @@ Locations.init({
 	sequelize: postgres,
 	modelName: 'locations',
 	paranoid: true,
-	comment: '位置Location信息'
+	comment: '项目点Location信息'
 });
 
 Companies.hasMany(Locations);

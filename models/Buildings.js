@@ -12,6 +12,10 @@ Buildings.init({
 		type: DataTypes.UUID,
 		defaultValue: UUIDV4
 	},
+	locationUuid: {
+		type: DataTypes.UUID,
+		comment: '项目点uuid'
+	},
 	name: {
 		type: DataTypes.STRING,
 		comment: '建筑名称'
@@ -74,9 +78,6 @@ Buildings.init({
 
 Locations.hasMany(Buildings);
 Buildings.belongsTo(Locations);
-
-// // Reviews.hasMany(Buildings);
-// // Buildings.belongsTo(Reviews);
 
 Buildings.belongsTo(Constants, { as: 'buildingClass' });
 Buildings.belongsTo(Constants, { as: 'primaryUse' });
