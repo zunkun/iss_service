@@ -39,7 +39,7 @@ DingStaffs.init({
 		type: DataTypes.ARRAY(DataTypes.JSONB),
 		comment: '用户部门信息 [{deptId: DataTypes.String, deptName: DataTypes.String}]'
 	} //
-}, { sequelize: postgres, modelName: 'dingstaffs', paranoid: true, comment: '钉钉用户' });
+}, { sequelize: postgres, modelName: 'dingstaffs', timestamps: false, comment: '钉钉用户' });
 
 DingStaffs.sync();
 

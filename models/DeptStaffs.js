@@ -18,7 +18,7 @@ DeptStaffs.init({
 	},
 	userName: { type: DataTypes.STRING, comment: '员工姓名' },
 	deptName: { type: DataTypes.STRING, comment: '部门名称' }
-}, { sequelize: postgres, modelName: 'deptstaffs', paranoid: true, comment: '钉钉组织架构与人员对应关系' });
+}, { sequelize: postgres, modelName: 'deptstaffs', timestamps: false, comment: '钉钉组织架构与人员对应关系' });
 
 DeptStaffs.belongsTo(DingDepts, { foreignKey: 'dingdeptId' });
 DeptStaffs.belongsTo(DingStaffs, { foreignKey: 'dingstaffId' });

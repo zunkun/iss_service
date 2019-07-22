@@ -11,7 +11,7 @@ DingRoles.init({
 	name: DataTypes.STRING, // 角色Id
 	groupId: DataTypes.INTEGER, // 角色组id
 	groupName: DataTypes.STRING // 角色组名称
-}, { sequelize: postgres, modelName: 'dingroles', comment: '钉钉角色' });
+}, { sequelize: postgres, modelName: 'dingroles', timestamps: false, comment: '钉钉角色' });
 
 DingRoles.sync();
 
