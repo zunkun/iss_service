@@ -1,16 +1,21 @@
 const should = require('should');
 const Handovers = require('../../models/Handovers');
+const Locations = require('../../models/Locations');
 
 describe('/api/handovers', () => {
 	let handover;
 	let handover2;
 	let handover3;
+	beforeEach(async () => {
+		this.location = await Locations.findOne({ where: { code: 'TEST0001', category: 0 } });
+	});
 
 	it('新增handovers POST /api/handovers', (done) => {
 		process.request
 			.post('/api/handovers')
 			.set('Authorization', process.token)
 			.send({
+				locationId: this.location.id,
 				toUserId: '36330717847922',
 				fromGps: '上海市三门路561号',
 				fromRemark: 'fromRemark',
@@ -38,6 +43,7 @@ describe('/api/handovers', () => {
 			.post('/api/handovers')
 			.set('Authorization', process.token)
 			.send({
+				locationId: this.location.id,
 				toUserId: '4508346521365159',
 				fromGps: '上海市三门路561号',
 				fromRemark: 'fromRemark',
@@ -65,6 +71,7 @@ describe('/api/handovers', () => {
 			.post('/api/handovers')
 			.set('Authorization', process.token)
 			.send({
+				locationId: this.location.id,
 				toUserId: '4508346521365159',
 				fromGps: '上海市三门路561号',
 				fromRemark: 'fromRemark',
@@ -152,9 +159,9 @@ describe('/api/handovers', () => {
 			});
 	});
 
-	it('查询handover列表 GET /api/handovers?limit=10&page=1&userId=4508346521365159&fromto=1', (done) => {
+	it('查询handover列表 GET /api/handovers?locationId=&limit=10&page=1&userId=4508346521365159&fromto=1', (done) => {
 		process.request
-			.get('/api/handovers?limit=10&page=1')
+			.get(`/api/handovers?limit=10&page=1&locationId=${this.location.id}`)
 			.set('Authorization', process.token)
 			.expect(200)
 			.end((err, res) => {

@@ -18,14 +18,16 @@ router.prefix('/api/spaces');
 * @apiParam {Number} [page] 第几页，默认1
 * @apiParam {String} [keywords] 关键词查询
 * @apiSuccess {Number} errcode 成功为0
-* @apiSuccess {Object[]} data 空间列表
-* @apiSuccess {String} data.name 空间名称
-* @apiSuccess {String} data.barcodeentry 编号
-* @apiSuccess {Number} data.area 面积
-* @apiSuccess {Number} data.extwindowarea 室外面积
-* @apiSuccess {Number} data.inwindowarea 室内面积
-* @apiSuccess {Number} data.spaceheight 空间高度
-* @apiSuccess {Number} data.category 当前数据分类 0-sv编辑的数据 1-审批中的数据 2-使用的数据 3-被替换的历史数据
+* @apiSuccess {Object} data 空间列表
+* @apiSuccess {Number} data.count 空间縂數目
+* @apiSuccess {Object[]} data.rows 当前页数据
+* @apiSuccess {String} data.rows.name 空间名称
+* @apiSuccess {String} data.rows.barcodeentry 编号
+* @apiSuccess {Number} data.rows.area 面积
+* @apiSuccess {Number} data.rows.extwindowarea 室外面积
+* @apiSuccess {Number} data.rows.inwindowarea 室内面积
+* @apiSuccess {Number} data.rows.spaceheight 空间高度
+* @apiSuccess {Number} data.rows.category 当前数据分类 0-sv编辑的数据 1-审批中的数据 2-使用的数据 3-被替换的历史数据
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
@@ -85,7 +87,16 @@ router.post('/', async (ctx, next) => {
 		if (!data.floorId || !floor || !data.name) {
 			return Promise.reject('参数错误');
 		}
-		let spaceData = { name: data.name, floorId: data.floorId, buildingId: floor.buildingId, locationId: floor.locationId, category: 0 };
+		let spaceData = {
+			name: data.name,
+			locationId: floor.locationId,
+			locationUuid: floor.locationUuid,
+			buildingId: floor.buildingId,
+			buildingUuid: floor.buildingUuid,
+			floorId: floor.id,
+			floorUuid: floor.uuid,
+			category: 0
+		};
 
 		[ 'barcodeentry', 'area', 'extwindowarea', 'inwindowarea', 'spaceheight' ].map(key => {
 			if (data[key]) spaceData[key] = data[key];
@@ -124,7 +135,7 @@ router.post('/', async (ctx, next) => {
 router.get('/:id', async (ctx, next) => {
 	const where = { id: ctx.params.id };
 
-	return Spaces.findOne({ where }).then(space => {
+	return Spaces.findOne({ where, attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] } }).then(space => {
 		ctx.body = ServiceResult.getSuccess(space);
 		next();
 	}).catch(error => {

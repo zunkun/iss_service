@@ -65,12 +65,13 @@ router.get('/', async (ctx, next) => {
 		where,
 		limit,
 		offset,
+		attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] },
 		include: [
 			{ model: Constants, as: 'brand' },
 			{ model: Constants, as: 'buildingSystem' },
 			{ model: Constants, as: 'serviceClass' },
 			{ model: Constants, as: 'specClass' },
-			{ model: Inspections, as: 'inspections' }
+			{ model: Inspections, as: 'inspections', attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] } }
 		]
 	}).then(res => {
 		ctx.body = ServiceResult.getSuccess(res);
@@ -125,6 +126,7 @@ router.post('/', async (ctx, next) => {
 		.then(spec => {
 			return Specs.findOne({
 				where: { id: spec.id },
+				attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] },
 				include: [
 					{ model: Constants, as: 'brand' },
 					{ model: Constants, as: 'buildingSystem' },
@@ -183,6 +185,7 @@ router.get('/:id', async (ctx, next) => {
 
 	return Specs.findOne({
 		where,
+		attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] },
 		include: [
 			{ model: Constants, as: 'brand' },
 			{ model: Constants, as: 'buildingSystem' },

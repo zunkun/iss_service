@@ -86,7 +86,7 @@ router.get('/login', async (ctx, next) => {
 	let code = ctx.query.code;
 	if (!code || code === 'undefined') {
 		let userId = ctx.query.userId || '4508346521365159';
-		let user = await DingStaffs.findOne({ where: { userId } });
+		let user = await DingStaffs.findOne({ attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] }, where: { userId } });
 		let token = jwt.sign({ userId: user.userId, userName: user.userName, jobnumber: user.jobnumber, oe: !!user.oe }, config.secret);
 		ctx.body = ServiceResult.getSuccess({ user, token: 'Bearer ' + token });
 
@@ -98,7 +98,7 @@ router.get('/login', async (ctx, next) => {
 			ctx.body = ServiceResult.getFail(userInfo.errmsg, userInfo.errcode);
 			return;
 		}
-		let user = await DingStaffs.findOne({ where: { userId: userInfo.userid } });
+		let user = await DingStaffs.findOne({ attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] }, where: { userId: userInfo.userid } });
 
 		if (!user) {
 			let userRes = await dingding.getUser(userInfo.userid);

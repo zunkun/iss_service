@@ -3,7 +3,6 @@ const Router = require('koa-router');
 const router = new Router();
 const Specs = require('../models/Specs');
 const Equipments = require('../models/Equipments');
-const Inspections = require('../models/Inspections');
 const Buildings = require('../models/Buildings');
 const Floors = require('../models/Floors');
 const Spaces = require('../models/Spaces');
@@ -89,11 +88,12 @@ router.get('/', async (ctx, next) => {
 		where,
 		limit,
 		offset,
+		attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] },
 		include: [
-			{ model: Specs, as: 'spec' },
-			{ model: Buildings, as: 'building' },
-			{ model: Floors, as: 'floor' },
-			{ model: Spaces, as: 'space' },
+			{ model: Specs, as: 'spec', attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] } },
+			{ model: Buildings, as: 'building', attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] } },
+			{ model: Floors, as: 'floor', attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] } },
+			{ model: Spaces, as: 'space', attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] } },
 			{ model: Constants, as: 'condition' },
 			{ model: Constants, as: 'grpassetcriticality' },
 			{ model: Equipments, as: 'parentAsset' }
@@ -167,9 +167,13 @@ router.post('/', async (ctx, next) => {
 
 	let equipmentData = {
 		locationId: space.locationId,
+		locationUuid: space.locationUuid,
 		buildingId: space.buildingId,
+		buildingUuid: space.buildingUuid,
 		floorId: space.floorId,
+		floorUuid: space.floorUuid,
 		spaceId: space.id,
+		spaceUuid: space.uuid,
 		specId: spec.id,
 		name: data.name,
 		barcodeEntry: data.barcodeEntry,
@@ -188,11 +192,12 @@ router.post('/', async (ctx, next) => {
 		.then((equipment) => {
 			return Equipments.findOne({
 				where: { id: equipment.id },
+				attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] },
 				include: [
-					{ model: Specs, as: 'spec' },
-					{ model: Buildings, as: 'building' },
-					{ model: Floors, as: 'floor' },
-					{ model: Spaces, as: 'space' },
+					{ model: Specs, as: 'spec', attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] } },
+					{ model: Buildings, as: 'building', attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] } },
+					{ model: Floors, as: 'floor', attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] } },
+					{ model: Spaces, as: 'space', attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] } },
 					{ model: Constants, as: 'condition' },
 					{ model: Constants, as: 'grpassetcriticality' },
 					{ model: Equipments, as: 'parentAsset' }
@@ -244,11 +249,12 @@ router.post('/', async (ctx, next) => {
 router.get('/:id', async (ctx, next) => {
 	return Equipments.findOne({
 		where: { id: ctx.params.id },
+		attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] },
 		include: [
-			{ model: Specs, as: 'spec' },
-			{ model: Buildings, as: 'building' },
-			{ model: Floors, as: 'floor' },
-			{ model: Spaces, as: 'space' },
+			{ model: Specs, as: 'spec', attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] } },
+			{ model: Buildings, as: 'building', attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] } },
+			{ model: Floors, as: 'floor', attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] } },
+			{ model: Spaces, as: 'space', attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] } },
 			{ model: Constants, as: 'condition' },
 			{ model: Constants, as: 'grpassetcriticality' },
 			{ model: Equipments, as: 'parentAsset' }

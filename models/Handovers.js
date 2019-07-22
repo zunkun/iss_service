@@ -1,11 +1,13 @@
 const postgres = require('../core/db/postgres');
 const { DataTypes, Model } = require('sequelize');
 const DingStaffs = require('./DingStaffs');
+const Locations = require('./Locations');
 
 // 工作交接记录
 class Handovers extends Model {}
 
 Handovers.init({
+	locationUuid: { type: DataTypes.UUID, comment: '项目点uuid' },
 	fromStaffId: {
 		type: DataTypes.INTEGER,
 		comment: '发起人staffId'
@@ -79,6 +81,9 @@ Handovers.init({
 
 Handovers.belongsTo(DingStaffs, { as: 'fromStaff' });
 Handovers.belongsTo(DingStaffs, { as: 'toStaff' });
+
+Handovers.belongsTo(Locations, { as: 'location' });
+Locations.hasMany(Handovers, { as: 'handovers' });
 
 Handovers.sync();
 

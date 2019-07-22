@@ -59,6 +59,7 @@ router.get('/', async (ctx, next) => {
 		where,
 		limit,
 		offset,
+		attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] },
 		include: [
 			{ model: Constants, as: 'buildingClass' },
 			{ model: Constants, as: 'primaryUse' }
@@ -97,6 +98,7 @@ router.get('/', async (ctx, next) => {
 * @apiSuccess {Object} data 建筑building
 * @apiSuccess {Number} data.id 建筑building id
 * @apiSuccess {String} data.name 建筑名称
+* @apiSuccess {Number} data.locationId 项目点id
 * @apiSuccess {Number} data.buildingClassId 建筑类别Id
 * @apiSuccess {Object} data.buildingClass 建筑类别
 * @apiSuccess {Date} data.activeStartDate 开始时间
@@ -121,7 +123,7 @@ router.post('/', async (ctx, next) => {
 		ctx.body = ServiceResult.getFail('参数不正确');
 		return;
 	}
-	let buildingData = { locationId: data.locationId, name: data.name, category: 0 };
+	let buildingData = { locationId: data.locationId, locationUuid: location.uuid, name: data.name, category: 0 };
 
 	[ 'activeStartDate', 'buildingClassId', 'address',
 		'commonName', 'costcenter', 'description', 'legalName',
@@ -133,6 +135,7 @@ router.post('/', async (ctx, next) => {
 	return Buildings.create(buildingData)
 		.then(building => {
 			return Buildings.findOne({
+				attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt', 'locationUuid' ] },
 				where: { id: building.id },
 				include: [
 					{ model: Constants, as: 'buildingClass' },

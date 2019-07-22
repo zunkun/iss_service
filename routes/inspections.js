@@ -171,7 +171,10 @@ router.post('/', async (ctx, next) => {
 router.get('/:id', async (ctx, next) => {
 	const where = { id: ctx.params.id };
 
-	return Inspections.findOne({ where }).then(inspection => {
+	return Inspections.findOne({
+		where,
+		attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] }
+	}).then(inspection => {
 		ctx.body = ServiceResult.getSuccess(inspection);
 		next();
 	}).catch(error => {
@@ -202,7 +205,7 @@ router.get('/:id', async (ctx, next) => {
 * @apiParam {String} [remark] 备注
 * @apiParam {Number} [frequency] 频率 参考常量中frequencyMap
 * @apiSuccess {Number} errcode 成功为0
-* @apiSuccess {Object[]} data {}
+* @apiSuccess {Object} data {}
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */

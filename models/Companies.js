@@ -1,5 +1,7 @@
 const postgres = require('../core/db/postgres');
 const { DataTypes, Model } = require('sequelize');
+const Constants = require('./Constants');
+
 // 组织信息表
 class Companies extends Model {}
 
@@ -40,16 +42,17 @@ Companies.init({
 		type: DataTypes.STRING,
 		comment: '邮编'
 	},
-	industryCode: {
-		type: DataTypes.STRING,
+	industryId: {
+		type: DataTypes.INTEGER,
 		comment: '行业code'
 	}, // 行业
 	site: {
 		type: DataTypes.STRING,
 		comment: '网址'
-	}, // 网址
-	oe: DataTypes.JSONB
+	} // 网址
 }, { sequelize: postgres, modelName: 'company', paranoid: true, comment: '组织信息表' });
+
+Companies.belongsTo(Constants, { as: 'industry' });
 
 Companies.sync();
 

@@ -41,6 +41,7 @@ describe('/api/locations', () => {
 				.end((err, res) => {
 					should.not.exist(err);
 					let resData = res.body;
+					console.log(resData);
 					should.equal(resData.errcode, 0);
 					location = resData.data;
 					should.equal(location.name, '复旦软件园');

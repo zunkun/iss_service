@@ -20,7 +20,7 @@ describe('/api/companies', () => {
 					shortname: '铭悦软件',
 					zippostal: '200000',
 					site: 'liuzunkun.com',
-					industryCode: 1
+					industryId: 1
 				})
 				.expect(200)
 				.end((err, res) => {
@@ -28,6 +28,7 @@ describe('/api/companies', () => {
 					let resData = res.body;
 					should.equal(resData.errcode, 0);
 					company = resData.data;
+					console.log(company);
 					done();
 				});
 		});
@@ -61,7 +62,7 @@ describe('/api/companies', () => {
 				shortname: '铭悦软件',
 				zippostal: '200000',
 				site: 'liuzunkun.com',
-				industryCode: 2
+				industryId: 2
 			})
 			.expect(200)
 			.end(async (err, res) => {

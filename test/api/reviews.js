@@ -78,18 +78,18 @@ describe('/api/reviews', () => {
 			});
 	});
 
-	it('SV提交项目 POST /api/reviews/commit', (done) => {
-		process.request
-			.post('/api/reviews/commit')
-			.set('Authorization', process.token)
-			.send({ locationId: this.location.id })
-			.expect(200)
-			.end((err, res) => {
-				should.not.exist(err);
-				should.equal(res.body.errcode, 0);
-				done();
-			});
-	});
+	// it('SV提交项目 POST /api/reviews/commit', (done) => {
+	// 	process.request
+	// 		.post('/api/reviews/commit')
+	// 		.set('Authorization', process.token)
+	// 		.send({ locationId: this.location.id })
+	// 		.expect(200)
+	// 		.end((err, res) => {
+	// 			should.not.exist(err);
+	// 			should.equal(res.body.errcode, 0);
+	// 			done();
+	// 		});
+	// });
 
 	// it('审批拒绝 POST /api/reviews/status', (done) => {
 	// 	process.request

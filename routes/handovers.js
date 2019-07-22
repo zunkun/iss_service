@@ -6,15 +6,17 @@ const Handovers = require('../models/Handovers');
 const jwt = require('jsonwebtoken');
 const moment = require('moment');
 const { Op } = require('sequelize');
+const Locations = require('../models/Locations');
 
 router.prefix('/api/handovers');
 
 /**
-* @api {get} /api/handovers?limit=&page=&userId=&fromto=&keywords=&fromDate=&toDate= 交班列表
+* @api {get} /api/handovers?locationId=limit=&page=&userId=&fromto=&keywords=&fromDate=&toDate= 交班列表
 * @apiName handover-lists
 * @apiGroup 交班
 * @apiDescription 交班列表
 * @apiHeader {String} authorization 登录token Bearer + token
+* @apiParam {Number} locationId 项目点location id
 * @apiParam {Number} [limit] 分页每页条数，默认10条数据
 * @apiParam {Number} [page] 分页查询的页码
 * @apiParam {String} [userId] 员工userId，配合fromto参数使用
@@ -42,13 +44,18 @@ router.prefix('/api/handovers');
 * @apiError {Number} errmsg 错误消息
 */
 router.get('/', async (ctx, next) => {
-	let { page, limit, keywords, fromto, userId, fromDate, toDate } = ctx.query;
+	let { locationId, page, limit, keywords, fromto, userId, fromDate, toDate } = ctx.query;
 	page = Number(page) || 1;
 	limit = Number(limit) || 10;
 	let offset = (page - 1) * limit;
+	if (!locationId) {
+		ctx.body = ServiceResult.getFail('参数错误');
+		return;
+	}
 
-	const where = { [Op.or]: [] };
+	const where = { };
 	if (keywords) {
+		if (!where[Op.or]) where[Op.or] = [];
 		where[Op.or].push({
 			fromUserName: {
 				[Op.iLike]: `%${keywords}%`
@@ -68,6 +75,7 @@ router.get('/', async (ctx, next) => {
 		} else if (fromto === 2) {
 			where.toUserId = userId;
 		} else {
+			if (!where[Op.or]) where[Op.or] = [];
 			where[Op.or].push({ fromUserId: userId });
 			where[Op.or].push({ toUserId: userId });
 		}
@@ -89,9 +97,12 @@ router.get('/', async (ctx, next) => {
 		where.date[Op.lte] = toDate;
 	}
 
-	return Handovers.findAndCountAll({ where, limit, offset }).then(handovers => {
-		ctx.body = ServiceResult.getSuccess(handovers);
-		next();
+	return Locations.findOne({ where: { id: locationId || null } }).then(location => {
+		where.locationUuid = location.uuid;
+		return Handovers.findAndCountAll({ where, limit, offset }).then(handovers => {
+			ctx.body = ServiceResult.getSuccess(handovers);
+			next();
+		});
 	}).catch(error => {
 		console.log(error);
 		ctx.body = ServiceResult.getFail('获取交班数据失败');
@@ -109,9 +120,11 @@ router.get('/', async (ctx, next) => {
 * @apiParam {String[]} [fromImages] 发起人上传图片uri数组
 * @apiParam {String} [fromRemark] 发起人填写备注信息
 * @apiParam {String} toUserId 接收人userId
+* @apiParam {Number} locationId 项目点location id
 * @apiSuccess {Number} errcode 成功为0
 * @apiSuccess {Object} data 交班handover数据
 * @apiSuccess {Number} data.id 交班id
+* @apiSuccess {Number} data.locationId 项目点id
 * @apiSuccess {String} data.fromUserId 发起人userId
 * @apiSuccess {String} data.fromUserName 发起人姓名
 * @apiSuccess {String} data.fromGps 发起人Gps
@@ -126,7 +139,7 @@ router.get('/', async (ctx, next) => {
 router.post('/', (ctx, next) => {
 	let user = jwt.decode(ctx.header.authorization.substr(7));
 	const data = ctx.request.body;
-	if (!data.toUserId) {
+	if (!data.toUserId || !data.locationId) {
 		ctx.body = ServiceResult.getFail('参数错误');
 		return;
 	}
@@ -144,8 +157,14 @@ router.post('/', (ctx, next) => {
 					return { fromUser, toUser };
 				});
 		})
-		.then(userInfo => {
+		.then(async (userInfo) => {
+			let location = await Locations.findOne({ where: { id: data.locationId } });
+			if (!location) {
+				return Promise.reject('参数错误');
+			}
 			let handoverData = {
+				locationId: location.id,
+				locationUuid: location.uuid,
 				fromUserId: user.userId,
 				fromUserName: userInfo.fromUser.userName,
 				fromStaffId: userInfo.fromUser.id,
@@ -163,6 +182,7 @@ router.post('/', (ctx, next) => {
 				.then((handover) => {
 					ctx.body = ServiceResult.getSuccess({
 						id: handover.id,
+						locationId: location.id,
 						fromUserId: user.userId,
 						fromUserName: userInfo.fromUser.userName,
 						toUserId: data.toUserId,

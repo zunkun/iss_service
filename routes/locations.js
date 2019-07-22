@@ -102,8 +102,9 @@ router.get('/', async (ctx, next) => {
 		where,
 		limit,
 		offset,
+		attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] },
 		include: [
-			{ model: Companies, as: 'company' },
+			{ model: Companies, as: 'company', 	attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] } },
 			{ model: Constants, as: 'areaUnit', paranoid, attributes: [ 'id', 'classfication', 'name' ] },
 			{ model: Constants, as: 'currency', paranoid, attributes: [ 'id', 'classfication', 'name' ] },
 			{ model: Constants, as: 'geographyLookup', paranoid, attributes: [ 'id', 'classfication', 'name' ] },
@@ -145,7 +146,7 @@ router.get('/', async (ctx, next) => {
 * @apiSuccess {Object} data 项目点Location
 * @apiSuccess {String} data.id 项目点id标识
 * @apiSuccess {String} data.companyId 客户id
-* @apiSuccess {Object} data.company 客户信息
+* @apiSuccess {Object} data.company 客户信息, 参考客户信息接口
 * @apiSuccess {String} data.name 项目点名称
 * @apiSuccess {String} data.provinceCode 省份编码
 * @apiSuccess {String} data.provinceName 省份名称
@@ -158,15 +159,15 @@ router.get('/', async (ctx, next) => {
 * @apiSuccess {String} data.commonName  通用名称
 * @apiSuccess {String} data.costcenter  成本中心
 * @apiSuccess {Number} data.areaUnitId  单位id
-* @apiSuccess {Object} data.areaUnit  单位
+* @apiSuccess {Object} data.areaUnit  单位，参考常量表
 * @apiSuccess {Number} data.currencyId  货币Id
 * @apiSuccess {Object} data.currency  货币
 * @apiSuccess {Number} data.geographyLookupId  城市-地理表Id
-* @apiSuccess {Object} data.geographyLookup  城市-地理表
+* @apiSuccess {Object} data.geographyLookup  城市-地理表，参考常量表
 * @apiSuccess {Number} data.primaryUseId  主要用途Id
-* @apiSuccess {Object} data.primaryUse  主要用途
+* @apiSuccess {Object} data.primaryUse  主要用途，参考常量表
 * @apiSuccess {Number} data.propertyClassId  类别Id
-* @apiSuccess {Object} data.propertyClass  类别
+* @apiSuccess {Object} data.propertyClass  类别，参考常量表
 * @apiSuccess {String} data.description  描述
 * @apiSuccess {String} data.legalName  法律名称
 * @apiSuccess {String} data.zippostal  邮编
@@ -191,8 +192,9 @@ router.post('/', async (ctx, next) => {
 
 	location = await Locations.findOne({
 		where: { id: location.id },
+		attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] },
 		include: [
-			{ model: Companies, as: 'company' },
+			{ model: Companies, as: 'company', attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] } },
 			{ model: Constants, as: 'areaUnit', attributes: [ 'id', 'classfication', 'name' ] },
 			{ model: Constants, as: 'currency', attributes: [ 'id', 'classfication', 'name' ] },
 			{ model: Constants, as: 'geographyLookup', attributes: [ 'id', 'classfication', 'name' ] },
@@ -260,7 +262,7 @@ router.get('/:id', async (ctx, next) => {
 * @apiParam {String} [mainphone]  电话总机
 * @apiParam {String} [parkingOpen]  停车位数量
 * @apiSuccess {Number} errcode 成功为0
-* @apiSuccess {Object[]} data {}
+* @apiSuccess {Object} data {}
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
@@ -280,11 +282,7 @@ router.put('/:id', async (ctx, next) => {
 	if (body.districtCode) {
 		body.districtName = areaMap.district[body.districtCode];
 	}
-	await Locations.update(body, {
-		where: {
-			id: ctx.params.id
-		}
-	});
+	await Locations.update(body, { where: { id: ctx.params.id	}	});
 
 	ctx.body = ServiceResult.getSuccess({});
 	await next();

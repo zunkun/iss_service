@@ -56,6 +56,7 @@ router.get('/', async (ctx, next) => {
 		where,
 		limit,
 		offset,
+		attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] },
 		include: [ { model: Constants, as: 'floorClass' } ]
 	});
 	ctx.body = ServiceResult.getSuccess(floors);
@@ -102,7 +103,14 @@ router.post('/', async (ctx, next) => {
 		ctx.body = ServiceResult.getFail('参数不正确');
 		return;
 	}
-	let floorData = { buildingId: data.buildingId, name: data.name, locationId: building.locationId, category: 0 };
+	let floorData = {
+		locationId: building.locationId,
+		locationUuid: building.locationUuid,
+		buildingId: data.buildingId,
+		buildingUuid: building.uuid,
+		name: data.name,
+		category: 0
+	};
 
 	[ 'floorClassId', 'floorMaintained', 'description',
 		'grossarea', 'grossexternarea', 'grossinternalarea', 'level'
@@ -114,6 +122,7 @@ router.post('/', async (ctx, next) => {
 		.then(floor => {
 			return Floors.findOne({
 				where: { id: floor.id },
+				attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] },
 				include: [
 					{ model: Constants, as: 'floorClass' }
 				]
@@ -159,6 +168,7 @@ router.get('/:id', async (ctx, next) => {
 
 	return Floors.findOne({
 		where,
+		attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] },
 		include: [
 			{ model: Constants, as: 'floorClass' }
 		]
@@ -189,7 +199,7 @@ router.get('/:id', async (ctx, next) => {
 * @apiParam {Number} [grossinternalarea] 内部面积
 * @apiParam {Number} [level] 楼层
 * @apiSuccess {Number} errcode 成功为0
-* @apiSuccess {Object[]} data {}
+* @apiSuccess {Object} data {}
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
