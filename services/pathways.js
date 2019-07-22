@@ -50,9 +50,12 @@ class PathwayService {
 
 								// 保存巡检设备
 								return PathEquipments.create({
-									companyId: location.companyId,
+									locationId: location.id,
+									locationUuid: location.uuid,
 									pathwayId,
+									pathwayUuid: pathway.uuid,
 									equipmentId: equipment.id,
+									equipmentUuid: equipment.uuid,
 									category: 1
 								}).then(async pathEquipment => {
 								// 保存检查项列表
@@ -60,6 +63,7 @@ class PathwayService {
 									for (let id of equipmentInspectionIds) {
 										let promise2 = PathInspections.create({
 											pathwayId,
+											pathwayUuid: pathway.uuid,
 											pathequipmentId: pathEquipment.id,
 											inspectionId: id,
 											category: 1
@@ -77,7 +81,7 @@ class PathwayService {
 				return sysPathway;
 			})
 			.catch(async error => {
-				console.log(error);
+				console.error(error);
 				// 删除错误数据
 				if (pathwayId) {
 					await PathInspections.destroy({ where: { pathwayId } });
@@ -100,19 +104,25 @@ class PathwayService {
 		pathwayData.uuid = uuid;
 		pathwayData.category = 1;
 		let locationUuid;
+		let pathwayLists = [];
 		return Pathways.findAll({ where: { uuid, category: 1 } }).then(async pathways => {
+			pathwayLists = pathways;
 			locationUuid = pathways[0].locationUuid;
-			for (let pathway of pathways) {
+			return Promise.resolve();
+		}).then(() => {
+			// 创建新的巡检路线版本
+			return Locations.findOne({ where: { uuid: locationUuid } })
+				.then((location) => {
+					return that.setPathways(location.id, pathwayData, equipments);
+				});
+		}).then(async () => {
+			// 同一路线的其他版本归入历史版本
+			for (let pathway of pathwayLists) {
 				await PathInspections.update({ category: 2 }, { where: { pathwayId: pathway.id } });
 				await PathEquipments.update({ category: 2 }, { where: { pathwayId: pathway.id } });
 				await Pathways.update({ category: 2 }, { where: { id: pathway.id } });
 			}
 			return Promise.resolve();
-		}).then(() => {
-			return Locations.findOne({ where: { uuid: locationUuid } })
-				.then((location) => {
-					return that.setPathways(location.id, pathwayData, equipments);
-				});
 		}).catch(error => {
 			return Promise.reject(error);
 		});
@@ -140,9 +150,10 @@ class PathwayService {
 					let promiseArray = [];
 					for (let pathEquipment of pathEquipments) {
 						let promise = PathEquipments.create({
-							companyId: pathEquipment.companyId,
 							pathwayId: pathway.id,
+							pathwayUuid: pathway.uuid,
 							equipmentId: pathEquipment.equipmentId,
+							equipmentUuid: pathEquipment.equipmentUuid,
 							category: pathEquipment.category
 						}).then((pathEquipmentNew) => {
 							return PathInspections.findAll({ where: { pathequipmentId: pathEquipment.id } }).then(pathInspections => {

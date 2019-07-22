@@ -29,7 +29,7 @@ router.prefix('/api/pathways');
 * @apiParam {String} [description] 路线说明
 * @apiParam {Object[]} equipments 路线中设备列表
 * @apiParam {Number} equipments.id 设备id
-* @apiParam {Number[]} equipments.inspections 巡检路线设备中检查项， 比如[1, 2, 3]
+* @apiParam {Number[]} equipments.inspections 巡检路线设备中检查项Id， 比如[1, 2, 3]
 * @apiSuccess {Number} errcode 成功为0
 * @apiSuccess {Object} data 巡检路线信息
 * @apiSuccess {String} data.uuid 巡检路线标识的uuid
@@ -281,7 +281,7 @@ router.get('/', async (ctx, next) => {
 });
 
 /**
-* @api {get} /api/pathways/personnels?role= 当前用户巡检路线列表
+* @api {get} /api/pathways/personnel?role= 当前用户巡检路线列表
 * @apiName pathways-personnels
 * @apiGroup 巡检路线
 * @apiDescription 查询当前用户相关的巡检路线列表
@@ -299,7 +299,7 @@ router.get('/', async (ctx, next) => {
 * @apiError {Number} errmsg 错误消息
 */
 
-router.get('/', async (ctx, next) => {
+router.get('/personnel', async (ctx, next) => {
 	let user = jwt.decode(ctx.header.authorization.substr(7));
 	let role = Number(ctx.query.role) || 1;
 	try {
@@ -311,7 +311,7 @@ router.get('/', async (ctx, next) => {
 
 			let pathways = await Pathways.findAll({
 				where: { locationUuid: personnel.locationUuid, category: 1, inuse: true },
-				include: [ { model: Companies, as: 'company' } ]
+				include: [ { model: Companies, as: 'company', attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] } } ]
 			});
 			pathwayLists = pathwayLists.concat(pathways);
 		}
@@ -351,7 +351,7 @@ router.get('/:uuid', async (ctx, next) => {
 	return Pathways.findOne({
 		where: { uuid: ctx.params.uuid, category: 1 },
 		include: [
-			{ model: Companies, as: 'company', attributes: [ 'id', 'name', 'costcenter' ] },
+			{ model: Companies, as: 'company', attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] } },
 			{
 				model: PathEquipments,
 				as: 'pathequipments',
@@ -429,8 +429,9 @@ router.get('/:uuid/locations', async (ctx, next) => {
 			}
 
 			return Locations.findOne({
+				attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] },
 				where: { locationUuid: pathway.locationUuid, category: 2 },
-				include: [ { model: Buildings, as: 'buildings' } ]
+				include: [ { model: Buildings, as: 'buildings', attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] } } ]
 			}).then(location => {
 				if (!location) {
 					return Promise.reject('无法获取');
@@ -447,6 +448,23 @@ router.get('/:uuid/locations', async (ctx, next) => {
 		});
 });
 
+/**
+* @api {post} /api/pathways/:uuid/scan 扫描设备信息
+* @apiName pathways-equipment-scan
+* @apiGroup 巡检路线
+* @apiDescription 扫描设备信息,并返回设备检查项，如果设备不在巡检路线中，也返回，参考 inpathway字段,
+inpathway === true，inspections 为sv所选择的路线中检查项，当值为false时，则为设备所有检查项
+* @apiHeader {String} authorization 登录token Bearer + token
+* @apiParam {String} uuid 巡检路线uuid
+* @apiParam {String} barcodeEntry 设备编号
+* @apiSuccess {Number} errcode 成功为0
+* @apiSuccess {Object} data 设备信息
+* @apiSuccess {Boolean} data.inpathway 设备是否在当前巡检路线中
+* @apiSuccess {Object} data.equipment 设备信息，参考设备信息api
+* @apiSuccess {Object[]} data.inspections 设备检查项
+* @apiError {Number} errcode 失败不为0
+* @apiError {Number} errmsg 错误消息
+*/
 router.post('/:uuid/scan', async (ctx, next) => {
 	const uuid = ctx.params.uuid;
 	const { barcodeEntry } = ctx.request.body;
@@ -456,7 +474,11 @@ router.post('/:uuid/scan', async (ctx, next) => {
 			if (!pathway) {
 				return Promise.reject('参数错误');
 			}
-			return Equipments.findOne({ where: { locationUuid: pathway.locationUuid, barcodeEntry, category: 2 } }).then(equipment => {
+			return Equipments.findOne({ where: {
+				locationUuid: pathway.locationUuid,
+				barcodeEntry,
+				category: 2 }
+			}).then(equipment => {
 				if (!equipment) {
 					return Promise.reject('无法获取');
 				}
@@ -466,7 +488,17 @@ router.post('/:uuid/scan', async (ctx, next) => {
 						equipmentId: equipment.id,
 						category: 1
 					}
-				}).then(pathEquipment => {
+				}).then(async pathEquipment => {
+					if (!pathEquipment) {
+						let inspections = await Inspections.findAll({
+							where: { specId: equipment.specId },
+							attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] }
+						});
+
+						ctx.body = ServiceResult.getSuccess({ inpathway: false, equipment, inspections });
+						return;
+					}
+
 					return PathInspections.findAll({
 						where: {
 							pathequipmentId: pathEquipment.id,
@@ -475,17 +507,18 @@ router.post('/:uuid/scan', async (ctx, next) => {
 						raw: true,
 						include: [ { model: Inspections, as: 'inspection' } ]
 					}).then(pathInspections => {
-						let res = { equipment, inspections: [] };
+						let res = { inpathway: true, equipment, inspections: [] };
 						for (let item of pathInspections) {
 							res.inspections.push(item.inspection);
 						}
 						ctx.body = ServiceResult.getSuccess(res);
 					});
-
-					// todo
-					next();
 				});
 			});
+		}).catch(error => {
+			console.error(error);
+			ctx.body = ServiceResult.getFail(error);
+			next();
 		});
 });
 module.exports = router;
