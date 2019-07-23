@@ -3,7 +3,6 @@ const { DataTypes, Model } = require('sequelize');
 const OperatePaths = require('./OperatePaths');
 const PathEquipments = require('./PathEquipments');
 const PathInspections = require('./PathInspections');
-const Locations = require('./Locations');
 const Pathways = require('./Pathways');
 const Equipments = require('./Equipments');
 const Inspections = require('./Inspections');
@@ -21,10 +20,6 @@ OperateInspections.init({
 		comment: '用来标识属于哪个巡检路线，pathway uuid'
 	},
 	equipmentUuid: {
-		type: DataTypes.UUID,
-		comment: '设备uuid'
-	},
-	inspectionUuid: {
 		type: DataTypes.UUID,
 		comment: '设备uuid'
 	},
@@ -47,11 +42,6 @@ OperateInspections.init({
 	images: {
 		type: DataTypes.ARRAY(DataTypes.STRING),
 		comment: '巡检内容图片（保留字段）'
-	},
-	category: {
-		type: DataTypes.INTEGER,
-		defaultValue: 0,
-		comment: '1-巡检中 2-巡检数据已提交'
 	}
 }, {
 	sequelize: postgres,
@@ -67,7 +57,7 @@ OperateInspections.belongsTo(OperateEquipments);
 OperateInspections.belongsTo(PathEquipments);
 OperateInspections.belongsTo(PathInspections);
 
-OperateInspections.belongsTo(Locations);
+// OperateInspections.belongsTo(Locations);
 OperateInspections.belongsTo(Pathways);
 OperateInspections.belongsTo(Equipments);
 OperateInspections.belongsTo(Inspections);

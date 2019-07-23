@@ -19,22 +19,30 @@ OperateEquipments.init({
 	equipmentUuid: {
 		type: DataTypes.UUID,
 		comment: '设备uuid'
+	},
+	equipmentName: {
+		type: DataTypes.STRING,
+		comment: '设备名称'
 	}
 }, {
 	sequelize: postgres,
 	modelName: 'operateequipments',
 	paranoid: true,
-	comment: '巡检中设备信息, locationId标识同一locationUuid下location版本，同理可以理解pathwayId和pathwayUuid, equipmentId, equipmentUuid'
+	comment: '巡检中设备信息, locationId标识同一locationUuid下location版本，同理可以理解pathwayId和pathwayUuid, equipmentId, equipmentUuid，当前数据中可能没有pathwayId，因为当前巡检设备可能不在巡检路线中。'
 });
 
+// 项目点信息
 Locations.hasMany(OperateEquipments);
 OperateEquipments.belongsTo(Locations);
 
+// 巡检路线信息
 Pathways.hasMany(OperateEquipments);
 OperateEquipments.belongsTo(Pathways);
 
+// 设备信息
 OperateEquipments.belongsTo(Equipments);
 
+// 巡检路线检查设备信息
 OperateEquipments.belongsTo(PathEquipments);
 
 OperateEquipments.sync();

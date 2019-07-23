@@ -287,7 +287,7 @@ router.get('/', async (ctx, next) => {
 * @apiGroup 巡检路线
 * @apiDescription 查询当前用户相关的巡检路线列表
 * @apiHeader {String} authorization 登录token Bearer + token
-* @@apiParam  {Number} [role] 角色  1-执行者operator 2-sv 3-manager， 默认1
+* @apiParam  {Number} [role] 角色  1-执行者operator 2-sv 3-manager， 默认1
 * @apiSuccess {Number} errcode 成功为0
 * @apiSuccess {Object[]} data 巡检路线
 * @apiSuccess {String} data.uuid 巡检路线标识的uuid
@@ -481,14 +481,15 @@ router.post('/:uuid/scan', async (ctx, next) => {
 				category: 2 }
 			}).then(equipment => {
 				if (!equipment) {
-					return Promise.reject('无法获取');
+					return Promise.reject('无法获取设备信息');
 				}
 				return PathEquipments.findOne({
 					where: {
 						pathwayId: pathway.id,
 						equipmentId: equipment.id,
 						category: 1
-					}
+					},
+					raw: true
 				}).then(async pathEquipment => {
 					if (!pathEquipment) {
 						let inspections = await Inspections.findAll({
@@ -505,7 +506,6 @@ router.post('/:uuid/scan', async (ctx, next) => {
 							pathequipmentId: pathEquipment.id,
 							category: 1
 						},
-						raw: true,
 						include: [ { model: Inspections, as: 'inspection' } ]
 					}).then(pathInspections => {
 						let res = { inpathway: true, equipment, inspections: [] };

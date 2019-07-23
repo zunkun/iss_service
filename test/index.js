@@ -67,3 +67,7 @@ describe('测试項目提交審批', () => {
 describe('巡检路线', () => {
 	require('./api/pathways');
 });
+
+describe('巡检员巡检', () => {
+	require('./api/operations');
+});

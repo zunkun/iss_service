@@ -15,9 +15,9 @@ OperatePaths.init({
 		type: DataTypes.UUID,
 		comment: '用来标识属于哪个巡检路线，pathway uuid'
 	},
-	gps: {
+	pathwayName: {
 		type: DataTypes.STRING,
-		comment: '巡检位置'
+		comment: '巡检名称'
 	},
 	date: {
 		type: DataTypes.DATEONLY,

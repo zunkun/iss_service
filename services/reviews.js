@@ -136,7 +136,7 @@ class ReviewService {
 			}
 
 			await this.setCategory(locationId, 1, 2);
-			await Equipments.update({ activeStartDate: moment().format('YYYY-MM-DD') }, { where: { locationId, category: 2, activeStartDate: null } });
+			await Equipments.update({ activeStartDate: moment().format('YYYY-MM-DD'), category: 2 }, { where: { locationId, category: 1, activeStartDate: null } });
 			return Promise.resolve();
 		} catch (error) {
 			return Promise.reject(error);

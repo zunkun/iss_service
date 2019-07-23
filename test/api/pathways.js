@@ -11,9 +11,8 @@ let ids = [];
 describe('/api/pathways', () => {
 	beforeEach(async () => {
 		ids = [];
-		this.location = await Locations.findOne({ where: { code: 'TEST0001', category: 0 } });
-		this.equipments = await Equipments.findAll({ where: { locationId: this.location.id } });
-
+		this.location = await Locations.findOne({ where: { code: 'TEST0001', category: 2 } });
+		this.equipments = await Equipments.findAll({ where: { locationId: this.location.id, category: 2 } });
 		equipment = this.equipments[0];
 
 		this.inspections = await Inspections.findAll({ where: { specId: equipment.specId } });
