@@ -105,11 +105,12 @@ router.put('/', async (ctx, next) => {
 				return Promise.reject('参数错误');
 			}
 			let pathwayData = { uuid, name: name || pathway.name, description: description || pathway.description, pathcode: moment().format('YYYYMMDDHHMMssSSS'), category: 1, inuse: true };
-			return pathwayService.updatePathway(uuid, pathwayData, equipments);
-		}).then(pathway => {
-			ctx.body = ServiceResult.getSuccess({ uuid: pathway.uuid, name, description });
-			next();
+			return pathwayService.updatePathway(uuid, pathwayData, equipments).then(() => {
+				ctx.body = ServiceResult.getSuccess({ uuid: pathway.uuid, name, description });
+				next();
+			});
 		}).catch(error => {
+			console.error(error);
 			ctx.body = ServiceResult.getFail(error);
 			next();
 		});
@@ -469,7 +470,7 @@ router.post('/:uuid/scan', async (ctx, next) => {
 	const uuid = ctx.params.uuid;
 	const { barcodeEntry } = ctx.request.body;
 
-	return Pathways.findOne({ where: { uuid, catetory: 1 } })
+	return Pathways.findOne({ where: { uuid, category: 1 } })
 		.then(pathway => {
 			if (!pathway) {
 				return Promise.reject('参数错误');

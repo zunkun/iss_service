@@ -40,6 +40,7 @@ describe('/api/pathways', () => {
 				should.not.exist(err);
 				should.equal(res.body.errcode, 0);
 				pathway = res.body.data;
+				console.log(pathway);
 				should.exist(pathway.uuid);
 				should.equal(pathway.name, '3楼巡检路线');
 				should.equal(pathway.description, '3楼巡检路线说明');
@@ -63,6 +64,7 @@ describe('/api/pathways', () => {
 			.expect(200)
 			.end((err, res) => {
 				should.not.exist(err);
+				console.log(res.body);
 				should.equal(res.body.errcode, 0);
 				pathway2 = res.body.data;
 				should.exist(pathway2.uuid);

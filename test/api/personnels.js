@@ -52,14 +52,14 @@ describe('/api/personnels', () => {
 			.send({
 				locationId: location.id,
 				role: 1,
-				userIds: [ '15601316486043132', '0306353825780096' ]
+				userIds: [ '15601316486043132', '0306353825780096', '4508346521365159' ]
 			})
 			.expect(200)
 			.end((err, res) => {
 				should.not.exist(err);
 				let resData = res.body;
 				should.equal(resData.errcode, 0);
-				should.equal(res.body.data.length, 2);
+				should.equal(res.body.data.length, 3);
 				done();
 			});
 	});

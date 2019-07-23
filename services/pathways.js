@@ -24,6 +24,7 @@ class PathwayService {
 					return Promise.reject('参数不正确');
 				}
 				location = locationDta;
+				pathwayData.locationId = locationId;
 				pathwayData.locationUuid = locationDta.uuid;
 				pathwayData.companyId = locationDta.companyId;
 
@@ -55,7 +56,7 @@ class PathwayService {
 									pathwayId,
 									pathwayUuid: pathway.uuid,
 									equipmentId: equipment.id,
-									equipmentUuid: equipment.uuid,
+									equipmentUuid: equipmentData.uuid,
 									category: 1
 								}).then(async pathEquipment => {
 								// 保存检查项列表
@@ -140,6 +141,7 @@ class PathwayService {
 			description: pathwayData.description,
 			inuse: pathwayData.inuse,
 			pathcode: moment().format('YYYYMMDDHHMMssSSS'),
+			locationId: pathwayData.locationId,
 			locationUuid: pathwayData.locationUuid,
 			category: pathwayData.category
 		};
@@ -154,6 +156,8 @@ class PathwayService {
 							pathwayUuid: pathway.uuid,
 							equipmentId: pathEquipment.equipmentId,
 							equipmentUuid: pathEquipment.equipmentUuid,
+							locationId: pathEquipment.locationId,
+							locationUuid: pathEquipment.locationUuid,
 							category: pathEquipment.category
 						}).then((pathEquipmentNew) => {
 							return PathInspections.findAll({ where: { pathequipmentId: pathEquipment.id } }).then(pathInspections => {
@@ -162,6 +166,7 @@ class PathwayService {
 									let promise2 = PathInspections.create({
 										pathequipmentId: pathEquipmentNew.id,
 										pathwayId: pathway.id,
+										pathwayUuid: pathway.uuid,
 										inspectionId: item.inspectionId,
 										category: item.category
 									});
