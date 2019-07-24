@@ -102,4 +102,79 @@ describe('/api/operations', () => {
 				done();
 			});
 	});
+
+	it('录入数据 POST /api/operations/inspect', (done) => {
+		let insData = [];
+		for (let inspection of inspections) {
+			if (inspection.datatype === 1) {
+				insData.push({
+					id: inspection.id,
+					state: 2
+				});
+			} else {
+				insData.push({ id: inspection.id, value: 2 });
+			}
+		}
+		process.request
+			.post('/api/operations/inspect')
+			.set('Authorization', process.token)
+			.send({
+				pathwayUuid: operation.pathwayUuid,
+				equipmentId: equipment.id,
+				inspections: insData
+			})
+			.expect(200)
+			.end((err, res) => {
+				should.not.exist(err);
+				should.equal(res.body.errcode, 0);
+				done();
+			});
+	});
+
+	it('查看巡检信息 GET /api/operations/:id', (done) => {
+		process.request
+			.get('/api/operations/' + operation.id)
+			.set('Authorization', process.token)
+			.expect(200)
+			.end((err, res) => {
+				should.not.exist(err);
+				should.equal(res.body.errcode, 0);
+				let resData = res.body.data;
+				should.exist(resData.operatepath);
+				should.exist(resData.location);
+				should.exist(resData.pathway);
+				should.exist(resData.equipments);
+				done();
+			});
+	});
+
+	it('提交巡检 POST /api/operations/:id/commit', (done) => {
+		process.request
+			.post('/api/operations/' + operation.id + '/commit')
+			.set('Authorization', process.token)
+			.expect(200)
+			.end((err, res) => {
+				should.not.exist(err);
+				should.equal(res.body.errcode, 0);
+				done();
+			});
+	});
+
+	it('设备巡检记录表 GET /api/operations/equipments', (done) => {
+		process.request
+			.get('/api/operations/equipments?norm=false&locationId=' + operation.locationId)
+			.set('Authorization', process.token)
+			.expect(200)
+			.end((err, res) => {
+				should.not.exist(err);
+				should.equal(res.body.errcode, 0);
+				let resData = res.body.data;
+				should.equal(resData.count, 2);
+				let row = resData.rows[0];
+				should.exist(row.operatepath);
+				should.exist(row.equipment);
+				should.exist(row.operateInspections);
+				done();
+			});
+	});
 });

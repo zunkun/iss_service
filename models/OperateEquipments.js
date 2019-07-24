@@ -4,6 +4,7 @@ const Pathways = require('./Pathways');
 const Equipments = require('./Equipments');
 const Locations = require('./Locations');
 const PathEquipments = require('./PathEquipments');
+const OperatePaths = require('./OperatePaths');
 
 class OperateEquipments extends Model {}
 // 巡检员巡检信息主表
@@ -65,6 +66,10 @@ OperateEquipments.belongsTo(Equipments);
 
 // 巡检路线检查设备信息
 OperateEquipments.belongsTo(PathEquipments);
+
+// 巡检主表与巡检设备关系
+OperatePaths.hasMany(OperateEquipments);
+OperateEquipments.belongsTo(OperatePaths);
 
 OperateEquipments.sync();
 

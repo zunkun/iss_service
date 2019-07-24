@@ -104,17 +104,27 @@ router.post('/', async (ctx, next) => {
 * @apiName operations-equipments
 * @apiGroup 巡检员巡检记录
 * @apiDescription 设备巡检记录表
+* @apiParam  {Number} [page] 当前页码，默认为1
+* @apiParam  {Number} [limit] 每页条数，默认为10
+* @apiParam  {String} [from] 查询巡检开始日期，日期格式 2019-03-02
+* @apiParam  {String} [to] 查询巡检结束日期，日期格式 2019-03-02
+* @apiParam  {String} [pathwayName] 巡检路线名称
+* @apiParam  {String} [equipmentName] 设备名称
+* @apiParam  {String} [operatorName] 巡检员姓名
+* @apiParam  {Boolean} [normal] 巡检结果是否正常,默认查看不正常
+* @apiParam  {Number} locationId 项目点location id
+* @apiParam  {Number} [buildingId] 建筑building id
+* @apiParam  {Number} [floorId] 楼层floor id
+* @apiParam  {Number} [spaceId] 空间space id
 * @apiHeader {String} authorization 登录token Bearer + token
 * @apiParam {String} pathwayUuid pathway uuid 巡检路线uuid
 * @apiSuccess {Number} errcode 成功为0
-* @apiSuccess {Object} data 巡检员巡检记录信息
-* @apiSuccess {Object} data.operatepath 巡检主表
-* @apiSuccess {Object} data.pathway 巡检路线信息
-* @apiSuccess {Object} data.location 巡检项目点信息
-* @apiSuccess {Object[]} data.equipments 设备检查信息
-* @apiSuccess {Object} data.equipments.equipment 设备信息
-* @apiSuccess {Object[]} data.inspect.operateInspections 检查项检查记录
-* @apiSuccess {Object} data.inspect.operateInspections.inspect 检查项规则
+* @apiSuccess {Object} data 设备检查信息表
+* @apiSuccess {Number} data.count 表中总数
+* @apiSuccess {Object[]} data.rows 当前页数据
+* @apiSuccess {Object} data.rows.equipment 设备信息
+* @apiSuccess {Object} data.rows.operatepath 巡检记录主表信息
+* @apiSuccess {Object[]} data.rows.operateInspections 检查项检查记录
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
@@ -124,7 +134,15 @@ router.get('/equipments', async (ctx, next) => {
 	page = Number(page) || 1;
 	limit = Number(limit) || 10;
 	let offset = (page - 1) * limit;
-	let where = { normal: !!normal };
+
+	let location = await Locations.findOne({ where: { id: locationId || null } });
+	if (!locationId || !location) {
+		ctx.body = ServiceResult.getFail('参数错误');
+		return;
+	}
+
+	// 查询已经提交的数据
+	let where = { normal: !!normal, category: 2 };
 	let equipmentWhere = {};
 
 	if (from) {
@@ -141,14 +159,12 @@ router.get('/equipments', async (ctx, next) => {
 	if (pathwayName) where.pathwayName = { [Op.iLike]: `%${pathwayName}%` };
 	if (pathwayName) where.pathwayName = { [Op.iLike]: `%${pathwayName}%` };
 	if (operatorName) where.userName = { [Op.iLike]: `%${operatorName}%` };
-	if (locationId) {
-		let location = await Locations.findOne({ id: locationId || null });
-		where.locationUuid = location.uuid;
-		equipmentWhere.locationUuid = location.uuid;
-	}
-
+	where.locationUuid = location.uuid;
+	equipmentWhere.locationUuid = location.uuid;
+	console.log({ where });
 	let operatepaths = await OperatePaths.findAll({ where });
 
+	console.log(operatepaths);
 	let operatepathMap = new Map();
 	let pathIds = [];
 	for (let operatepath of operatepaths) {
@@ -182,7 +198,7 @@ router.get('/equipments', async (ctx, next) => {
 
 	let equipments = [];
 	// 依次获取设备详细信息
-	for (let operateEquipment of operateEquipments) {
+	for (let operateEquipment of operateEquipments.rows) {
 		// 设备信息
 		let equipment = await Equipments.findOne({ uuid: operateEquipment.equipmentUuid, category: 2 });
 		// 检查结果
@@ -200,7 +216,7 @@ router.get('/equipments', async (ctx, next) => {
 		});
 	}
 
-	ctx.body = ServiceResult.getSuccess(equipments);
+	ctx.body = ServiceResult.getSuccess({ count: operateEquipments.count, rows: equipments });
 });
 
 /**
@@ -323,7 +339,7 @@ router.post('/inspect', async (ctx, next) => {
 * @apiGroup 巡检员巡检记录
 * @apiDescription 查看某次巡检记录
 * @apiHeader {String} authorization 登录token Bearer + token
-* @apiParam {String} pathwayUuid pathway uuid 巡检路线uuid
+* @apiParam {Number} id 当前巡检id
 * @apiSuccess {Number} errcode 成功为0
 * @apiSuccess {Object} data 巡检员巡检记录信息
 * @apiSuccess {Object} data.operatepath 巡检主表
@@ -342,7 +358,7 @@ router.get('/:id', async (ctx, next) => {
 	try {
 		// 巡检记录主表
 		let operatepath = await OperatePaths.findOne({
-			where: { id: ctx.param.id },
+			where: { id: ctx.params.id },
 			attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] }
 		});
 
@@ -388,6 +404,42 @@ router.get('/:id', async (ctx, next) => {
 		ctx.body = ServiceResult.getFail(error);
 		next();
 	}
+});
+
+/**
+* @api {post} /api/operations/:id/commit 提交巡检
+* @apiName operations-commit
+* @apiGroup 巡检员巡检记录
+* @apiDescription 提交当前巡检路线的巡检
+* @apiHeader {String} authorization 登录token Bearer + token
+* @apiParam {Number} id 当前巡检id
+* @apiParam {Number} equipmentId 设备id
+* @apiParam {Object[]} inspections 设备检查项信息
+* @apiParam {Number} inspections.id 检查项id
+* @apiParam {Number} inspections.[state] 检查项选择的值，分别为1~4, 参考检查项接口，state和value必须填写一个
+* @apiParam {Number} inspections.[value] 检查项的值，如果当前检查项检查类型为输入类型, state和value必须填写一个
+* @apiSuccess {Number} errcode 成功为0
+* @apiSuccess {Object} data {}
+* @apiError {Number} errcode 失败不为0
+* @apiError {Number} errmsg 错误消息
+*/
+router.post('/:id/commit', async (ctx, next) => {
+	return OperatePaths.findOne({
+		where: { id: ctx.params.id, category: 1 }
+	}).then(operatepath => {
+		if (!operatepath) {
+			return Promise.reject('参数错误');
+		}
+
+		return OperatePaths.update({ category: 2 }, { where: { id: ctx.params.id } });
+	}).then(() => {
+		ctx.body = ServiceResult.getSuccess({});
+		next();
+	}).catch(error => {
+		console.error(error);
+		ctx.body = ServiceResult.getFail(error);
+		next();
+	});
 });
 
 module.exports = router;
