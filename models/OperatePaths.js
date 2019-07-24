@@ -44,11 +44,21 @@ OperatePaths.init({
 		type: DataTypes.STRING,
 		comment: '巡检员姓名'
 	},
+	normal: {
+		type: DataTypes.BOOLEAN,
+		defaultValue: true,
+		comment: '巡检数据是否正常，当有不正常检查项时，设置此项'
+	},
+	unnormalInfos: {
+		type: DataTypes.ARRAY(DataTypes.STRING),
+		comment: '不正常原因'
+	},
 	category: {
 		type: DataTypes.INTEGER,
 		defaultValue: 1,
 		comment: '1-巡检中 2-巡检数据已提交'
 	}
+
 }, {
 	sequelize: postgres,
 	modelName: 'operatepaths',

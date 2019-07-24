@@ -12,6 +12,22 @@ OperateEquipments.init({
 		type: DataTypes.UUID,
 		comment: '项目点uuid'
 	},
+	buildingUuid: {
+		type: DataTypes.UUID,
+		comment: 'Building uuid'
+	},
+	floorUuid: {
+		type: DataTypes.UUID,
+		comment: '楼层uuid'
+	},
+	spaceUuid: {
+		type: DataTypes.UUID,
+		comment: '空间uuid'
+	},
+	equipmentName: {
+		type: DataTypes.STRING,
+		comment: '设备名称'
+	},
 	pathwayUuid: {
 		type: DataTypes.UUID,
 		comment: '用来标识属于哪个巡检路线，pathway uuid'
@@ -20,9 +36,14 @@ OperateEquipments.init({
 		type: DataTypes.UUID,
 		comment: '设备uuid'
 	},
-	equipmentName: {
-		type: DataTypes.STRING,
-		comment: '设备名称'
+	normal: {
+		type: DataTypes.BOOLEAN,
+		defaultValue: true,
+		comment: '巡检数据是否正常，当有不正常检查项时，设置此项'
+	},
+	unnormalInfos: {
+		type: DataTypes.ARRAY(DataTypes.STRING),
+		comment: '不正常原因'
 	}
 }, {
 	sequelize: postgres,
