@@ -7,7 +7,7 @@ describe('/api/handovers', () => {
 	let handover2;
 	let handover3;
 	beforeEach(async () => {
-		this.location = await Locations.findOne({ where: { code: 'TEST0001', category: 0 } });
+		this.location = await Locations.findOne({ where: { code: 'TEST0001', status: 0 } });
 	});
 
 	it('新增handovers POST /api/handovers', (done) => {
@@ -119,7 +119,7 @@ describe('/api/handovers', () => {
 				should.equal(res.body.errcode, 0);
 
 				Handovers.findOne({ where: { id: handover.id } }).then(_handover => {
-					should.equal(_handover.category, 3);
+					should.equal(_handover.status, 3);
 					done();
 				});
 			});
@@ -129,14 +129,14 @@ describe('/api/handovers', () => {
 		process.request
 			.post(`/api/handovers/${handover2.id}/receiver`)
 			.set('Authorization', process.token)
-			.send({ category: 2 })
+			.send({ status: 2 })
 			.expect(200)
 			.end((err, res) => {
 				should.not.exist(err);
 				should.equal(res.body.errcode, 0);
 
 				Handovers.findOne({ where: { id: handover2.id } }).then(_handover => {
-					should.equal(_handover.category, 2);
+					should.equal(_handover.status, 2);
 					done();
 				});
 			});
@@ -146,14 +146,14 @@ describe('/api/handovers', () => {
 		process.request
 			.post(`/api/handovers/${handover3.id}/receiver`)
 			.set('Authorization', process.token)
-			.send({ category: 4 })
+			.send({ status: 4 })
 			.expect(200)
 			.end((err, res) => {
 				should.not.exist(err);
 				should.equal(res.body.errcode, 0);
 
 				Handovers.findOne({ where: { id: handover3.id } }).then(_handover => {
-					should.equal(_handover.category, 4);
+					should.equal(_handover.status, 4);
 					done();
 				});
 			});

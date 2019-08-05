@@ -1,11 +1,11 @@
 const should = require('should');
 const Locations = require('../../models/Locations');
 let reviewId;
-let reviewId2;
+// let reviewId2;
 
 describe('/api/reviews', () => {
 	beforeEach(async () => {
-		this.location = await Locations.findOne({ where: { code: 'TEST0001', category: 0 } });
+		this.location = await Locations.findOne({ where: { code: 'TEST0001', status: 0 } });
 	});
 	it('SV提交项目 POST /api/reviews/commit', (done) => {
 		process.request

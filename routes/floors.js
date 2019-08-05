@@ -32,7 +32,7 @@ router.prefix('/api/floors');
 * @apiSuccess {Number} data.rows.grossexternarea 外部面积
 * @apiSuccess {Number} data.rows.grossinternalarea 内部面积
 * @apiSuccess {Number} data.rows.level 楼层
-* @apiSuccess {Number} data.rows.category 当前数据分类 0-sv编辑的数据 1-审批中的数据 2-使用的数据 3-被替换的历史数据
+* @apiSuccess {Number} data.rows.status 当前数据分类 0-sv编辑的数据 1-审批中的数据 2-使用的数据 3-被替换的历史数据
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
@@ -92,7 +92,7 @@ router.get('/', async (ctx, next) => {
 * @apiSuccess {Number} data.grossexternarea 外部面积
 * @apiSuccess {Number} data.grossinternalarea 内部面积
 * @apiSuccess {Number} data.level 楼层
-* @apiSuccess {Number} data.category 当前数据分类 0-sv编辑的数据 1-审批中的数据 2-使用的数据 3-被替换的历史数据
+* @apiSuccess {Number} data.status 当前数据分类 0-sv编辑的数据 1-审批中的数据 2-使用的数据 3-被替换的历史数据
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
@@ -109,7 +109,7 @@ router.post('/', async (ctx, next) => {
 		buildingId: data.buildingId,
 		buildingUuid: building.uuid,
 		name: data.name,
-		category: 0
+		status: 0
 	};
 
 	[ 'floorClassId', 'floorMaintained', 'description',
@@ -157,7 +157,7 @@ router.post('/', async (ctx, next) => {
 * @apiSuccess {Number} data.grossexternarea 外部面积
 * @apiSuccess {Number} data.grossinternalarea 内部面积
 * @apiSuccess {Number} data.level 楼层
-* @apiSuccess {Number} data.category 当前数据分类 0-sv编辑的数据 1-审批中的数据 2-使用的数据 3-被替换的历史数据
+* @apiSuccess {Number} data.status 当前数据分类 0-sv编辑的数据 1-审批中的数据 2-使用的数据 3-被替换的历史数据
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */

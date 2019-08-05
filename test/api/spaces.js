@@ -1,15 +1,15 @@
 const should = require('should');
-const Buildings = require('../../models/Buildings');
+// const Buildings = require('../../models/Buildings');
 const Floors = require('../../models/Floors');
 const Spaces = require('../../models/Spaces');
 const Locations = require('../../models/Locations');
-const { Op } = require('sequelize');
+// const { Op } = require('sequelize');
 
 describe('/api/spaces', () => {
 	let space;
 	let space2;
 	beforeEach(async () => {
-		this.location = await Locations.findOne({ where: { code: 'TEST0001', category: 0 } });
+		this.location = await Locations.findOne({ where: { code: 'TEST0001', status: 0 } });
 		this.floor = await Floors.findOne({ where: { locationId: this.location.id } });
 	});
 

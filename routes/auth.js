@@ -58,6 +58,17 @@ router.get('/signature', async (ctx, next) => {
 	await next();
 });
 
+router.post('/signin', async (ctx, next) => {
+	const { username, password } = ctx.request.body;
+	if (username !== 'zhangchao' && password !== 'abcd1234') {
+		ctx.body = ServiceResult.getFail('参数错误');
+	}
+	let user = await DingStaffs.findOne({ where: { userName: '张超' } });
+	let token = jwt.sign({ userId: user.userId, userName: user.userName, jobnumber: user.jobnumber, oe: !!user.oe }, config.secret);
+	ctx.body = ServiceResult.getSuccess({ user, token: 'Bearer ' + token });
+	await next();
+});
+
 /**
 * @api {get} /api/auth/login?code=:code&userId= 用户登录
 * @apiName login

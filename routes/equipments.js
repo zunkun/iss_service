@@ -14,12 +14,12 @@ const { Op } = require('sequelize');
 router.prefix('/api/equipments');
 
 /**
-* @api {get} /api/equipments?barcodeEntry=&name=&conditionId=&grpassetcriticalityId=&serialNum=&locationId=&buildingId=&floorId=&spaceId=&limit=&page=&keywords=&category=&activeStartDate= 设备录入列表
+* @api {get} /api/equipments?barcodeEntry=&name=&conditionId=&grpassetcriticalityId=&serialNum=&locationId=&buildingId=&floorId=&spaceId=&limit=&page=&keywords=&status=&activeStartDate= 设备录入列表
 * @apiName equipments-query
 * @apiGroup 设备录入
 * @apiDescription 设备录入列表
 * @apiHeader {String} authorization 登录token Bearer + token
-* @apiParam {String} category 当前数据分类 0-sv编辑的数据 1-审批中的数据 2-使用的数据 3-被替换的历史数据, 默认0
+* @apiParam {String} status 当前数据分类 0-sv编辑的数据 1-审批中的数据 2-使用的数据 3-被替换的历史数据, 默认0
 * @apiParam {String} [barcodeEntry] 设备code
 * @apiParam {String} [activeStartDate] 生效日期
 * @apiParam {String} [name] 设备名称
@@ -68,7 +68,7 @@ router.get('/', async (ctx, next) => {
 	let page = Number(query.page) || 1;
 	let limit = Number(query.limit) || 10;
 	let offset = (page - 1) * limit;
-	const where = { category: Number(query.category) || 0 };
+	const where = { status: Number(query.status) || 0 };
 	let keywords = query.keywords;
 	if (keywords && keywords !== 'undefined') {
 		where[Op.or] = [];
@@ -178,7 +178,7 @@ router.post('/', async (ctx, next) => {
 		name: data.name,
 		barcodeEntry: data.barcodeEntry,
 		inspect: !!data.inspect,
-		category: 0
+		status: 0
 	};
 
 	[ 'description', 'conditionId', 'grpassetcriticalityId', 'remarks',

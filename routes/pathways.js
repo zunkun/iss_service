@@ -53,7 +53,7 @@ router.post('/', async (ctx, next) => {
 		}
 	}
 
-	let pathwayData = { name, description, pathcode: moment().format('YYYYMMDDHHMMssSSS'), category: 1, inuse: true };
+	let pathwayData = { name, description, pathcode: moment().format('YYYYMMDDHHMMssSSS'), status: 1, inuse: true };
 
 	return pathwayService.setPathways(locationId, pathwayData, equipments).then(pathway => {
 		ctx.body = ServiceResult.getSuccess({ uuid: pathway.uuid, name, description });
@@ -99,12 +99,12 @@ router.put('/', async (ctx, next) => {
 		}
 	}
 
-	return Pathways.findOne({ where: { uuid, category: 1 } })
+	return Pathways.findOne({ where: { uuid, status: 1 } })
 		.then((pathway) => {
 			if (!pathway) {
 				return Promise.reject('参数错误');
 			}
-			let pathwayData = { uuid, name: name || pathway.name, description: description || pathway.description, pathcode: moment().format('YYYYMMDDHHMMssSSS'), category: 1, inuse: true };
+			let pathwayData = { uuid, name: name || pathway.name, description: description || pathway.description, pathcode: moment().format('YYYYMMDDHHMMssSSS'), status: 1, inuse: true };
 			return pathwayService.updatePathway(uuid, pathwayData, equipments).then(() => {
 				ctx.body = ServiceResult.getSuccess({ uuid: pathway.uuid, name, description });
 				next();
@@ -136,7 +136,7 @@ router.post('/inuse', async (ctx, next) => {
 		return;
 	}
 
-	return Pathways.findOne({ where: { uuid: data.uuid, category: 1 } })
+	return Pathways.findOne({ where: { uuid: data.uuid, status: 1 } })
 		.then((pathway) => {
 			if (!pathway) {
 				return Promise.reject('参数错误');
@@ -170,7 +170,7 @@ router.delete('/', async (ctx, next) => {
 		return;
 	}
 
-	return Pathways.findOne({ where: { uuid: data.uuid, category: 1 } })
+	return Pathways.findOne({ where: { uuid: data.uuid, status: 1 } })
 		.then((pathway) => {
 			if (!pathway) {
 				return Promise.reject('参数错误');
@@ -204,7 +204,7 @@ router.post('/copy', async (ctx, next) => {
 		return;
 	}
 
-	return Pathways.findOne({ where: { uuid: data.uuid, category: 1 } })
+	return Pathways.findOne({ where: { uuid: data.uuid, status: 1 } })
 		.then((pathway) => {
 			if (!pathway) {
 				return Promise.reject('参数错误');
@@ -250,7 +250,7 @@ router.get('/', async (ctx, next) => {
 	limit = Number(limit) || 10;
 	let offset = (page - 1) * limit;
 
-	const where = { category: 1 };
+	const where = { status: 1 };
 	if (name) where.name = { [Op.iLike]: `%${name}%` };
 	if (keywords) {
 		where[Op.or] = [
@@ -304,14 +304,14 @@ router.get('/personnel', async (ctx, next) => {
 	let user = jwt.decode(ctx.header.authorization.substr(7));
 	let role = Number(ctx.query.role) || 1;
 	try {
-		let personnels = await Personnels.findAll({ where: { userId: user.userId, role, category: 1 } });
+		let personnels = await Personnels.findAll({ where: { userId: user.userId, role, status: 1 } });
 		let pathwayLists = [];
 		for (let personnel of personnels) {
-			let location = await Locations.findOne({ where: { uuid: personnel.locationUuid, category: 2 } });
+			let location = await Locations.findOne({ where: { uuid: personnel.locationUuid, status: 2 } });
 			if (!location) continue;
 
 			let pathways = await Pathways.findAll({
-				where: { locationUuid: personnel.locationUuid, category: 1, inuse: true },
+				where: { locationUuid: personnel.locationUuid, status: 1, inuse: true },
 				include: [ { model: Companies, as: 'company', attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] } } ]
 			});
 			pathwayLists = pathwayLists.concat(pathways);
@@ -350,19 +350,19 @@ router.get('/personnel', async (ctx, next) => {
 */
 router.get('/:uuid', async (ctx, next) => {
 	return Pathways.findOne({
-		where: { uuid: ctx.params.uuid, category: 1 },
+		where: { uuid: ctx.params.uuid, status: 1 },
 		include: [
 			{ model: Companies, as: 'company', attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] } },
 			{
 				model: PathEquipments,
 				as: 'pathequipments',
-				where: { category: 1 },
+				where: { status: 1 },
 				include: [
 					{ model: Equipments, as: 'equipment' },
 					{
 						model: PathInspections,
 						as: 'pathinspections',
-						where: { category: 1 },
+						where: { status: 1 },
 						include: [ { model: Inspections, as: 'inspection' } ]
 					}
 				]
@@ -423,7 +423,7 @@ router.get('/:uuid', async (ctx, next) => {
 router.get('/:uuid/locations', async (ctx, next) => {
 	let { uuid } = ctx.params.uuid;
 
-	return Pathways.findOne({ where: { uuid, category: 1 } })
+	return Pathways.findOne({ where: { uuid, status: 1 } })
 		.then(pathway => {
 			if (!pathway) {
 				return Promise.reject('参数错误');
@@ -431,7 +431,7 @@ router.get('/:uuid/locations', async (ctx, next) => {
 
 			return Locations.findOne({
 				attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] },
-				where: { locationUuid: pathway.locationUuid, category: 2 },
+				where: { locationUuid: pathway.locationUuid, status: 2 },
 				include: [ { model: Buildings, as: 'buildings', attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] } } ]
 			}).then(location => {
 				if (!location) {
@@ -470,7 +470,7 @@ router.post('/:uuid/scan', async (ctx, next) => {
 	const uuid = ctx.params.uuid;
 	const { barcodeEntry } = ctx.request.body;
 
-	return Pathways.findOne({ where: { uuid, category: 1 } })
+	return Pathways.findOne({ where: { uuid, status: 1 } })
 		.then(pathway => {
 			if (!pathway) {
 				return Promise.reject('参数错误');
@@ -478,7 +478,7 @@ router.post('/:uuid/scan', async (ctx, next) => {
 			return Equipments.findOne({ where: {
 				locationUuid: pathway.locationUuid,
 				barcodeEntry,
-				category: 2 }
+				status: 2 }
 			}).then(equipment => {
 				if (!equipment) {
 					return Promise.reject('无法获取设备信息');
@@ -487,7 +487,7 @@ router.post('/:uuid/scan', async (ctx, next) => {
 					where: {
 						pathwayId: pathway.id,
 						equipmentId: equipment.id,
-						category: 1
+						status: 1
 					},
 					raw: true
 				}).then(async pathEquipment => {
@@ -504,7 +504,7 @@ router.post('/:uuid/scan', async (ctx, next) => {
 					return PathInspections.findAll({
 						where: {
 							pathequipmentId: pathEquipment.id,
-							category: 1
+							status: 1
 						},
 						include: [ { model: Inspections, as: 'inspection' } ]
 					}).then(pathInspections => {

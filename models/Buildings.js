@@ -64,7 +64,7 @@ Buildings.init({
 		type: DataTypes.INTEGER,
 		comment: '主要用途Id,参考常量表constants'
 	},
-	category: {
+	status: {
 		type: DataTypes.INTEGER,
 		defaultValue: 0,
 		comment: '当前数据分类 0-sv编辑的数据 1-审批中的数据 2-使用的数据 3-被替换的历史数据'

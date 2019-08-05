@@ -11,7 +11,7 @@ PathInspections.init({
 		type: DataTypes.UUID,
 		comment: 'pathway uuid'
 	},
-	category: {
+	status: {
 		type: DataTypes.INTEGER,
 		defaultValue: 1,
 		comment: '1-使用的数据 2-被替换的历史数据'

@@ -39,7 +39,7 @@ router.prefix('/api/handovers');
 * @apiSuccess {Object} data.rows.toGps 接收人Gps
 * @apiSuccess {Object} data.rows.toImagers 接收人上传图片
 * @apiSuccess {Object} data.rows.toRemark 接收人备注
-* @apiSuccess {Number} data.rows.category 工作交接状态 1-交接中 2-交接成功 3-撤回 4-拒绝
+* @apiSuccess {Number} data.rows.status 工作交接状态 1-交接中 2-交接成功 3-撤回 4-拒绝
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
@@ -132,7 +132,7 @@ router.get('/', async (ctx, next) => {
 * @apiSuccess {String} data.toUserId 接收人钉钉userId
 * @apiSuccess {String} data.toUserName 接收人姓名
 * @apiSuccess {Date} data.date 交班日期
-* @apiSuccess {Number} data.category 工作交接状态 1-交接中 2-交接成功 3-撤回 4-拒绝
+* @apiSuccess {Number} data.status 工作交接状态 1-交接中 2-交接成功 3-撤回 4-拒绝
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
@@ -176,7 +176,7 @@ router.post('/', (ctx, next) => {
 				fromRemark: data.fromRemark,
 				startTime: new Date(),
 				date: moment().format('YYYY-MM-DD'),
-				category: 1
+				status: 1
 			};
 			return Handovers.create(handoverData)
 				.then((handover) => {
@@ -191,7 +191,7 @@ router.post('/', (ctx, next) => {
 						fromImages: data.fromImages,
 						fromRemark: data.fromRemark,
 						date: handover.date,
-						category: 1
+						status: 1
 					});
 					next();
 				});
@@ -223,7 +223,7 @@ router.post('/', (ctx, next) => {
 * @apiSuccess {String[]} data.toImages 接收人上传图片
 * @apiSuccess {String} data.toRemark 接收人备注
 * @apiSuccess {Date} data.date 交班日期
-* @apiSuccess {Number} data.category 工作交接状态 1-交接中 2-交接成功 3-撤回 4-拒绝
+* @apiSuccess {Number} data.status 工作交接状态 1-交接中 2-交接成功 3-撤回 4-拒绝
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
@@ -263,11 +263,11 @@ router.post('/:id/revoke', (ctx, next) => {
 			if (handover.fromUserId !== user.userId) {
 				return Promise.reject('没有权限');
 			}
-			if (handover.category !== 1) {
+			if (handover.status !== 1) {
 				return Promise.reject('当前交班已经被接收人处理，无法操作');
 			}
 			return Handovers.update({
-				category: 3
+				status: 3
 			}, {
 				where: { id: ctx.params.id }
 			});
@@ -289,7 +289,7 @@ router.post('/:id/revoke', (ctx, next) => {
 * @apiDescription 接收人处理交班数据
 * @apiHeader {String} authorization 登录token Bearer + token
 * @apiParam {Number} id 交班信息id
-* @apiParam {Number} category 2-接受交接 4-拒绝交接
+* @apiParam {Number} status 2-接受交接 4-拒绝交接
 * @apiParam {String} [toRemark] 接收人备注
 * @apiParam {String} [toGps] 接收人Gps
 * @apiParam {String[]} [toImages] 接收人上传图片uri列表
@@ -301,8 +301,8 @@ router.post('/:id/revoke', (ctx, next) => {
 router.post('/:id/receiver', (ctx, next) => {
 	let user = jwt.decode(ctx.header.authorization.substr(7));
 	let data = ctx.request.body;
-	let category = data.category;
-	if (category !== 2 && category !== 4) {
+	let status = data.status;
+	if (status !== 2 && status !== 4) {
 		ctx.body = ServiceResult.getFail('参数错误');
 		return;
 	}
@@ -315,10 +315,10 @@ router.post('/:id/receiver', (ctx, next) => {
 			if (handover.toUserId !== user.userId) {
 				return Promise.reject('没有权限');
 			}
-			if (handover.category !== 1) {
+			if (handover.status !== 1) {
 				return Promise.reject('当前交班已经被接收人处理，无法操作');
 			}
-			let updateData = { category, endTime: new Date() };
+			let updateData = { status, endTime: new Date() };
 			[ 'toRemark', 'toGps', 'toImages' ].map(key => {
 				if (data[key]) updateData[key] = data[key];
 			});

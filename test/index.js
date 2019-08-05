@@ -24,50 +24,50 @@ describe('测试 /api/companies', () => {
 	require('./api/companies');
 });
 
-describe('测试 /api/locations', () => {
-	require('./api/locations');
-});
+// describe('测试 /api/locations', () => {
+// 	require('./api/locations');
+// });
 
-describe('测试 /api/personnels', () => {
-	require('./api/personnels');
-});
+// describe('测试 /api/personnels', () => {
+// 	require('./api/personnels');
+// });
 
-describe('测试 /api/buildings', () => {
-	require('./api/buildings');
-});
+// describe('测试 /api/buildings', () => {
+// 	require('./api/buildings');
+// });
 
-describe('测试 /api/floors', () => {
-	require('./api/floors');
-});
+// describe('测试 /api/floors', () => {
+// 	require('./api/floors');
+// });
 
-describe('测试 /api/spaces', () => {
-	require('./api/spaces');
-});
+// describe('测试 /api/spaces', () => {
+// 	require('./api/spaces');
+// });
 
-describe('测试 /api/specs', () => {
-	require('./api/specs');
-});
+// describe('测试 /api/specs', () => {
+// 	require('./api/specs');
+// });
 
-describe('测试 /api/inspections', () => {
-	require('./api/inspections');
-});
+// describe('测试 /api/inspections', () => {
+// 	require('./api/inspections');
+// });
 
-describe('测试 /api/handovers', () => {
-	require('./api/handovers');
-});
+// describe('测试 /api/handovers', () => {
+// 	require('./api/handovers');
+// });
 
-describe('测试 /api/equipments', () => {
-	require('./api/equipments');
-});
+// describe('测试 /api/equipments', () => {
+// 	require('./api/equipments');
+// });
 
-describe('测试項目提交審批', () => {
-	require('./api/reviews');
-});
+// describe('测试項目提交審批', () => {
+// 	require('./api/reviews');
+// });
 
-describe('巡检路线', () => {
-	require('./api/pathways');
-});
+// describe('巡检路线', () => {
+// 	require('./api/pathways');
+// });
 
-describe('巡检员巡检', () => {
-	require('./api/operations');
-});
+// describe('巡检员巡检', () => {
+// 	require('./api/operations');
+// });

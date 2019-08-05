@@ -41,7 +41,7 @@ router.prefix('/api/operations');
 * @apiSuccess {String} data.userName 巡检员姓名
 * @apiSuccess {Object} data.personnel 巡检员信息
 * @apiSuccess {Object} data.pathway 巡检路线信息
-* @apiSuccess {Number} data.category 巡检状态 1-巡检中 2-巡检数据已提交
+* @apiSuccess {Number} data.status 巡检状态 1-巡检中 2-巡检数据已提交
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
@@ -60,14 +60,14 @@ router.post('/', async (ctx, next) => {
 				return Promise.reject('当前用户不是该项目点的巡检员');
 			}
 
-			return Pathways.findOne({ where: { uuid: pathwayUuid, category: 1 } })
+			return Pathways.findOne({ where: { uuid: pathwayUuid, status: 1 } })
 				.then(pathway => {
 					if (!pathway) {
 						return Promise.reject('无法获取巡检路线信息');
 					}
 
 					return OperatePaths.findOne({
-						where: { pathwayUuid, category: 1, date, userId: user.userId }
+						where: { pathwayUuid, status: 1, date, userId: user.userId }
 					}).then(operatepath => {
 						if (operatepath) {
 							return operatepath;
@@ -83,7 +83,7 @@ router.post('/', async (ctx, next) => {
 							accomplished: false,
 							userId: user.userId,
 							userName: user.userName,
-							category: 1,
+							status: 1,
 							pathwayId: pathway.id,
 							personnelId: personnel.id
 						});
@@ -142,7 +142,7 @@ router.get('/equipments', async (ctx, next) => {
 	}
 
 	// 查询已经提交的数据
-	let where = { normal: !!normal, category: 2 };
+	let where = { normal: !!normal, status: 2 };
 	let equipmentWhere = {};
 
 	if (from) {
@@ -200,7 +200,7 @@ router.get('/equipments', async (ctx, next) => {
 	// 依次获取设备详细信息
 	for (let operateEquipment of operateEquipments.rows) {
 		// 设备信息
-		let equipment = await Equipments.findOne({ uuid: operateEquipment.equipmentUuid, category: 2 });
+		let equipment = await Equipments.findOne({ uuid: operateEquipment.equipmentUuid, status: 2 });
 		// 检查结果
 		let operateInspections = await OperateInspections.findAll({
 			where: {
@@ -239,7 +239,7 @@ router.get('/equipments', async (ctx, next) => {
 router.post('/inspect', async (ctx, next) => {
 	let user = jwt.decode(ctx.header.authorization.substr(7));
 	let { pathwayUuid, equipmentId, inspections } = ctx.request.body;
-	let pathway = await Pathways.findOne({ where: { uuid: pathwayUuid, category: 1 } });
+	let pathway = await Pathways.findOne({ where: { uuid: pathwayUuid, status: 1 } });
 	if (!pathwayUuid || !pathway || !equipmentId || !inspections || !Array.isArray(inspections) || !inspections.length) {
 		return Promise.reject('参数错误');
 	}
@@ -368,9 +368,9 @@ router.get('/:id', async (ctx, next) => {
 		}
 
 		// 巡检路线信息
-		let pathway = await Pathways.findOne({ uuid: operatepath.pathwayUuid, category: 1 });
+		let pathway = await Pathways.findOne({ uuid: operatepath.pathwayUuid, status: 1 });
 		// 巡检项目点信息
-		let location = await Locations.findOne({ uuid: operatepath.locationUuid, category: 2 });
+		let location = await Locations.findOne({ uuid: operatepath.locationUuid, status: 2 });
 		res.pathway = pathway;
 		res.location = location;
 
@@ -384,7 +384,7 @@ router.get('/:id', async (ctx, next) => {
 		// 依次获取设备详细信息
 		for (let operateEquipment of operateEquipments) {
 			// 设备信息
-			let equipment = await Equipments.findOne({ uuid: operateEquipment.equipmentUuid, category: 2 });
+			let equipment = await Equipments.findOne({ uuid: operateEquipment.equipmentUuid, status: 2 });
 			// 检查结果
 			let operateInspections = await OperateInspections.findAll({
 				where: {
@@ -425,13 +425,13 @@ router.get('/:id', async (ctx, next) => {
 */
 router.post('/:id/commit', async (ctx, next) => {
 	return OperatePaths.findOne({
-		where: { id: ctx.params.id, category: 1 }
+		where: { id: ctx.params.id, status: 1 }
 	}).then(operatepath => {
 		if (!operatepath) {
 			return Promise.reject('参数错误');
 		}
 
-		return OperatePaths.update({ category: 2 }, { where: { id: ctx.params.id } });
+		return OperatePaths.update({ status: 2 }, { where: { id: ctx.params.id } });
 	}).then(() => {
 		ctx.body = ServiceResult.getSuccess({});
 		next();

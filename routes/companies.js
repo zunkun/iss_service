@@ -4,6 +4,8 @@ const Router = require('koa-router');
 const router = new Router();
 const Companies = require('../models/Companies');
 const Constants = require('../models/Constants');
+const areaMap = require('../config/areaMap');
+const util = require('../core/util');
 
 router.prefix('/api/companies');
 
@@ -23,7 +25,7 @@ router.prefix('/api/companies');
 * @apiSuccess {Number} data.count 客户总数
 * @apiSuccess {Object[]} data.rows 当前页客户列表
 * @apiSuccess {String} data.rows.name 客户名称
-* @apiSuccess {String} data.rows.costcenter 成本中心
+* @apiSuccess {String} data.rows.costcenter 客户代码（财务编号）
 * @apiSuccess {String} data.rows.address 地址
 * @apiSuccess {String} data.rows.apcompanycode 项目代码
 * @apiSuccess {String} data.rows.email email
@@ -61,7 +63,7 @@ router.get('/', async (ctx, next) => {
 		include: [ {
 			model: Constants,
 			as: 'industry',
-			attributes: { exclude: [ 'category' ] }
+			attributes: { exclude: [ 'status' ] }
 		} ],
 		where,
 		limit,
@@ -79,71 +81,119 @@ router.get('/', async (ctx, next) => {
 * @apiPermission OE
 * @apiHeader {String} authorization 登录token Bearer + token
 * @apiParam {String} name 客户名称
-* @apiParam {String} [costcenter] 成本中心
-* @apiParam {String} [address] 地址
-* @apiParam {String} [apcompanycode] 项目代码
-* @apiParam {String} [email] email
+* @apiParam {String} [shortname] 名称缩写
+* @apiParam {String} [costcenter] 客户代码（财务编号）
+* @apiParam {Number} [industryId]  行业类型id
+* @apiParam {String} [provinceCode] 省份编码
+* @apiParam {String} [cityCode] 城市编码
+* @apiParam {String} [districtCode]  区县编码
+* @apiParam {String} [street]  地址详细
+* @apiParam {String} [email] 邮箱
 * @apiParam {String} [mainfax] 传真
 * @apiParam {String} [mainphone] 电话总机
-* @apiParam {String} [shortname] 名称缩写
 * @apiParam {String} [zippostal] 邮编
-* @apiParam {String} [email] email
-* @apiParam {String} [site]  网址
-* @apiParam {Number} [industryId]  行业类型id，参考常量表
+* @apiParam {String} [description] 描述
+* @apiParam {Number} status 当前客户数据状态 0-编辑中 1-启用 2-停用中，默认为0
 * @apiSuccess {Number} errcode 成功为0
 * @apiSuccess {Object} data 客户company
-* @apiSuccess {String} name 客户名称
-* @apiSuccess {String} costcenter 成本中心
-* @apiSuccess {String} address 地址
-* @apiSuccess {String} apcompanycode 项目代码
-* @apiSuccess {String} email email
-* @apiSuccess {String} mainfax 传真
-* @apiSuccess {String} mainphone 电话总机
-* @apiSuccess {String} shortname 名称缩写
-* @apiSuccess {String} zippostal 邮编
-* @apiSuccess {String} email email
-* @apiSuccess {String} site  网址
-* @apiSuccess {Number} industryId  行业类型id，参考常量表
-* @apiSuccess {Number} industry  行业类型，参考常量表
+* @apiSuccess {Number} data.id 客户ID
+* @apiSuccess {String} data.name 客户名称
+* @apiSuccess {String} data.shortname 名称缩写
+* @apiSuccess {String} data.costcenter 客户代码（财务编号）
+* @apiSuccess {String} data.provinceCode 省份编码
+* @apiSuccess {String} data.provinceName 省份名称
+* @apiSuccess {String} data.cityCode 城市编码
+* @apiSuccess {String} data.cityName 城市名称
+* @apiSuccess {String} data.districtCode  区县编码
+* @apiSuccess {String} data.districtName  区县名称
+* @apiSuccess {String} data.street  地址详细
+* @apiSuccess {String} data.email 邮箱
+* @apiSuccess {String} data.mainfax 传真
+* @apiSuccess {String} data.mainphone 电话总机
+* @apiSuccess {String} data.zippostal 邮编
+* @apiSuccess {Number} data.industryId  行业类型id
+* @apiSuccess {Number} data.industryName  行业类型
+* @apiSuccess {Number} data.status 当前客户数据状态 0-编辑中 1-启用 2-停用中，默认为0
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
 router.post('/', async (ctx, next) => {
 	const data = ctx.request.body;
-
+	const companyData = {
+		name: data.name,
+		status: Number(data.status) || 0
+	};
 	if (!data.name) {
 		ctx.body = ServiceResult.getFail('参数不正确');
 		return;
 	}
+	companyData.shortname = data.shortname || data.name;
+	// 复制基本信息
+	util.setProperty([ 'costcenter', 'street', 'email', 'mainfax',
+		'mainphone', 'zippostal', 'description' ], data, companyData);
+	// 处理省市区信息
+	if (data.provinceCode) {
+		companyData.provinceCode = data.provinceCode;
+		companyData.provinceName = areaMap.province[data.provinceCode];
+	}
+	if (data.provinceCode) {
+		companyData.cityCode = data.cityCode;
+		companyData.cityName = areaMap.city[data.cityCode];
+	}
+	if (data.districtCode) {
+		companyData.districtCode = data.districtCode;
+		companyData.districtName = areaMap.district[data.districtCode];
+	}
 
-	return Companies.create(data).then(company => {
-		return Companies.findOne({
-			attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] },
-			where: { id: company.id },
-			include: [ {
-				model: Constants,
-				as: 'industry',
-				attributes: { exclude: [ 'category' ] }
-			} ]
-		}).then(res => {
-			ctx.body = ServiceResult.getSuccess(res);
+	return Companies.findOne({ where: { name: data.name } })
+		.then(company => {
+			if (company) {
+				return Promise.reject(`系统中已经存在名称为 ${data.name}的客户`);
+			}
+			return Companies.create(companyData);
+		}).then(company => {
+			company =	company.toJSON();
+			// 删除时间戳信息
+			delete company.createdAt;
+			delete company.updatedAt;
+			delete company.deletedAt;
+
+			ctx.body = ServiceResult.getSuccess(company);
+			next();
+		}).catch(error => {
+			console.error('创建客户信息失败', error);
+			ctx.body = ServiceResult.getFail(error);
 			next();
 		});
-	}).catch(error => {
-		ctx.body = ServiceResult.getFail(error);
-		next();
-	});
 });
 
 /**
 * @api {get} /api/companies/:id 客户信息
-* @apiName projects-info
+* @apiName companies-info
 * @apiGroup 客户
 * @apiDescription 客户信息
 * @apiHeader {String} authorization 登录token Bearer + token
 * @apiParam {Number} id 客户id
 * @apiSuccess {Number} errcode 成功为0
 * @apiSuccess {Object} data 客户信息
+* @apiSuccess {Number} data.id 客户ID
+* @apiSuccess {String} data.name 客户名称
+* @apiSuccess {String} data.shortname 名称缩写
+* @apiSuccess {String} data.costcenter 客户代码（财务编号）
+* @apiSuccess {String} data.provinceCode 省份编码
+* @apiSuccess {String} data.provinceName 省份名称
+* @apiSuccess {String} data.cityCode 城市编码
+* @apiSuccess {String} data.cityName 城市名称
+* @apiSuccess {String} data.districtCode  区县编码
+* @apiSuccess {String} data.districtName  区县名称
+* @apiSuccess {String} data.street  地址详细
+* @apiSuccess {String} data.email 邮箱
+* @apiSuccess {String} data.mainfax 传真
+* @apiSuccess {String} data.mainphone 电话总机
+* @apiSuccess {String} data.zippostal 邮编
+* @apiSuccess {Number} data.industryId  行业类型id
+* @apiSuccess {Number} data.industryName  行业类型
+* @apiSuccess {Number} data.status 当前客户数据状态 0-编辑中 1-启用 2-停用中，默认为0
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
@@ -154,7 +204,7 @@ router.get('/:id', async (ctx, next) => {
 		include: [ {
 			model: Constants,
 			as: 'industry',
-			attributes: { exclude: [ 'category' ] }
+			attributes: { exclude: [ 'status' ] }
 		} ]
 	}).then(res => {
 		ctx.body = ServiceResult.getSuccess(res);
@@ -175,36 +225,62 @@ router.get('/:id', async (ctx, next) => {
 * @apiHeader {String} authorization 登录token Bearer + token
 * @apiParam {Number} id 客户id
 * @apiParam {String} [name] 客户名称
-* @apiParam {String} [costcenter] 成本中心
-* @apiParam {String} [address] 地址
-* @apiParam {String} [apcompanycode] 项目代码
-* @apiParam {String} [email] email
-* @apiParam {String} [mainfax] 传真
-* @apiParam {String} [mainphone] 电话总机
 * @apiParam {String} [shortname] 名称缩写
+* @apiParam {String} [costcenter] 客户代码（财务编号）
+* @apiParam {Number} [industryId]  行业类型id
+* @apiParam {String} [provinceCode] 省份编码
+* @apiParam {String} [cityCode] 城市编码
+* @apiParam {String} [districtCode]  区县编码
+* @apiParam {String} [street]  地址详细
+* @apiParam {String} [email] 邮箱
+* @apiParam {String} [mainphone] 电话总机
 * @apiParam {String} [zippostal] 邮编
-* @apiParam {String} [site]  网址
-* @apiParam {String} [industryId]  行业类型id
+* @apiParam {String} [description] 描述
+* @apiParam {Number} [status] 当前客户数据状态 1-启用 2-停用中, 此处不允许为0，需求中不允许回到编辑状态
 * @apiSuccess {Number} errcode 成功为0
 * @apiSuccess {Object} data {}
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
 router.put('/:id', async (ctx, next) => {
-	const body = ctx.request.body;
-	let company = await Companies.findOne({ where: { id: ctx.params.id } });
-	if (!company) {
-		ctx.body = ServiceResult.getFail('参数不正确');
-		return;
-	}
-	const data = {};
-	[ 'name', 'costcenter', 'address', 'apcompanycode', 'email', 'mainfax', 'mainphone', 'shortname', 'zippostal', 'site', 'industryId' ].map(key => {
-		if (body[key]) data[key] = body[key];
-	});
+	const data = ctx.request.body;
+	const companyData = {};
 
-	await Companies.update(data, { where: { id: ctx.params.id } });
-	ctx.body = ServiceResult.getSuccess({});
-	await next();
+	// 复制基本信息
+	util.setProperty([ 'name', 'shortname', 'costcenter', 'street', 'email',
+		'mainphone', 'zippostal', 'description' ], data, companyData);
+	// 处理省市区信息
+	if (data.provinceCode) {
+		companyData.provinceCode = data.provinceCode;
+		companyData.provinceName = areaMap.province[data.provinceCode];
+	}
+	if (data.provinceCode) {
+		companyData.cityCode = data.cityCode;
+		companyData.cityName = areaMap.city[data.cityCode];
+	}
+	if (data.districtCode) {
+		companyData.districtCode = data.districtCode;
+		companyData.districtName = areaMap.district[data.districtCode];
+	}
+
+	// 修改客户信息状态，此处过滤掉编辑中状态，需求中编辑启用后就不允许回到编辑状态中
+	if (data.status) companyData.status = Number(data.status);
+
+	return Companies.findOne({ where: { id: ctx.params.id } })
+		.then(company => {
+			if (!company) {
+				return Promise.reject('获取客户信息失败');
+			}
+
+			return Companies.update(companyData, { where: { id: ctx.params.id } });
+		}).then(() => {
+			ctx.body = ServiceResult.getSuccess({});
+			next();
+		}).catch(error => {
+			console.error('修改客户信息失败', error);
+			ctx.body = ServiceResult.getFail(error);
+			next();
+		});
 });
 
 /**

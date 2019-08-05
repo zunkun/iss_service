@@ -6,7 +6,7 @@ describe('/api/buildings', () => {
 	let building;
 	let building2;
 	beforeEach(async () => {
-		this.location = await Locations.findOne({ where: { code: 'TEST0001', category: 0 } });
+		this.location = await Locations.findOne({ where: { code: 'TEST0001', status: 0 } });
 	});
 
 	it('新增buildings POST /api/buildings', (done) => {

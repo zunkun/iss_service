@@ -36,7 +36,7 @@ router.prefix('/api/buildings');
 * @apiSuccess {Number}  data.rows.parkingOpen 停车位数量
 * @apiSuccess {String}  data.rows.primaryUseId 主要用途Id
 * @apiSuccess {Object}  data.rows.primaryUse 主要用途
-* @apiSuccess {Number}  data.rows.category 当前数据分类 0-sv编辑的数据 1-审批中的数据 2-使用的数据 3-被替换的历史数据
+* @apiSuccess {Number}  data.rows.status 当前数据分类 0-sv编辑的数据 1-审批中的数据 2-使用的数据 3-被替换的历史数据
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
@@ -112,7 +112,7 @@ router.get('/', async (ctx, next) => {
 * @apiSuccess {Number} data.parkingOpen 停车位数量
 * @apiSuccess {String} data.primaryUseId 主要用途Id
 * @apiSuccess {Object} data.primaryUse 主要用途
-* @apiSuccess {Number} data.category 当前数据分类 0-sv编辑的数据 1-审批中的数据 2-使用的数据 3-被替换的历史数据
+* @apiSuccess {Number} data.status 当前数据分类 0-sv编辑的数据 1-审批中的数据 2-使用的数据 3-被替换的历史数据
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
@@ -123,7 +123,7 @@ router.post('/', async (ctx, next) => {
 		ctx.body = ServiceResult.getFail('参数不正确');
 		return;
 	}
-	let buildingData = { locationId: data.locationId, locationUuid: location.uuid, name: data.name, category: 0 };
+	let buildingData = { locationId: data.locationId, locationUuid: location.uuid, name: data.name, status: 0 };
 
 	[ 'activeStartDate', 'buildingClassId', 'address',
 		'commonName', 'costcenter', 'description', 'legalName',
@@ -176,7 +176,7 @@ router.post('/', async (ctx, next) => {
 * @apiSuccess {Number} data.parkingOpen 停车位数量
 * @apiSuccess {String} data.primaryUseId 主要用途Id
 * @apiSuccess {Object} data.primaryUse 主要用途
-* @apiSuccess {Number} data.category 当前数据分类 0-sv编辑的数据 1-审批中的数据 2-使用的数据 3-被替换的历史数据
+* @apiSuccess {Number} data.status 当前数据分类 0-sv编辑的数据 1-审批中的数据 2-使用的数据 3-被替换的历史数据
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */

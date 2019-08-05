@@ -49,13 +49,13 @@ router.get('/classfication', async (ctx, next) => {
 });
 
 /**
-* @api {get} /api/constants?classfication=&name=&category= 常量列表
+* @api {get} /api/constants?classfication=&name=&status= 常量列表
 * @apiName constants-query
 * @apiGroup 常量
 * @apiDescription 常量列表
 * @apiParam {String} [classfication] 分类
 * @apiParam {String} [name] 分类名称
-* @apiParam {String} category 数据分类 1-使用中常量 2-归档常量，默认1
+* @apiParam {String} status 数据分类 1-使用中常量 2-归档常量，默认1
 * @apiSuccess {Number} errcode 成功为0
 * @apiSuccess {Object[]} data 常量信息
 * @apiSuccess {Number} data.id 常量id
@@ -65,8 +65,8 @@ router.get('/classfication', async (ctx, next) => {
 * @apiError {String} errmsg 错误消息
 */
 router.get('/', async (ctx, next) => {
-	let { classfication, name, category } = ctx.query;
-	const where = { category: category || 1 };
+	let { classfication, name, status } = ctx.query;
+	const where = { status: status || 1 };
 	if (classfication) { where.classfication = { [Op.iLike]: `%${classfication}%` }; }
 
 	if (name) { where.name = { [Op.iLike]: `%${name}%` }; }
@@ -163,7 +163,7 @@ router.put('/:id', async (ctx, next) => {
 * @apiError {String} errmsg 错误消息
 */
 router.post('/:id/archive', async (ctx, next) => {
-	return Constants.update({ category: 2 }, { where: { id: ctx.params.id } }).then(() => {
+	return Constants.update({ status: 2 }, { where: { id: ctx.params.id } }).then(() => {
 		ctx.body = ServiceResult.getSuccess({});
 		next();
 	}).catch(() => {

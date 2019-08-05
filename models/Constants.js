@@ -13,7 +13,7 @@ Constants.init({
 		type: DataTypes.STRING,
 		comment: '常量的分类'
 	},
-	category: {
+	status: {
 		type: DataTypes.INTEGER,
 		defaultValue: 1,
 		comment: '数据分类 1-使用中 2-归档常量'

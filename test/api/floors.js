@@ -7,7 +7,7 @@ describe('/api/floors', () => {
 	let floor;
 	let floor2;
 	beforeEach(async () => {
-		this.location = await Locations.findOne({ where: { code: 'TEST0001', category: 0 } });
+		this.location = await Locations.findOne({ where: { code: 'TEST0001', status: 0 } });
 		this.building = await Buildings.findOne({ where: { name: '上海复旦软件园2', locationId: this.location.id } });
 	});
 

@@ -53,7 +53,7 @@ OperatePaths.init({
 		type: DataTypes.ARRAY(DataTypes.STRING),
 		comment: '不正常原因'
 	},
-	category: {
+	status: {
 		type: DataTypes.INTEGER,
 		defaultValue: 1,
 		comment: '1-巡检中 2-巡检数据已提交'

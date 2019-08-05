@@ -27,7 +27,7 @@ router.prefix('/api/spaces');
 * @apiSuccess {Number} data.rows.extwindowarea 室外面积
 * @apiSuccess {Number} data.rows.inwindowarea 室内面积
 * @apiSuccess {Number} data.rows.spaceheight 空间高度
-* @apiSuccess {Number} data.rows.category 当前数据分类 0-sv编辑的数据 1-审批中的数据 2-使用的数据 3-被替换的历史数据
+* @apiSuccess {Number} data.rows.status 当前数据分类 0-sv编辑的数据 1-审批中的数据 2-使用的数据 3-被替换的历史数据
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
@@ -74,7 +74,7 @@ router.get('/', async (ctx, next) => {
 * @apiSuccess {Number} data.extwindowarea 室外面积
 * @apiSuccess {Number} data.inwindowarea 室内面积
 * @apiSuccess {Number} data.spaceheight 空间高度
-* @apiSuccess {Number} data.category 当前数据分类 0-sv编辑的数据 1-审批中的数据 2-使用的数据 3-被替换的历史数据
+* @apiSuccess {Number} data.status 当前数据分类 0-sv编辑的数据 1-审批中的数据 2-使用的数据 3-被替换的历史数据
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
@@ -95,7 +95,7 @@ router.post('/', async (ctx, next) => {
 			buildingUuid: floor.buildingUuid,
 			floorId: floor.id,
 			floorUuid: floor.uuid,
-			category: 0
+			status: 0
 		};
 
 		[ 'barcodeentry', 'area', 'extwindowarea', 'inwindowarea', 'spaceheight' ].map(key => {
@@ -128,7 +128,7 @@ router.post('/', async (ctx, next) => {
 * @apiSuccess {Number} data.extwindowarea 室外面积
 * @apiSuccess {Number} data.inwindowarea 室内面积
 * @apiSuccess {Number} data.spaceheight 空间高度
-* @apiSuccess {Number} data.category 当前数据分类 0-sv编辑的数据 1-审批中的数据 2-使用的数据 3-被替换的历史数据
+* @apiSuccess {Number} data.status 当前数据分类 0-sv编辑的数据 1-审批中的数据 2-使用的数据 3-被替换的历史数据
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */

@@ -60,7 +60,7 @@ class ReviewService {
 	async copy (reviewData) {
 		let locationData = _.clone(this.location);
 		delete locationData.id;
-		locationData.category = 1;
+		locationData.status = 1;
 		let locationReview = await Locations.create(locationData);
 
 		reviewData.locationId = locationReview.id;
@@ -68,7 +68,7 @@ class ReviewService {
 		this.reviewId = review.id;
 
 		// 复制待审核的项目详细信息
-		let buildings = await Buildings.findAll({ where: { locationId: this.locationId, category: 0 }, raw: true });
+		let buildings = await Buildings.findAll({ where: { locationId: this.locationId, status: 0 }, raw: true });
 
 		try {
 			for (let building of buildings) {
@@ -76,22 +76,22 @@ class ReviewService {
 				let _building = _.cloneDeep(building);
 				delete _building.id;
 				_building.locationId = locationReview.id;
-				_building.category = 1;
+				_building.status = 1;
 				let buildingReview = await Buildings.create(_building);
 
 				// 复制floor信息
-				let floors = await Floors.findAll({ where: { buildingId: building.id, category: 0 }, raw: true });
+				let floors = await Floors.findAll({ where: { buildingId: building.id, status: 0 }, raw: true });
 				for (let floor of floors) {
 					let _floor = _.cloneDeep(floor);
 					delete _floor.id;
 
 					_floor.locationId = locationReview.id;
 					_floor.buildingId = buildingReview.id;
-					_floor.category = 1;
+					_floor.status = 1;
 					let floorReview = await Floors.create(_floor);
 
 					// 复制space信息
-					let spaces = await Spaces.findAll({ where: { floorId: floor.id, category: 0 }, raw: true });
+					let spaces = await Spaces.findAll({ where: { floorId: floor.id, status: 0 }, raw: true });
 
 					for (let space of spaces) {
 						let _space = _.cloneDeep(space);
@@ -100,11 +100,11 @@ class ReviewService {
 						_space.locationId = locationReview.id;
 						_space.buildingId = buildingReview.id;
 						_space.floorId = floorReview.id;
-						_space.category = 1;
+						_space.status = 1;
 						let spaceReview = await Spaces.create(_space);
 
 						// 复制设备信息
-						let equipments = await Equipments.findAll({ where: { spaceId: space.id, category: 0 }, raw: true });
+						let equipments = await Equipments.findAll({ where: { spaceId: space.id, status: 0 }, raw: true });
 
 						for (let equipment of equipments) {
 							let _equipment = _.cloneDeep(equipment);
@@ -114,7 +114,7 @@ class ReviewService {
 							_equipment.buildingId = buildingReview.id;
 							_equipment.floorId = floorReview.id;
 							_equipment.spaceId = spaceReview.id;
-							_equipment.category = 1;
+							_equipment.status = 1;
 							await Equipments.create(_equipment);
 						}
 					}
@@ -128,28 +128,28 @@ class ReviewService {
 	}
 
 	async agree (locationId, locationUuid) {
-		let _locations = await Locations.findAll({ where: { uuid: locationUuid, category: 2 }, raw: true });
+		let _locations = await Locations.findAll({ where: { uuid: locationUuid, status: 2 }, raw: true });
 
 		try {
 			for (let _location of _locations) {
-				await this.setCategory(_location.id, 2, 3);
+				await this.setstatus(_location.id, 2, 3);
 			}
 
-			await this.setCategory(locationId, 1, 2);
-			await Equipments.update({ activeStartDate: moment().format('YYYY-MM-DD'), category: 2 }, { where: { locationId, category: 1, activeStartDate: null } });
+			await this.setstatus(locationId, 1, 2);
+			await Equipments.update({ activeStartDate: moment().format('YYYY-MM-DD'), status: 2 }, { where: { locationId, status: 1, activeStartDate: null } });
 			return Promise.resolve();
 		} catch (error) {
 			return Promise.reject(error);
 		}
 	}
 
-	async setCategory (locationId, preCategory, category) {
+	async setstatus (locationId, prestatus, status) {
 		try {
-			await Locations.update({ category }, { where: { id: locationId, category: preCategory } });
-			await Buildings.update({ category }, { where: { locationId, category: preCategory } });
-			await Floors.update({ category }, { where: { locationId, category: preCategory } });
-			await Spaces.update({ category }, { where: { locationId, category: preCategory } });
-			await Equipments.update({ category }, { where: { locationId, category: preCategory } });
+			await Locations.update({ status }, { where: { id: locationId, status: prestatus } });
+			await Buildings.update({ status }, { where: { locationId, status: prestatus } });
+			await Floors.update({ status }, { where: { locationId, status: prestatus } });
+			await Spaces.update({ status }, { where: { locationId, status: prestatus } });
+			await Equipments.update({ status }, { where: { locationId, status: prestatus } });
 			return Promise.resolve();
 		} catch (error) {
 			return Promise.reject(error);

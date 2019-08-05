@@ -9,11 +9,11 @@ class PathOperations {
 		const date = moment().format('YYYY-MM-DD');
 		try {
 			let pathoperate = await OperatePaths.findOne({
-				where: { pathwayUuid, category: 1, date, userId }
+				where: { pathwayUuid, status: 1, date, userId }
 			});
 			if (pathoperate) return pathoperate;
 
-			let pathway = await Pathways.findOne({ pathwayUuid, category: 1 });
+			let pathway = await Pathways.findOne({ pathwayUuid, status: 1 });
 			let personnel = await Personnels.findOne({ where: { pathwayUuid, userId } });
 
 			pathoperate = await OperatePaths.create({
@@ -24,7 +24,7 @@ class PathOperations {
 				accomplished: false,
 				userId: userId,
 				userName: personnel.userName,
-				category: 1,
+				status: 1,
 				pathwayId: pathway.id,
 				personnelId: personnel.id
 			});

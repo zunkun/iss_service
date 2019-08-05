@@ -68,7 +68,7 @@ Handovers.init({
 		type: DataTypes.DATE,
 		comment: '接收时间'
 	},
-	category: {
+	status: {
 		type: DataTypes.INTEGER,
 		comment: '工作交接状态 1-交接中 2-交接成功 3-撤回 4-拒绝'
 	}

@@ -31,7 +31,7 @@ Pathways.init({
 		defaultValue: true,
 		comment: '是否启用'
 	},
-	category: {
+	status: {
 		type: DataTypes.INTEGER,
 		defaultValue: 0,
 		comment: '1-使用的数据 2-被替换的历史数据'

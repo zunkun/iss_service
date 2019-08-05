@@ -7,11 +7,11 @@ class Personnels extends Model {}
 Personnels.init({
 	userId: {
 		type: DataTypes.STRING,
-		comment: '任务执行者userId'
+		comment: '参与人员userId'
 	},
 	userName: {
 		type: DataTypes.STRING,
-		comment: '执行者姓名'
+		comment: '参与人员姓名'
 	},
 	locationUuid: {
 		type: DataTypes.UUID,
@@ -20,9 +20,9 @@ Personnels.init({
 	role: {
 		type: DataTypes.INTEGER,
 		defaultValue: 1,
-		comment: '人员角色信息, 1-执行者operator 2-sv 3-manager 4-oe，通常oe不保存，因为oe在dingstaff中'
+		comment: '人员角色信息, 10-执行者operator 20-SV 30-SM（项目点经理） 40-DA(数据管理员) 50-KAM（客户/区域经理） 60-OE'
 	},
-	category: {
+	status: {
 		type: DataTypes.INTEGER,
 		defaultValue: 1,
 		comment: '是否在当前巡检路线中 1-巡检员在巡检路线中 2-巡检员被移除巡检路线'

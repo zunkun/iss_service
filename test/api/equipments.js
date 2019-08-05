@@ -8,8 +8,8 @@ describe('/api/equipments', () => {
 	let equipment;
 	let equipment2;
 	beforeEach(async () => {
-		this.location = await Locations.findOne({ where: { code: 'TEST0001', category: 0 } });
-		this.space = await Spaces.findOne({ where: { locationId: this.location.id, category: 0 } });
+		this.location = await Locations.findOne({ where: { code: 'TEST0001', status: 0 } });
+		this.space = await Spaces.findOne({ where: { locationId: this.location.id, status: 0 } });
 		this.spec = await Specs.findOne({ where: { name: '格力空调2' } });
 	});
 

@@ -20,7 +20,7 @@ PathEquipments.init({
 		type: DataTypes.UUID,
 		comment: 'location uuid'
 	},
-	category: {
+	status: {
 		type: DataTypes.INTEGER,
 		defaultValue: 0,
 		comment: '1-使用的数据 2-被替换的历史数据'

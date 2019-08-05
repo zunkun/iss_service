@@ -7,9 +7,9 @@ let inspections;
 let operation;
 describe('/api/operations', () => {
 	beforeEach(async () => {
-		this.location = await Locations.findOne({ where: { code: 'TEST0001', category: 2 }, raw: true });
+		this.location = await Locations.findOne({ where: { code: 'TEST0001', status: 2 }, raw: true });
 
-		this.pathway = await Pathways.findOne({ where: { locationUuid: this.location.uuid, category: 1 }, raw: true });
+		this.pathway = await Pathways.findOne({ where: { locationUuid: this.location.uuid, status: 1 }, raw: true });
 		console.log(this.pathway);
 	});
 

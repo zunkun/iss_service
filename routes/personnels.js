@@ -31,7 +31,7 @@ router.prefix('/api/personnels');
 */
 router.get('/', async (ctx, next) => {
 	// 通过loction中uuid 对用 Personnels 中 locationUuid
-	// category=1 标识为当前使用中的人员
+	// status=1 标识为当前使用中的人员
 	let locationId = ctx.query.locationId;
 	let role = ctx.query.role || [];
 	let roleArray = [];
@@ -41,7 +41,7 @@ router.get('/', async (ctx, next) => {
 	if (!ctx.query.role) {
 		roleArray = [ 1, 2, 3 ];
 	}
-	const where = { role: { [Op.in]: roleArray }, category: 1 };
+	const where = { role: { [Op.in]: roleArray }, status: 1 };
 	if (ctx.query.name) {
 		where.userName = { [Op.iLike]: `%${name}%` };
 	}
@@ -100,7 +100,7 @@ router.post('/', async (ctx, next) => {
 							locationUuid: location.uuid,
 							userId: dingstaff.userId,
 							role,
-							category: 1
+							status: 1
 						}
 					}).then(personnel => {
 						if (personnel) {
@@ -112,7 +112,7 @@ router.post('/', async (ctx, next) => {
 							userName: dingstaff.userName,
 							role,
 							dingstaffId: dingstaff.id,
-							category: 1
+							status: 1
 						});
 					});
 					promiseArray.push(promise);
@@ -160,12 +160,12 @@ router.delete('/role', async (ctx, next) => {
 			if (!location) {
 				return Promise.reject('参数错误');
 			}
-			return Personnels.findOne({ where: { locationUuid: location.uuid, userId, role, category: 1 } })
+			return Personnels.findOne({ where: { locationUuid: location.uuid, userId, role, status: 1 } })
 				.then(personnel => {
 					if (!personnel) {
 						return Promise.reject('参数错误');
 					}
-					return Personnels.update({ category: 2 }, { where: { id: personnel.id } });
+					return Personnels.update({ status: 2 }, { where: { id: personnel.id } });
 				}).then(() => {
 					ctx.body = ServiceResult.getSuccess({});
 					next();

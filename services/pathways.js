@@ -57,7 +57,7 @@ class PathwayService {
 									pathwayUuid: pathway.uuid,
 									equipmentId: equipment.id,
 									equipmentUuid: equipmentData.uuid,
-									category: 1
+									status: 1
 								}).then(async pathEquipment => {
 								// 保存检查项列表
 									let promiseArray2 = [];
@@ -67,7 +67,7 @@ class PathwayService {
 											pathwayUuid: pathway.uuid,
 											pathequipmentId: pathEquipment.id,
 											inspectionId: id,
-											category: 1
+											status: 1
 										});
 										promiseArray2.push(promise2);
 									}
@@ -103,10 +103,10 @@ class PathwayService {
 	async updatePathway (uuid, pathwayData, equipments) {
 		let that = this;
 		pathwayData.uuid = uuid;
-		pathwayData.category = 1;
+		pathwayData.status = 1;
 		let locationUuid;
 		let pathwayLists = [];
-		return Pathways.findAll({ where: { uuid, category: 1 } }).then(async pathways => {
+		return Pathways.findAll({ where: { uuid, status: 1 } }).then(async pathways => {
 			pathwayLists = pathways;
 			locationUuid = pathways[0].locationUuid;
 			return Promise.resolve();
@@ -119,9 +119,9 @@ class PathwayService {
 		}).then(async () => {
 			// 同一路线的其他版本归入历史版本
 			for (let pathway of pathwayLists) {
-				await PathInspections.update({ category: 2 }, { where: { pathwayId: pathway.id } });
-				await PathEquipments.update({ category: 2 }, { where: { pathwayId: pathway.id } });
-				await Pathways.update({ category: 2 }, { where: { id: pathway.id } });
+				await PathInspections.update({ status: 2 }, { where: { pathwayId: pathway.id } });
+				await PathEquipments.update({ status: 2 }, { where: { pathwayId: pathway.id } });
+				await Pathways.update({ status: 2 }, { where: { id: pathway.id } });
 			}
 			return Promise.resolve();
 		}).catch(error => {
@@ -143,7 +143,7 @@ class PathwayService {
 			pathcode: moment().format('YYYYMMDDHHMMssSSS'),
 			locationId: pathwayData.locationId,
 			locationUuid: pathwayData.locationUuid,
-			category: pathwayData.category
+			status: pathwayData.status
 		};
 
 		return Pathways.create(pathwayNew)
@@ -158,7 +158,7 @@ class PathwayService {
 							equipmentUuid: pathEquipment.equipmentUuid,
 							locationId: pathEquipment.locationId,
 							locationUuid: pathEquipment.locationUuid,
-							category: pathEquipment.category
+							status: pathEquipment.status
 						}).then((pathEquipmentNew) => {
 							return PathInspections.findAll({ where: { pathequipmentId: pathEquipment.id } }).then(pathInspections => {
 								let promiseArray2 = [];
@@ -168,7 +168,7 @@ class PathwayService {
 										pathwayId: pathway.id,
 										pathwayUuid: pathway.uuid,
 										inspectionId: item.inspectionId,
-										category: item.category
+										status: item.status
 									});
 									promiseArray2.push(promise2);
 								}
