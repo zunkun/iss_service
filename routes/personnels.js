@@ -2,6 +2,7 @@ const ServiceResult = require('../core/ServiceResult');
 const Locations = require('../models/Locations');
 const Personnels = require('../models/Personnels');
 const DingStaffs = require('../models/DingStaffs');
+const Companies = require('../models/Companies');
 const jwt = require('jsonwebtoken');
 
 const { Op } = require('sequelize');
@@ -13,12 +14,12 @@ router.prefix('/api/personnels');
 /**
 * @api {get} /api/personnels?locationId=&role=&name= 项目点人员信息
 * @apiName personnels-query
-* @apiGroup 项目点人员
+* @apiGroup 项目人员信息
 * @apiDescription 项目点人员列表
 * @apiPermission OE/SV
 * @apiHeader {String} authorization 登录token Bearer + token
 * @apiParam {Number} locationId 项目点id
-* @apiParam {Number[]} [role] 角色 1-执行者operator 2-sv 3-manager，例如 role=1&role=2&role=3 或者 role=[1,2,3]
+* @apiParam {Number[]} [role] 角色 10-执行者operator 20-SV 30-SM（项目点经理） 40-DA(数据管理员) 或者 role=[40]
 * @apiParam {String} [name] 姓名
 * @apiSuccess {Number} errcode 成功为0
 * @apiSuccess {Object[]} data 项目点人员location列表
@@ -63,9 +64,88 @@ router.get('/', async (ctx, next) => {
 });
 
 /**
+* @api {post} /api/personnels/kam 设置客户经理
+* @apiName personnels-kam
+* @apiGroup 项目人员信息
+* @apiDescription 设置客户经理
+* @apiHeader {String} authorization 登录token Bearer + token
+* @apiParam {String[]} userIds 人员userId列表
+* @apiParam {Number} companyId 客户Id
+* @apiSuccess {Number} errcode 成功为0
+* @apiSuccess {Object[]} data 项目点人员信息
+* @apiSuccess {Number} data.id 项目点人员id
+* @apiSuccess {Object} data.userId 人员userId
+* @apiSuccess {String} data.userName 人员姓名
+* @apiSuccess {Number} data.role 人员角色 当前值为 50 项目点经理
+* @apiError {Number} errcode 失败不为0
+* @apiError {Number} errmsg 错误消息
+*/
+router.post('/kam', async (ctx, next) => {
+	const { companyId, userIds } = ctx.request.body;
+
+	if (!companyId || !Array.isArray(userIds) || !userIds.length) {
+		ctx.body = ServiceResult.getFail('参数错误');
+		return;
+	}
+	let timestamps = Date.now();
+	return Companies.findOne({ where: { id: companyId } })
+		.then(company => {
+			if (!companyId) {
+				return Promise.reject('无法获取客户信息');
+			}
+			return DingStaffs.findAll({ where: { userId: { [Op.in]: userIds } } })
+				.then(staffs => {
+					let personnels = [];
+					for (let staff of staffs) {
+						personnels.push({
+							companyId: company.id,
+							companyName: company.name,
+							userId: staff.userId,
+							userName: staff.userName,
+							role: 50,
+							dingstaffId: staff.id,
+							timestamps
+						});
+					}
+					// 创建客户经理信息;
+					return Personnels.bulkCreate(personnels)
+						.then(() => {
+						// 删除旧的客户经理信息
+							return Personnels.destroy({
+								where: {
+									companyId: company.id,
+									role: 50,
+									timestamps: { [Op.ne]: timestamps }
+								}
+							});
+						});
+				});
+		})
+		.then(() => {
+			// 返回客户经理信息
+			return Personnels.findAll({
+				attributes: [ 'id', 'companyId', 'companyName', 'userId', 'userName', 'role' ],
+				where: {
+					companyId,
+					role: 50,
+					timestamps
+				},
+				raw: true
+			}).then(personnels => {
+				ctx.body = ServiceResult.getSuccess(personnels);
+				next();
+			});
+		})
+		.catch(error => {
+			ctx.body = ServiceResult.getFail(error);
+			next();
+		});
+});
+
+/**
 * @api {post} /api/personnels 设置项目点人员
 * @apiName personnels-settings
-* @apiGroup 项目点人员
+* @apiGroup 项目人员信息
 * @apiDescription 设置项目点人员
 * @apiHeader {String} authorization 登录token Bearer + token
 * @apiParam {String} locationId 项目点id
@@ -142,7 +222,7 @@ router.post('/', async (ctx, next) => {
 /**
 * @api {delete} /api/personnels/role 删除项目点人员
 * @apiName personnels-delete
-* @apiGroup 项目点人员
+* @apiGroup 项目人员信息
 * @apiDescription 删除项目点人员
 * @apiHeader {String} authorization 登录token Bearer + token
 * @apiParam {String} userId 项目点人员userId
@@ -179,7 +259,7 @@ router.delete('/role', async (ctx, next) => {
 /**
 * @api {get} /api/personnels/role?locationId= 用户项目点角色
 * @apiName personnels-role
-* @apiGroup 项目点人员
+* @apiGroup 项目人员信息
 * @apiDescription 获取当前登录用户在项目点中角色
 * @apiHeader {String} authorization 登录token Bearer + token
 * @apiParam {Number} locationId 项目点id

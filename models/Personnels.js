@@ -3,8 +3,16 @@ const { DataTypes, Model } = require('sequelize');
 const DingStaffs = require('./DingStaffs');
 
 class Personnels extends Model {}
-// Location 参与人员表
+// 客户 参与人员表
 Personnels.init({
+	companyId: {
+		type: DataTypes.INTEGER,
+		comment: '客户ID'
+	},
+	companyName: {
+		type: DataTypes.STRING,
+		comment: '客户名称'
+	},
 	userId: {
 		type: DataTypes.STRING,
 		comment: '参与人员userId'
@@ -22,6 +30,7 @@ Personnels.init({
 		defaultValue: 1,
 		comment: '人员角色信息, 10-执行者operator 20-SV 30-SM（项目点经理） 40-DA(数据管理员) 50-KAM（客户/区域经理） 60-OE'
 	},
+	timestamps: { type: DataTypes.INTEGER, comment: '时间戳' },
 	status: {
 		type: DataTypes.INTEGER,
 		defaultValue: 1,
@@ -31,7 +40,7 @@ Personnels.init({
 	sequelize: postgres,
 	modelName: 'personnels',
 	paranoid: true,
-	comment: 'Location参与人员角色关系表'
+	comment: '客户参与人员角色关系表'
 });
 
 // 员工-执行者身份关系
