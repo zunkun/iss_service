@@ -14,6 +14,10 @@ Companies.init({
 		type: DataTypes.STRING,
 		comment: '名称缩写'
 	},
+	pinyin: {
+		type: DataTypes.JSONB,
+		comment: '拼音' // {name: '', shortname: ''}
+	},
 	costcenter: {
 		type: DataTypes.STRING,
 		comment: '客户代码（财务编号）'
@@ -70,6 +74,14 @@ Companies.init({
 		type: DataTypes.TEXT,
 		comment: '描述'
 	},
+	createdUserId: {
+		type: DataTypes.STRING,
+		comment: '创建人钉钉userId'
+	},
+	createdUserName: {
+		type: DataTypes.STRING,
+		comment: '创建人姓名'
+	},
 	status: {
 		type: DataTypes.INTEGER,
 		comment: '当前客户数据状态 0-编辑中 1-启用 2-停用中',
@@ -77,6 +89,16 @@ Companies.init({
 	}
 }, { sequelize: postgres, modelName: 'company', paranoid: true, comment: '组织信息表' });
 
-Companies.sync();
+Companies.sync().then(() => {
+	// 处理id,id从10000开始自增
+	return postgres.query('SELECT setval(\'companies_id_seq\', max(id)) FROM companies;	')
+		.then(data => {
+			let setval = Number(data[0][0].setval);
+			if (setval < 10000) {
+				return postgres.query('SELECT setval(\'companies_id_seq\', 10000, true);');
+			}
+			return Promise.resolve();
+		});
+});
 
 module.exports = Companies;

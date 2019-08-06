@@ -1,6 +1,7 @@
 var crypto = require('crypto');
 const Equipments = require('../../models/Equipments');
 const Inspections = require('../../models/Inspections');
+const pinyin = require('pinyin');
 
 const util = {
 	/**
@@ -63,6 +64,19 @@ const util = {
 		keys.map(key => {
 			if (key) target[key] = source[key];
 		});
+	},
+
+	/**
+	 * 将字符串转成拼音格式，比如京东 jingdong
+	 *@param {String} characters 需要获取拼音的字符
+	 */
+	getPinyin (characters) {
+		let str = '';
+		characters = characters.trim();
+		pinyin(characters, { style: pinyin.STYLE_NORMAL }).map(charaterArray => {
+			str += charaterArray[0];
+		});
+		return str;
 	}
 };
 
