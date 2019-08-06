@@ -1,8 +1,4 @@
 node_modules
-logs/*
-bin/daemon
-*.sqlite
 public/images/*.jpg
-ECAPI/*
-uploads/*.xlsx
+public/files/upload/*
 package-lock.json
