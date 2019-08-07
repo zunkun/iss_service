@@ -178,21 +178,22 @@ router.post('/', async (ctx, next) => {
 * @apiError {Number} errmsg 错误消息
 */
 router.get('/:id', async (ctx, next) => {
-	return Companies.findOne({
-		attributes: { exclude: [ 'pinyin', 'updatedAt', 'deletedAt' ] },
-		where: { id: ctx.params.id }
-	}).then(res => {
-		if (res) {
-			ctx.body = ServiceResult.getSuccess(res);
-		} else {
-			ctx.body = ServiceResult.getFail('参数错误');
-		}
-		next();
-	}).catch(error => {
-		console.error('获取客户信息失败', error);
-		ctx.body = ServiceResult.getFail('获取客户信息失败');
-		next();
-	});
+	return Companies.findOne({ where: { id: ctx.params.id } })
+		.then(res => {
+			if (res) {
+				delete res.updatedAt;
+				delete res.pinyin;
+
+				ctx.body = ServiceResult.getSuccess(res);
+			} else {
+				ctx.body = ServiceResult.getFail('参数错误');
+			}
+			next();
+		}).catch(error => {
+			console.error('获取客户信息失败', error);
+			ctx.body = ServiceResult.getFail('获取客户信息失败');
+			next();
+		});
 });
 
 /**
@@ -241,7 +242,6 @@ router.put('/:id', async (ctx, next) => {
 		companyData.districtCode = data.districtCode;
 		companyData.districtName = areaMap.district[data.districtCode];
 	}
-	console.log({ companyData });
 	// 修改客户信息状态，此处过滤掉编辑中状态，需求中编辑启用后就不允许回到编辑状态中
 	if (data.status) companyData.status = Number(data.status);
 
@@ -265,6 +265,32 @@ router.put('/:id', async (ctx, next) => {
 		}).catch(error => {
 			console.error('修改客户信息失败', error);
 			ctx.body = ServiceResult.getFail(error);
+			next();
+		});
+});
+
+/**
+* @api {post} /api/companies/status 设置当前状态
+* @apiName company-status
+* @apiGroup 客户
+* @apiDescription 设置当前状态 当前客户数据状态 1-启用 2-停用中
+* @apiHeader {String} authorization 登录token Bearer + token
+* @apiParam {Number} id 客户id
+* @apiSuccess {Number} errcode 成功为0
+* @apiSuccess {Object} data {}
+* @apiError {Number} errcode 失败不为0
+* @apiError {Number} errmsg 错误消息
+*/
+router.post('/:id/status', async (ctx, next) => {
+	const { id, status } = ctx.request.body;
+
+	return Companies.update({ status: Number(status), where: { id } })
+		.then(() => {
+			ctx.body = ServiceResult.getSuccess({});
+			next();
+		}).catch(error => {
+			console.error('设置客户当前状态失败', error);
+			ctx.body = ServiceResult.getFail('设置失败');
 			next();
 		});
 });
