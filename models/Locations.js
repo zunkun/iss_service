@@ -1,23 +1,20 @@
 const postgres = require('../core/db/postgres');
-const { DataTypes, Model, UUIDV4 } = require('sequelize');
+const { DataTypes, Model } = require('sequelize');
 const Companies = require('./Companies');
 const Constants = require('./Constants');
 
 class Locations extends Model {}
 // 项目点Location信息
 Locations.init({
-	uuid: {
-		type: DataTypes.UUID,
-		defaultValue: UUIDV4
-	},
-	code: {
-		type: DataTypes.STRING,
-		comment: '项目编号（财务编号）'
-	}, // 项目编号
 	name: {
 		type: DataTypes.STRING,
 		comment: '项目点名称'
 	},
+	pinyin: { type: DataTypes.STRING, comment: 'pinyin' },
+	costcenter: {
+		type: DataTypes.STRING,
+		comment: '项目编号（财务编号）'
+	}, // 项目编号
 	provinceCode: {
 		type: DataTypes.STRING,
 		comment: '省份code'
@@ -46,65 +43,48 @@ Locations.init({
 		type: DataTypes.STRING,
 		comment: '详细地址'
 	},
-	areaUnitId: {
-		type: DataTypes.INTEGER,
-		comment: '单位Id,参考常量表constants单位Id,参考常量表constants'
-	},
-	commonName: {
+	unit: {
 		type: DataTypes.STRING,
-		comment: '通用名称'
-	},
-	costcenter: {
-		type: DataTypes.STRING,
-		comment: '成本中心'
-	},
-	currencyId: {
-		type: DataTypes.INTEGER,
-		comment: '货币Id,参考常量表constants'
+		comment: '测量单位'
 	},
 	description: {
 		type: DataTypes.TEXT,
 		comment: '描述'
 	},
-	geographyLookupId: {
-		type: DataTypes.INTEGER,
-		comment: '城市-地理表Id,参考常量表constants'
-	},
-	legalName: {
-		type: DataTypes.STRING,
-		comment: '法律名称'
-	},
 	mainphone: {
 		type: DataTypes.STRING,
 		comment: '电话总机'
-	},
-	parkingOpen: {
-		type: DataTypes.INTEGER,
-		comment: '停车位数量'
-	},
-	primaryUseId: {
-		type: DataTypes.INTEGER,
-		comment: '主要用途Id,参考常量表constants'
-	},
-	propertyClassId: {
-		type: DataTypes.INTEGER,
-		comment: '类别Id,参考常量表constants'
 	},
 	zippostal: {
 		type: DataTypes.STRING,
 		comment: '邮编'
 	},
+	parkingOpen: {
+		type: DataTypes.INTEGER,
+		comment: '停车位数量'
+	},
+	propertyClassId: {
+		type: DataTypes.INTEGER,
+		comment: '项目点类别ID'
+	},
+	createdUserId: {
+		type: DataTypes.STRING,
+		comment: '创建人钉钉userId'
+	},
+	createdUserName: {
+		type: DataTypes.STRING,
+		comment: '创建人姓名'
+	},
+	companyName: {
+		type: DataTypes.STRING,
+		comment: '客户名称'
+	},
 	status: {
 		type: DataTypes.INTEGER,
 		defaultValue: 0,
-		comment: '当前数据分类 0-sv编辑的数据 1-审批中的数据 2-使用的数据 3-被替换的历史数据'
+		comment: '当前数据分类 0-草稿 1-启用 2-弃用'
 	}
 }, {
-	getterMethods: {
-		address () {
-			return this.provinceName + this.cityName + this.districtName + this.street;
-		}
-	},
 	sequelize: postgres,
 	modelName: 'locations',
 	paranoid: true,
@@ -114,10 +94,6 @@ Locations.init({
 Companies.hasMany(Locations);
 Locations.belongsTo(Companies);
 
-Locations.belongsTo(Constants, { as: 'areaUnit' });
-Locations.belongsTo(Constants, { as: 'currency' });
-Locations.belongsTo(Constants, { as: 'geographyLookup' });
-Locations.belongsTo(Constants, { as: 'primaryUse' });
 Locations.belongsTo(Constants, { as: 'propertyClass' });
 
 Locations.sync();

@@ -55,7 +55,6 @@ class CompanyService {
 			createdUserId: user.userId,
 			createdUserName: user.userName
 		};
-		console.log({ data });
 		if (!data.name) {
 			return Promise.reject('解析客户信息出错，信息不完整');
 		}

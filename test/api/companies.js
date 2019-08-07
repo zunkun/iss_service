@@ -12,9 +12,9 @@ describe('/api/companies', () => {
 				.send({
 					name: '上海铭悦软件有限公司',
 					costcenter: '客户代码（财务编号）',
-					provinceCode: '110000',
-					cityCode: '110100',
-					districtCode: '110101',
+					provinceCode: '310000000000',
+					cityCode: '310100000000',
+					districtCode: '310113000000',
 					street: '三门路569弄',
 					email: 'liuzunkun@gmail.com',
 					mainphone: '15618871298',
@@ -28,7 +28,6 @@ describe('/api/companies', () => {
 					let resData = res.body;
 					should.equal(resData.errcode, 0);
 					company = resData.data;
-					console.log(company);
 					done();
 				});
 		});
@@ -41,9 +40,9 @@ describe('/api/companies', () => {
 			.send({
 				name: '上海铭悦软件有限公司',
 				costcenter: '客户代码（财务编号）',
-				provinceCode: '110000',
-				cityCode: '110100',
-				districtCode: '110101',
+				provinceCode: '310000000000',
+				cityCode: '310100000000',
+				districtCode: '310113000000',
 				street: '三门路569弄',
 				email: 'liuzunkun@gmail.com',
 				mainphone: '15618871298',
@@ -56,7 +55,6 @@ describe('/api/companies', () => {
 				should.not.exist(err);
 				let resData = res.body;
 				should.notEqual(resData.errcode, 0);
-				console.log(resData.errmsg);
 				done();
 			});
 	});
@@ -111,7 +109,38 @@ describe('/api/companies', () => {
 				should.not.exist(err);
 				should.exist(res.body.data.count);
 				should.exist(res.body.data.rows);
-				console.log(res.body);
+				done();
+			});
+	});
+
+	it('设置客户经理 POST /api/personnels/kam', (done) => {
+		process.request
+			.post('/api/personnels/kam')
+			.set('Authorization', process.token)
+			.send({
+				companyId: company.id,
+				userIds: [ '332934059962', '33296143733440' ]
+			})
+			.expect(200)
+			.end((err, res) => {
+				should.not.exist(err);
+				let resData = res.body.data;
+				should.exist(Array.isArray(resData));
+				should.equal(resData.length, 2);
+				done();
+			});
+	});
+
+	it('获取客户经理 GET /api/personnels/kam', (done) => {
+		process.request
+			.get('/api/personnels/kam?companyId=' + company.id)
+			.set('Authorization', process.token)
+			.expect(200)
+			.end((err, res) => {
+				should.not.exist(err);
+				let resData = res.body.data;
+				should.exist(Array.isArray(resData));
+				should.equal(resData.length, 2);
 				done();
 			});
 	});
