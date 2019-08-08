@@ -5,7 +5,6 @@ const Constants = require('../models/Constants');
 
 const { Op } = require('sequelize');
 const Router = require('koa-router');
-const areaMap = require('../config/areaMap');
 const LocationService = require('../services/location');
 const jwt = require('jsonwebtoken');
 
@@ -45,7 +44,8 @@ let paranoid = true;
 * @apiSuccess {String} data.rows.districtName  区县名称
 * @apiSuccess {String} data.rows.street  地址详细
 * @apiSuccess {String} data.rows.costcenter 项目编号（财务编号）
-* @apiSuccess {Number} data.rows.unit  测量单位
+* @apiSuccess {Number} data.rows.area  总面积
+* @apiSuccess {String} data.rows.unit  测量单位
 * @apiSuccess {Number} data.rows.propertyClassId  类别Id
 * @apiSuccess {Object} data.rows.propertyClass  类别，参考常量表
 * @apiSuccess {String} data.rows.description  描述
@@ -115,6 +115,7 @@ router.get('/', async (ctx, next) => {
 * @apiParam {String} [districtCode]  区县编码
 * @apiParam {String} [street]  地址详细
 * @apiParam {String} [costcenter] 项目编号（财务编号）
+* @apiParam {Number} [area]  总面积
 * @apiParam {String} [unit]  测量单位
 * @apiParam {Number} [propertyClassId]  类别Id
 * @apiParam {String} [description]  描述
@@ -135,7 +136,8 @@ router.get('/', async (ctx, next) => {
 * @apiSuccess {String} data.districtName  区县名称
 * @apiSuccess {String} data.street  地址详细
 * @apiSuccess {String} data.costcenter 项目编号（财务编号）
-* @apiSuccess {Number} data.unit  测量单位
+* @apiSuccess {Number} data.area  总面积
+* @apiSuccess {String} data.unit  测量单位
 * @apiSuccess {Number} data.propertyClassId  类别Id
 * @apiSuccess {Object} data.propertyClass  类别，参考常量表
 * @apiSuccess {String} data.description  描述
@@ -191,7 +193,8 @@ router.post('/', async (ctx, next) => {
 * @apiSuccess {String} data.districtName  区县名称
 * @apiSuccess {String} data.street  地址详细
 * @apiSuccess {String} data.costcenter 项目编号（财务编号）
-* @apiSuccess {Number} data.unit  测量单位
+* @apiSuccess {Number} data.area  总面积
+* @apiSuccess {String} data.unit  测量单位
 * @apiSuccess {Number} data.propertyClassId  类别Id
 * @apiSuccess {Object} data.propertyClass  类别，参考常量表
 * @apiSuccess {String} data.description  描述
@@ -228,6 +231,7 @@ router.get('/:id', async (ctx, next) => {
 * @apiParam {String} [districtCode]  区县编码
 * @apiParam {String} [street]  地址详细
 * @apiParam {String} [costcenter] 项目编号（财务编号）
+* @apiParam {Number} [area]  总面积
 * @apiParam {String} [unit]  测量单位
 * @apiParam {Number} [propertyClassId]  类别Id
 * @apiParam {String} [description]  描述
@@ -249,31 +253,12 @@ router.put('/:id', async (ctx, next) => {
 	let locationData = {};
 	// 复制基本信息
 	util.setProperty([ 'name', 'costcenter', 'street', 'mainphone', 'propertyClassId',
-		'unit',	'zippostal', 'description', 'parkingOpen' ], data, locationData);
+		'area', 'unit',	'zippostal', 'description', 'parkingOpen' ], data, locationData);
 
 	if (data.name) locationData.pinyin = util.getPinyin(data.name);
 	// 处理省市区信息
-	if (data.provinceCode) {
-		locationData.provinceCode = data.provinceCode;
-		locationData.provinceName = areaMap.province[data.provinceCode];
-	}
-	if (data.provinceCode) {
-		locationData.cityCode = data.cityCode;
-		locationData.cityName = areaMap.city[data.cityCode];
-	}
-	if (data.districtCode) {
-		locationData.districtCode = data.districtCode;
-		locationData.districtName = areaMap.district[data.districtCode];
-	}
-	if (data.provinceCode) {
-		locationData.provinceName = areaMap.province[data.provinceCode];
-	}
-	if (data.cityCode) {
-		locationData.cityName = areaMap.city[data.cityCode];
-	}
-	if (data.districtCode) {
-		locationData.districtName = areaMap.district[data.districtCode];
-	}
+	util.setZone(data, locationData);
+
 	await Locations.update(locationData, { where: { id: ctx.params.id	}	});
 
 	ctx.body = ServiceResult.getSuccess({});

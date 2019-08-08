@@ -1,5 +1,4 @@
 const Companies = require('../models/Companies');
-const areaMap = require('../config/areaMap');
 const util = require('../core/util');
 class CompanyService {
 	/**
@@ -19,8 +18,9 @@ class CompanyService {
 				let data = {
 					name: filedata['客户名称'] || '',
 					shortname: filedata['客户名称缩写'] || '',
-					costcenter: filedata['财务编号'] || '',
+					costcenter: filedata['客户代码'] || '',
 					email: filedata['邮箱'] || '',
+					provinceCode: util.getProvinceCode(filedata['省名称'] || ''),
 					provinceName: filedata['省名称'] || '',
 					cityCode: filedata['城市编码'] || '',
 					cityName: filedata['城市名称'] || '',
@@ -32,7 +32,7 @@ class CompanyService {
 				let promise = this.saveCompany(data, user)
 					.catch(error => {
 						console.log({ error });
- 						return Promise.resolve({ });
+						return Promise.resolve({ });
 					});
 				promiseArray.push(promise);
 			}
@@ -68,18 +68,8 @@ class CompanyService {
 		util.setProperty([ 'costcenter', 'street', 'email',
 			'mainphone', 'zippostal', 'description' ], data, companyData);
 		// 处理省市区信息
-		if (data.provinceCode) {
-			companyData.provinceCode = data.provinceCode;
-			companyData.provinceName = areaMap.province[data.provinceCode];
-		}
-		if (data.provinceCode) {
-			companyData.cityCode = data.cityCode;
-			companyData.cityName = areaMap.city[data.cityCode];
-		}
-		if (data.districtCode) {
-			companyData.districtCode = data.districtCode;
-			companyData.districtName = areaMap.district[data.districtCode];
-		}
+		util.setZone(data, companyData);
+
 		return Companies.findOne({ where: { name: data.name } })
 			.then(company => {
 				if (company) {

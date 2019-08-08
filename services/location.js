@@ -1,11 +1,48 @@
 const Companies = require('../models/Companies');
 const Locations = require('../models/Locations');
-const areaMap = require('../config/areaMap');
 const util = require('../core/util');
 
 class LocationService {
-	static async saveLocations (filedata, user) {
+	/**
+   * 保存项目点信息列表
+   * @param {Object[]} filedatas Excel文件解析后的数据
+   * @param {Object} user 操作当前保存的用户信息
+   */
+	static async saveLocations (filedatas, user, companyId) {
+		if (!Array.isArray(filedatas)) {
+			return Promise.reject('参数错误');
+		}
 
+		try {
+			let promiseArray = [];
+
+			for (let filedata of filedatas) {
+				let data = {
+					companyId: filedata['客户代码'],
+					name: filedata['项目点名称'] || '',
+					costcenter: filedata['项目编号'] || '',
+					provinceCode: util.getProvinceCode(filedata['省名称'] || ''),
+					provinceName: filedata['省名称'] || '',
+					cityCode: filedata['城市编码'] || '',
+					cityName: filedata['城市名称'] || '',
+					districtCode: filedata['区县编码'] || '',
+					districtName: filedata['区县名称'] || '',
+					street: filedata['地址详细'] || '',
+					description: filedata['描述'] || '',
+					area: filedata['总面积'],
+					unit: filedata['测量单位'],
+					mainphone: filedata['电话总机'],
+					parkingOpen: filedata['停车位数量'],
+					zippostal: filedata['邮编']
+				};
+				let promise = this.saveLocation(data, user);
+				promiseArray.push(promise);
+			}
+			return Promise.all(promiseArray);
+		} catch (error) {
+			console.log({ error });
+			return Promise.reject(error);
+		}
 	}
 
 	/**
@@ -27,21 +64,10 @@ class LocationService {
 
 		// 复制基本信息
 		util.setProperty([ 'costcenter', 'street', 'mainphone', 'propertyClassId',
-			'unit',	'zippostal', 'description', 'parkingOpen' ], data, locationData);
+			'area',	'unit',	'zippostal', 'description', 'parkingOpen' ], data, locationData);
 
 		// 处理省市区信息
-		if (data.provinceCode) {
-			locationData.provinceCode = data.provinceCode;
-			locationData.provinceName = areaMap.province[data.provinceCode];
-		}
-		if (data.provinceCode) {
-			locationData.cityCode = data.cityCode;
-			locationData.cityName = areaMap.city[data.cityCode];
-		}
-		if (data.districtCode) {
-			locationData.districtCode = data.districtCode;
-			locationData.districtName = areaMap.district[data.districtCode];
-		}
+		util.setZone(data, locationData);
 
 		return Companies.findOne({ where: { id: data.companyId } })
 			.then(company => {

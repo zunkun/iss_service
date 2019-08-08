@@ -2,6 +2,7 @@ var crypto = require('crypto');
 const Equipments = require('../../models/Equipments');
 const Inspections = require('../../models/Inspections');
 const pinyin = require('pinyin');
+const areaMap = require('../../config/areaMap');
 
 const util = {
 	/**
@@ -77,6 +78,44 @@ const util = {
 			str += charaterArray[0];
 		});
 		return str;
+	},
+
+	/**
+	 * 获取省编码
+	 * @param {String} name 省名称
+	 */
+	getProvinceCode (name) {
+		let provinceMap = areaMap.province;
+		let code = '';
+		if (!name) return code;
+		for (let provinceCode of Object.keys(provinceMap)) {
+			if (provinceMap[provinceCode].indexOf(name) > -1) {
+				code = provinceCode;
+				break;
+			}
+		}
+		return code;
+	},
+
+	/**
+	 * 处理省市区信息
+	 * @param {Ojbect} source 省市区对象
+	 * @param {Ojbect} target 被赋值的对象
+	 */
+	setZone (source, target) {
+		// 处理省市区信息
+		if (source.provinceCode) {
+			target.provinceCode = source.provinceCode;
+			target.provinceName = areaMap.province[source.provinceCode];
+		}
+		if (source.provinceCode) {
+			target.cityCode = source.cityCode;
+			target.cityName = areaMap.city[source.cityCode];
+		}
+		if (source.districtCode) {
+			target.districtCode = source.districtCode;
+			target.districtName = areaMap.district[source.districtCode];
+		}
 	}
 };
 

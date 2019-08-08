@@ -5,6 +5,8 @@ const Locations = require('../models/Locations');
 const Buildings = require('../models/Buildings');
 const Constants = require('../models/Constants');
 const { Op } = require('sequelize');
+const jwt = require('jsonwebtoken');
+const BuildingService = require('../services/building');
 
 router.prefix('/api/buildings');
 /**
@@ -84,16 +86,8 @@ router.get('/', async (ctx, next) => {
 * @apiParam {Number} locationId 项目点id
 * @apiParam {String} name 建筑名称
 * @apiParam {Number} [buildingClassId] 建筑类别Id
-* @apiParam {Date} [activeStartDate] 开始时间
-* @apiParam {String} [address] 地址信息
-* @apiParam {String} [commonName] 通用名称
-* @apiParam {String} [costcenter] 成本中心
 * @apiParam {String} [description] 描述
-* @apiParam {String} [legalName] 法律名称
-* @apiParam {String} [mainfax] 传真
 * @apiParam {String} [mainphone] 电话总机
-* @apiParam {Number} [parkingOpen] 停车位数量
-* @apiParam {String} [primaryUseId] 主要用途Id
 * @apiSuccess {Number} errcode 成功为0
 * @apiSuccess {Object} data 建筑building
 * @apiSuccess {Number} data.id 建筑building id

@@ -90,12 +90,12 @@ Companies.init({
 }, { sequelize: postgres, modelName: 'company', paranoid: true, comment: '组织信息表' });
 
 Companies.sync().then(() => {
-	// 处理id,id从10000开始自增
+	// 处理id,id从1000开始自增
 	return postgres.query('SELECT setval(\'companies_id_seq\', max(id)) FROM companies;	')
 		.then(data => {
 			let setval = Number(data[0][0].setval);
-			if (setval < 10000) {
-				return postgres.query('SELECT setval(\'companies_id_seq\', 10000, true);');
+			if (setval < 1000) {
+				return postgres.query('SELECT setval(\'companies_id_seq\', 1000, true);');
 			}
 			return Promise.resolve();
 		});

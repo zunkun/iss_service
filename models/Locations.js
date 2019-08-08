@@ -43,6 +43,10 @@ Locations.init({
 		type: DataTypes.STRING,
 		comment: '详细地址'
 	},
+	area: {
+		type: DataTypes.INTEGER,
+		comment: '总面积'
+	},
 	unit: {
 		type: DataTypes.STRING,
 		comment: '测量单位'
@@ -96,6 +100,16 @@ Locations.belongsTo(Companies);
 
 Locations.belongsTo(Constants, { as: 'propertyClass' });
 
-Locations.sync();
+Locations.sync().then(() => {
+	// 处理id,id从1000开始自增
+	return postgres.query('SELECT setval(\'locations_id_seq\', max(id)) FROM locations;	')
+		.then(data => {
+			let setval = Number(data[0][0].setval);
+			if (setval < 1000) {
+				return postgres.query('SELECT setval(\'locations_id_seq\', 1000, true);');
+			}
+			return Promise.resolve();
+		});
+});
 
 module.exports = Locations;

@@ -3,7 +3,6 @@ const { Op } = require('sequelize');
 const Router = require('koa-router');
 const router = new Router();
 const Companies = require('../models/Companies');
-const areaMap = require('../config/areaMap');
 const util = require('../core/util');
 const jwt = require('jsonwebtoken');
 const CompanyService = require('../services/company');
@@ -230,18 +229,8 @@ router.put('/:id', async (ctx, next) => {
 	util.setProperty([ 'name', 'shortname', 'costcenter', 'street', 'email',
 		'mainphone', 'zippostal', 'description' ], data, companyData);
 	// 处理省市区信息
-	if (data.provinceCode) {
-		companyData.provinceCode = data.provinceCode;
-		companyData.provinceName = areaMap.province[data.provinceCode];
-	}
-	if (data.provinceCode) {
-		companyData.cityCode = data.cityCode;
-		companyData.cityName = areaMap.city[data.cityCode];
-	}
-	if (data.districtCode) {
-		companyData.districtCode = data.districtCode;
-		companyData.districtName = areaMap.district[data.districtCode];
-	}
+	util.setZone(data, companyData);
+
 	// 修改客户信息状态，此处过滤掉编辑中状态，需求中编辑启用后就不允许回到编辑状态中
 	if (data.status) companyData.status = Number(data.status);
 

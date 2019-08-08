@@ -7,6 +7,8 @@ const Files = require('../models/Files');
 const FileService = require('../services/FileService');
 const jwt = require('jsonwebtoken');
 const CompanyService = require('../services/company');
+const LocationService = require('../services/location');
+
 const storage = multer.diskStorage({
 	// 文件保存路径
 	destination: (req, file, cb) => {
@@ -31,6 +33,7 @@ router.prefix('/api/files');
 * @apiHeader {String} authorization 登录token Bearer + token
 * @apiDescription 上传Excel文件,该Excel文件必须是系统下载的Excel模板，比如“客户信息模板.xlsx” 【需要登录】
 * @apiParam {String} type 文件类型，请查看文件模板列表
+* @apiParam  {File} file 文件信息
 * @apiSuccess {Object} data 返回值
 * @apiSuccess {Number} errcode 成功为0
 * @apiSuccess {Object} data {}
@@ -53,9 +56,13 @@ router.post('/upload', upload.single('file'), async (ctx, next) => {
 
 	try {
 		let filedatas = FileService.parseExcel(fileInfo.filename);
+		console.log({ filedatas });
 		switch (type) {
 		case 'company':
 			CompanyService.saveCompanines(filedatas, user);
+			break;
+		case 'location':
+			LocationService.saveLocations(filedatas, user);
 			break;
 		default:
 			break;
