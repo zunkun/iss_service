@@ -6,9 +6,10 @@ const send = require('koa-send');
 const Files = require('../models/Files');
 const FileService = require('../services/FileService');
 const jwt = require('jsonwebtoken');
-const CompanyService = require('../services/company');
-const LocationService = require('../services/location');
-const BuildingService = require('../services/building');
+const CompanyService = require('../services/CompanyService');
+const LocationService = require('../services/LocationService');
+const BuildingService = require('../services/BuildingService');
+const FloorService = require('../services/FloorService');
 
 const storage = multer.diskStorage({
 	// 文件保存路径
@@ -67,6 +68,9 @@ router.post('/upload', upload.single('file'), async (ctx, next) => {
 			break;
 		case 'building':
 			BuildingService.saveBuildings(filedatas, user);
+			break;
+		case 'floor':
+			FloorService.saveFloors(filedatas, user);
 			break;
 		default:
 			break;

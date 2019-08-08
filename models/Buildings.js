@@ -61,6 +61,16 @@ Buildings.belongsTo(Locations);
 
 Buildings.belongsTo(Constants, { as: 'buildingClass' });
 
-Buildings.sync();
+Buildings.sync().then(() => {
+	// 处理id,id从1000开始自增
+	return postgres.query('SELECT setval(\'buildings_id_seq\', max(id)) FROM buildings;	')
+		.then(data => {
+			let setval = Number(data[0][0].setval);
+			if (setval < 1000) {
+				return postgres.query('SELECT setval(\'buildings_id_seq\', 1000, true);');
+			}
+			return Promise.resolve();
+		});
+});
 
 module.exports = Buildings;

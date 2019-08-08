@@ -2,5 +2,6 @@
 module.exports = {
 	company: '客户信息模板',
 	location: '项目点信息模板',
-	building: '建筑信息模板'
+	building: '建筑信息模板',
+	floor: '楼层信息模板'
 };

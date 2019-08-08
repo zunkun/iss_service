@@ -5,7 +5,7 @@ const router = new Router();
 const Companies = require('../models/Companies');
 const util = require('../core/util');
 const jwt = require('jsonwebtoken');
-const CompanyService = require('../services/company');
+const CompanyService = require('../services/CompanyService');
 
 router.prefix('/api/companies');
 

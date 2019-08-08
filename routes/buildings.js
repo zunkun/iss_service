@@ -5,8 +5,8 @@ const Buildings = require('../models/Buildings');
 const Constants = require('../models/Constants');
 const { Op } = require('sequelize');
 const jwt = require('jsonwebtoken');
-const BuildingService = require('../services/building');
 const util = require('../core/util');
+const BuildingService = require('../services/BuildingService');
 
 router.prefix('/api/buildings');
 /**

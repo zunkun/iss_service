@@ -5,7 +5,7 @@ const Constants = require('../models/Constants');
 
 const { Op } = require('sequelize');
 const Router = require('koa-router');
-const LocationService = require('../services/location');
+const LocationService = require('../services/LocationService');
 const jwt = require('jsonwebtoken');
 
 const util = require('../core/util');

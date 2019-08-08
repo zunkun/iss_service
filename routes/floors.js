@@ -1,14 +1,16 @@
 const ServiceResult = require('../core/ServiceResult');
 const Router = require('koa-router');
 const router = new Router();
-const Buildings = require('../models/Buildings');
 const Floors = require('../models/Floors');
 const { Op } = require('sequelize');
 const Constants = require('../models/Constants');
+const FloorService = require('../services/FloorService');
+const jwt = require('jsonwebtoken');
+const util = require('../core/util');
 
 router.prefix('/api/floors');
 /**
-* @api {get} /api/floors?buildingId=&limit=&page=&keywords= 楼层列表
+* @api {get} /api/floors?buildingId=&limit=&page=&name= 楼层列表
 * @apiName floors-query
 * @apiGroup 楼层
 * @apiDescription 楼层列表
@@ -16,28 +18,29 @@ router.prefix('/api/floors');
 * @apiParam {String} buildingId 建筑id
 * @apiParam {Number} [limit] 分页条数，默认10
 * @apiParam {Number} [page] 第几页，默认1
-* @apiParam {String} [keywords] 关键词查询
+* @apiParam {String} [name] 楼层名称
 * @apiSuccess {Number} errcode 成功为0
 * @apiSuccess {Object} data 楼层列表
 * @apiSuccess {Number} data.count 楼层总数
 * @apiSuccess {Object[]} data.rows 楼层列表
 * @apiSuccess {Number} data.rows.id 楼层floor id
 * @apiSuccess {String} data.rows.name 楼层名称
+* @apiSuccess {Number} data.rows.level 楼层
 * @apiSuccess {Number} data.rows.floorClassId 楼层类别Id
 * @apiSuccess {Object} data.rows.floorClassId 楼层类别
 * @apiSuccess {Date} data.rows.activeStartDate 开始时间
-* @apiSuccess {Boolean} data.rows.floorMaintained 是否维护
+* @apiSuccess {Boolean} data.rows.isMaintained 是否维护
 * @apiSuccess {String} data.rows.description 描述
-* @apiSuccess {Number} data.rows.grossarea 总面积
-* @apiSuccess {Number} data.rows.grossexternarea 外部面积
-* @apiSuccess {Number} data.rows.grossinternalarea 内部面积
+* @apiSuccess {Number} data.rows.area 总面积
+* @apiSuccess {Number} data.rows.outerarea 外部面积
+* @apiSuccess {Number} data.rows.innerarea 内部面积
 * @apiSuccess {Number} data.rows.level 楼层
 * @apiSuccess {Number} data.rows.status 当前数据分类 0-sv编辑的数据 1-审批中的数据 2-使用的数据 3-被替换的历史数据
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
 router.get('/', async (ctx, next) => {
-	let { page, limit, keywords, buildingId } = ctx.query;
+	let { page, limit, name, buildingId } = ctx.query;
 	page = Number(page) || 1;
 	limit = Number(limit) || 10;
 	let offset = (page - 1) * limit;
@@ -48,19 +51,27 @@ router.get('/', async (ctx, next) => {
 	}
 	let where = { buildingId };
 
-	if (keywords && keywords !== 'undefined') {
-		where.name = { [Op.iLike]: `%${keywords}%` };
+	if (name && name !== 'undefined') {
+		where[Op.or] = [
+			{ name: { [Op.iLike]: `%${name}%` } },
+			{ pinyin: { [Op.iLike]: `%${name}%` } }
+		];
 	}
 
-	let floors = await Floors.findAndCountAll({
+	return Floors.findAndCountAll({
 		where,
 		limit,
 		offset,
-		attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] },
+		attributes: { exclude: [ 'pinyin', 'updatedAt', 'deletedAt' ] },
 		include: [ { model: Constants, as: 'floorClass' } ]
+	}).then(floors => {
+		ctx.body = ServiceResult.getSuccess(floors);
+		next();
+	}).catch(error => {
+		console.error('获取楼层列表失败', error);
+		ctx.body = ServiceResult.getFail('获取楼层列表失败');
+		next();
 	});
-	ctx.body = ServiceResult.getSuccess(floors);
-	await next();
 });
 
 /**
@@ -74,55 +85,38 @@ router.get('/', async (ctx, next) => {
 * @apiParam {String} name 楼层名称
 * @apiParam {String} [description] 描述
 * @apiParam {Number} [floorClassId] floorClass id 参看常量表
-* @apiParam {Boolean} [floorMaintained] 是否维护
-* @apiParam {Number} [grossarea] 总面积
-* @apiParam {Number} [grossexternarea] 外部面积
-* @apiParam {Number} [grossinternalarea] 内部面积
+* @apiParam {Boolean} [isMaintained] 是否维护
+* @apiParam {Number} [area] 总面积
+* @apiParam {Number} [outerarea] 外部面积
+* @apiParam {Number} [innerarea] 内部面积
 * @apiParam {Number} [level] 楼层
+* @apiParam {Number} [status] 当前数据分类 0-sv编辑 1-启用 2-启用
 * @apiSuccess {Number} errcode 成功为0
 * @apiSuccess {Object} data 楼层信息
 * @apiSuccess {Number} data.id 楼层floor id
 * @apiSuccess {String} data.name 楼层名称
+* @apiSuccess {Number} ldata.evel 楼层
 * @apiSuccess {Number} data.floorClassId 楼层类别Id
-* @apiSuccess {Object} data.floorClassId 楼层类别
-* @apiSuccess {Date} data.activeStartDate 开始时间
-* @apiSuccess {Boolean} data.floorMaintained 是否维护
+* @apiSuccess {Object} data.floorClass 楼层类别
+* @apiSuccess {Boolean} data.isMaintained 是否维护
 * @apiSuccess {String} data.description 描述
-* @apiSuccess {Number} data.grossarea 总面积
-* @apiSuccess {Number} data.grossexternarea 外部面积
-* @apiSuccess {Number} data.grossinternalarea 内部面积
+* @apiSuccess {Number} data.area 总面积
+* @apiSuccess {Number} data.outerarea 外部面积
+* @apiSuccess {Number} data.innerarea 内部面积
 * @apiSuccess {Number} data.level 楼层
-* @apiSuccess {Number} data.status 当前数据分类 0-sv编辑的数据 1-审批中的数据 2-使用的数据 3-被替换的历史数据
+* @apiSuccess {Number} data.status 当前数据分类 0-sv编辑 1-启用 2-启用
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
 router.post('/', async (ctx, next) => {
+	let user = jwt.decode(ctx.header.authorization.substr(7));
 	const data = ctx.request.body;
-	let building = await Buildings.findOne({ where: { id: data.buildingId || null } });
-	if (!data.buildingId || !data.name || !building) {
-		ctx.body = ServiceResult.getFail('参数不正确');
-		return;
-	}
-	let floorData = {
-		locationId: building.locationId,
-		locationUuid: building.locationUuid,
-		buildingId: data.buildingId,
-		buildingUuid: building.uuid,
-		name: data.name,
-		status: 0
-	};
 
-	[ 'floorClassId', 'floorMaintained', 'description',
-		'grossarea', 'grossexternarea', 'grossinternalarea', 'level'
-	].map(key => {
-		if (data[key]) floorData[key] = data[key];
-	});
-
-	return Floors.create(floorData)
+	return FloorService.saveFloor(data, user)
 		.then(floor => {
 			return Floors.findOne({
 				where: { id: floor.id },
-				attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] },
+				attributes: { exclude: [ 'pinyin', 'updatedAt', 'deletedAt' ] },
 				include: [
 					{ model: Constants, as: 'floorClass' }
 				]
@@ -148,27 +142,25 @@ router.post('/', async (ctx, next) => {
 * @apiSuccess {Object} data 楼层信息
 * @apiSuccess {Number} data.id 楼层floor id
 * @apiSuccess {String} data.name 楼层名称
+* @apiSuccess {Number} ldata.evel 楼层
 * @apiSuccess {Number} data.floorClassId 楼层类别Id
-* @apiSuccess {Object} data.floorClassId 楼层类别
-* @apiSuccess {Date} data.activeStartDate 开始时间
-* @apiSuccess {Boolean} data.floorMaintained 是否维护
+* @apiSuccess {Object} data.floorClass 楼层类别
+* @apiSuccess {Boolean} data.isMaintained 是否维护
 * @apiSuccess {String} data.description 描述
-* @apiSuccess {Number} data.grossarea 总面积
-* @apiSuccess {Number} data.grossexternarea 外部面积
-* @apiSuccess {Number} data.grossinternalarea 内部面积
+* @apiSuccess {Number} data.area 总面积
+* @apiSuccess {Number} data.outerarea 外部面积
+* @apiSuccess {Number} data.innerarea 内部面积
 * @apiSuccess {Number} data.level 楼层
-* @apiSuccess {Number} data.status 当前数据分类 0-sv编辑的数据 1-审批中的数据 2-使用的数据 3-被替换的历史数据
+* @apiSuccess {Number} data.status 当前数据分类 0-sv编辑 1-启用 2-启用
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
 router.get('/:id', async (ctx, next) => {
 	const where = { id: ctx.params.id };
-	if (ctx.query.projectId) where.projectId = ctx.query.projectId;
-	if (ctx.query.buildingId) where.buildingId = ctx.query.buildingId;
 
 	return Floors.findOne({
 		where,
-		attributes: { exclude: [ 'createdAt', 'updatedAt', 'deletedAt' ] },
+		attributes: { exclude: [ 'pinyin', 'updatedAt', 'deletedAt' ] },
 		include: [
 			{ model: Constants, as: 'floorClass' }
 		]
@@ -191,13 +183,14 @@ router.get('/:id', async (ctx, next) => {
 * @apiHeader {String} authorization 登录token Bearer + token
 * @apiParam {Number} id 楼层id
 * @apiParam {String} [name] 楼层名称
+* @apiParam {Number} [level] 楼层
 * @apiParam {String} [description] 描述
 * @apiParam {Number} [floorClassId] floorClass id 参看常量表
-* @apiParam {Boolean} [floorMaintained] 是否维护
-* @apiParam {Number} [grossarea] 总面积
-* @apiParam {Number} [grossexternarea] 外部面积
-* @apiParam {Number} [grossinternalarea] 内部面积
-* @apiParam {Number} [level] 楼层
+* @apiParam {Boolean} [isMaintained] 是否维护
+* @apiParam {Number} [area] 总面积
+* @apiParam {Number} [outerarea] 外部面积
+* @apiParam {Number} [innerarea] 内部面积
+* @apiParam {Number} [status] 当前数据分类 0-sv编辑 1-启用 2-启用
 * @apiSuccess {Number} errcode 成功为0
 * @apiSuccess {Object} data {}
 * @apiError {Number} errcode 失败不为0
@@ -208,11 +201,13 @@ router.put('/:id', async (ctx, next) => {
 	const where = { id: ctx.params.id };
 
 	let floorData = {};
-	[ 'name', 'floorClassId', 'floorMaintained', 'description',
-		'grossarea', 'grossexternarea', 'grossinternalarea', 'level'
-	].map(key => {
-		if (data[key]) floorData[key] = data[key];
-	});
+	util.setProperty([ 'name', 'floorClassId', 'description',
+		'area', 'outerarea', 'innerarea', 'level'
+	], data, floorData);
+
+	if (Object.keys(data).indexOf('isMaintained') > -1) floorData.isMaintained = data.isMaintained;
+	if (data.name) floorData.pinyin = util.getPinyin(data.name);
+	if (data.status) floorData.status = data.status;
 
 	return Floors.update(floorData, { where }).then(() => {
 		ctx.body = ServiceResult.getSuccess({});
@@ -225,30 +220,29 @@ router.put('/:id', async (ctx, next) => {
 });
 
 /**
-* @api {delete} /api/floors/:id 删除楼层
-* @apiName floor-delete
-* @apiGroup 楼层
-* @apiDescription 删除楼层
-* @apiPermission OE
+* @api {post} /api/floors/status 设置当前状态
+* @apiName floor-status
+* @apiGroup 项目点
+* @apiDescription 设置当前状态 当前楼层数据状态 1-启用 2-停用中
 * @apiHeader {String} authorization 登录token Bearer + token
-* @apiParam {String} id 楼层id
-* @apiSuccess {Object} data 楼层building
+* @apiParam {Number} id 楼层id
 * @apiSuccess {Number} errcode 成功为0
-* @apiSuccess {Object[]} data {}
+* @apiSuccess {Object} data {}
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
-router.delete('/:id', async (ctx, next) => {
-	const where = { id: ctx.params.id };
+router.post('/:id/status', async (ctx, next) => {
+	const { id, status } = ctx.request.body;
 
-	return Floors.destroy({ where }).then(() => {
-		ctx.body = ServiceResult.getSuccess({});
-		next();
-	}).catch(error => {
-		console.log('删除floor失败', error);
-		ctx.body = ServiceResult.getFail('执行错误');
-		next();
-	});
+	return Floors.update({ status: Number(status), where: { id } })
+		.then(() => {
+			ctx.body = ServiceResult.getSuccess({});
+			next();
+		}).catch(error => {
+			console.error('设置楼层当前状态失败', error);
+			ctx.body = ServiceResult.getFail('设置失败');
+			next();
+		});
 });
 
 module.exports = router;

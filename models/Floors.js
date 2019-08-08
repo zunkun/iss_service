@@ -1,30 +1,21 @@
 const postgres = require('../core/db/postgres');
-const { DataTypes, Model, UUIDV4 } = require('sequelize');
+const { DataTypes, Model } = require('sequelize');
 
 const Buildings = require('./Buildings');
 const Locations = require('./Locations');
-// const Reviews = require('./Reviews');
 const Constants = require('./Constants');
 
 // 楼层信息
 class Floors extends Model {}
 Floors.init({
-	uuid: {
-		type: DataTypes.UUID,
-		defaultValue: UUIDV4
-	},
-	locationUuid: {
-		type: DataTypes.UUID,
-		comment: '项目点uuid'
-	},
-	buildingUuid: {
-		type: DataTypes.UUID,
-		comment: 'Building uuid'
-	},
 	name: {
 		type: DataTypes.STRING,
 		comment: '楼层名称'
 	}, // 建筑楼层
+	level: {
+		type: DataTypes.INTEGER,
+		comment: '楼层'
+	},
 	description: {
 		type: DataTypes.TEXT,
 		comment: '描述'
@@ -33,31 +24,43 @@ Floors.init({
 		type: DataTypes.INTEGER,
 		comment: '楼层类别Id,参考常量表constants'
 	},
-	floorMaintained: {
+	isMaintained: {
 		type: DataTypes.BOOLEAN,
-		comment: '是否维护',
+		comment: '是否需要维护',
 		defaultValue: false
 	},
-	grossarea: {
+	area: {
 		type: DataTypes.FLOAT,
 		comment: '总面积'
 	},
-	grossexternarea: {
+	outerarea: {
 		type: DataTypes.FLOAT,
 		comment: '外部面积'
 	},
-	grossinternalarea: {
+	innerarea: {
 		type: DataTypes.FLOAT,
 		comment: '内部面积'
 	},
-	level: {
-		type: DataTypes.INTEGER,
-		comment: '楼层'
+	createdUserId: {
+		type: DataTypes.STRING,
+		comment: '创建人钉钉userId'
+	},
+	createdUserName: {
+		type: DataTypes.STRING,
+		comment: '创建人姓名'
+	},
+	companyId: {
+		type: DataTypes.STRING,
+		comment: '客户ID'
+	},
+	buildingName: {
+		type: DataTypes.STRING,
+		comment: '建筑名称'
 	},
 	status: {
 		type: DataTypes.INTEGER,
 		defaultValue: 0,
-		comment: '当前数据分类 0-sv编辑的数据 1-审批中的数据 2-使用的数据 3-被替换的历史数据'
+		comment: '当前数据分类 0-sv编辑 1-启用 2-启用'
 	}
 }, {
 	sequelize: postgres,
@@ -66,6 +69,7 @@ Floors.init({
 	comment: '楼层信息'
 });
 
+// 保存项目点信息，用作设备信息使用
 Locations.hasMany(Floors);
 Floors.belongsTo(Locations);
 
@@ -74,6 +78,16 @@ Floors.belongsTo(Buildings);
 
 Floors.belongsTo(Constants, { as: 'floorClass' });
 
-Floors.sync();
+Floors.sync().then(() => {
+	// 处理id,id从1000开始自增
+	return postgres.query('SELECT setval(\'floors_id_seq\', max(id)) FROM floors;	')
+		.then(data => {
+			let setval = Number(data[0][0].setval);
+			if (setval < 1000) {
+				return postgres.query('SELECT setval(\'floors_id_seq\', 1000, true);');
+			}
+			return Promise.resolve();
+		});
+});
 
 module.exports = Floors;
