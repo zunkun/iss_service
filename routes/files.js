@@ -8,6 +8,7 @@ const FileService = require('../services/FileService');
 const jwt = require('jsonwebtoken');
 const CompanyService = require('../services/company');
 const LocationService = require('../services/location');
+const BuildingService = require('../services/building');
 
 const storage = multer.diskStorage({
 	// 文件保存路径
@@ -63,6 +64,9 @@ router.post('/upload', upload.single('file'), async (ctx, next) => {
 			break;
 		case 'location':
 			LocationService.saveLocations(filedatas, user);
+			break;
+		case 'building':
+			BuildingService.saveBuildings(filedatas, user);
 			break;
 		default:
 			break;

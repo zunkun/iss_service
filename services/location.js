@@ -18,7 +18,7 @@ class LocationService {
 
 			for (let filedata of filedatas) {
 				let data = {
-					companyId: filedata['客户代码'],
+					companyId: filedata['客户ID'],
 					name: filedata['项目点名称'] || '',
 					costcenter: filedata['项目编号'] || '',
 					provinceCode: util.getProvinceCode(filedata['省名称'] || ''),

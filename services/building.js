@@ -3,8 +3,38 @@ const Buildings = require('../models/Buildings');
 const util = require('../core/util');
 
 class BuildingService {
-	static async saveBuildings (filedata, user) {
+	/**
+	 * 保存建筑信息列表
+	 * @param {Object} filedatas 建筑信息
+	 * @param {Ojbect} user 当前操作人员信息
+	 */
+	static async saveBuildings (filedatas, user) {
+		if (!Array.isArray(filedatas)) {
+			return Promise.reject('参数错误');
+		}
 
+		try {
+			let promiseArray = [];
+
+			for (let filedata of filedatas) {
+				let data = {
+					locationId: filedata['客户ID'],
+					name: filedata['建筑名称'] || '',
+					mainphone: filedata['电话总机'],
+					description: filedata['描述'] || ''
+				};
+				let promise = this.saveBuilding(data, user);
+
+				promiseArray.push(promise);
+			}
+			return Promise.all(promiseArray).catch(error => {
+				console.error({ error });
+				return Promise.resolve();
+			});
+		} catch (error) {
+			console.error({ error });
+			return Promise.reject(error);
+		}
 	}
 
 	/**

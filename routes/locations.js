@@ -266,10 +266,10 @@ router.put('/:id', async (ctx, next) => {
 });
 
 /**
-* @api {post} /api/companies/status 设置当前状态
-* @apiName company-status
+* @api {post} /api/locations/status 设置当前状态
+* @apiName location-status
 * @apiGroup 项目点
-* @apiDescription 设置当前状态 当前客户数据状态 1-启用 2-停用中
+* @apiDescription 设置当前状态 当前项目点数据状态 1-启用 2-停用中
 * @apiHeader {String} authorization 登录token Bearer + token
 * @apiParam {Number} id 项目点id
 * @apiSuccess {Number} errcode 成功为0
