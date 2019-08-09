@@ -11,7 +11,7 @@ const LocationService = require('../services/LocationService');
 const BuildingService = require('../services/BuildingService');
 const FloorService = require('../services/FloorService');
 
-const storage = multer.diskStorage({
+const fileStorage = multer.diskStorage({
 	// 文件保存路径
 	destination: (req, file, cb) => {
 		cb(null, 'public/files/upload/');
@@ -22,18 +22,45 @@ const storage = multer.diskStorage({
 		cb(null, Date.now() + '.' + fileFormat[fileFormat.length - 1]);
 	}
 });
+const imageStorage = multer.diskStorage({
+	// 文件保存路径
+	destination: (req, file, cb) => {
+		cb(null, 'public/images/');
+	},
+	// 修改文件名称
+	filename: (req, file, cb) => {
+		const fileFormat = (file.originalname).split('.'); // 以点分割成数组，数组的最后一项就是后缀名
+		cb(null, Date.now() + '.' + fileFormat[fileFormat.length - 1]);
+	}
+});
 // 加载配置
-const upload = multer({ storage });
+const fileUpload = multer({ storage: fileStorage, limits: { fileSize: '10M', files: 1 } });
+const imageUpload = multer({
+	storage: imageStorage,
+	limits: { fileSize: '10M', files: 1 },
+	fileFilter: (req, file, cb) => {
+		const fileFormat = (file.originalname).split('.'); // 以点分割成数组，数组的最后一项就是后缀名
+		const ext = (fileFormat[fileFormat.length - 1] || '').toLowerCase();
+
+		let isLeagal = [ 'jpg', 'jpeg', 'png' ].indexOf(ext) > -1;
+		if (isLeagal) {
+			cb(null, true);
+		} else {
+			cb(new Error('必须上传 .jpg 或 .png 格式的图片'));
+		}
+	}
+});
+
 const router = new Router();
 
 router.prefix('/api/files');
 
 /**
-* @api {post} /api/files/upload 上传文件
+* @api {post} /api/files/upload 上传EXCEL文件
 * @apiName file-upload
 * @apiGroup 文件
 * @apiHeader {String} authorization 登录token Bearer + token
-* @apiDescription 上传Excel文件,该Excel文件必须是系统下载的Excel模板，比如“客户信息模板.xlsx” 【需要登录】
+* @apiDescription 上传Excel文件,该Excel文件必须是系统下载的Excel模板，比如“客户信息模板.xlsx”, 注意文件最大限制10M，只允许上传单文件 【需要登录】
 * @apiParam {String} type 文件类型，请查看文件模板列表
 * @apiParam  {File} file 文件信息
 * @apiSuccess {Object} data 返回值
@@ -42,7 +69,7 @@ router.prefix('/api/files');
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
-router.post('/upload', upload.single('file'), async (ctx, next) => {
+router.post('/upload', fileUpload.single('file'), async (ctx, next) => {
 	let user = jwt.decode(ctx.header.authorization.substr(7));
 	const { type } = ctx.req.body;
 	const fileInfo = ctx.req.file;
@@ -128,6 +155,33 @@ router.get('/types', async (ctx, next) => {
 	}
 	ctx.body = ServiceResult.getSuccess(data);
 	await next();
+});
+
+/**
+* @api {post} /api/files/images 上传图片
+* @apiName file-images
+* @apiGroup 文件
+* @apiHeader {String} authorization 登录token Bearer + token
+* @apiDescription 上传图片, 注意文件最大限制10M，只允许上传 .png .jpg 格式的图片 【需要登录】，获取图片请使用 'server_host + /images/:name'
+* @apiParam  {File} file 文件信息
+* @apiSuccess {Object} data 返回值
+* @apiSuccess {Number} errcode 成功为0
+* @apiSuccess {Object} data {} 图片信息
+* @apiSuccess {Object} data.name  图片名称
+* @apiError {Number} errcode 失败不为0
+* @apiError {Number} errmsg 错误消息
+*/
+router.post('/image', imageUpload.single('image'), async (ctx, next) => {
+	const imageInfo = ctx.req.image;
+	let user = jwt.decode(ctx.header.authorization.substr(7));
+
+	if (!user || !user.userId) {
+		ctx.body = ServiceResult.getFail('鉴权失败');
+		return;
+	}
+
+	ctx.body = ServiceResult.getSuccess({ name: imageInfo.filename });
+	next();
 });
 
 module.exports = router;
