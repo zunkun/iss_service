@@ -1,7 +1,6 @@
 const postgres = require('../core/db/postgres');
 const { DataTypes, Model } = require('sequelize');
 const Locations = require('./Locations');
-const Constants = require('./Constants');
 
 // 建筑信息
 class Buildings extends Model {}
@@ -15,6 +14,10 @@ Buildings.init({
 	buildingClassId: {
 		type: DataTypes.INTEGER,
 		comment: '建筑类别Id,参考常量表constants'
+	},
+	buildingClass: {
+		type: DataTypes.STRING,
+		comment: '建筑类别'
 	},
 	description: {
 		type: DataTypes.TEXT,
@@ -58,8 +61,6 @@ Buildings.init({
 
 Locations.hasMany(Buildings);
 Buildings.belongsTo(Locations);
-
-Buildings.belongsTo(Constants, { as: 'buildingClass' });
 
 Buildings.sync().then(() => {
 	// 处理id,id从1000开始自增

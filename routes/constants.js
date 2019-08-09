@@ -5,6 +5,7 @@ const Constants = require('../models/Constants');
 const areaLists = require('../config/areaLists');
 const { Op, fn, col } = require('sequelize');
 
+const constUtil = require('../core/util/constants');
 router.prefix('/api/constants');
 
 /**
@@ -115,6 +116,8 @@ router.post('/', async (ctx, next) => {
 		}
 		return Constants.create({ name, classfication });
 	}).then(constant => {
+		// 同步常量表MAP
+		constUtil.setMap(constant.id, name);
 		ctx.body = ServiceResult.getSuccess({
 			id: constant.id,
 			name,
@@ -143,6 +146,8 @@ router.put('/:id', async (ctx, next) => {
 	const { name } = ctx.request.body;
 
 	return Constants.update({ name }, { where: { id: ctx.params.id } }).then(() => {
+		// 同步常量表MAP
+		constUtil.setMap(ctx.params.id, name);
 		ctx.body = ServiceResult.getSuccess({});
 		next();
 	}).catch(() => {

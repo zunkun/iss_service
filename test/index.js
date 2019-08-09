@@ -40,9 +40,9 @@ describe('测试 /api/floors', () => {
 	require('./api/floors');
 });
 
-// describe('测试 /api/spaces', () => {
-// 	require('./api/spaces');
-// });
+describe('测试 /api/spaces', () => {
+	require('./api/spaces');
+});
 
 // describe('测试 /api/specs', () => {
 // 	require('./api/specs');

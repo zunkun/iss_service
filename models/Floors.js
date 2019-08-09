@@ -3,7 +3,6 @@ const { DataTypes, Model } = require('sequelize');
 
 const Buildings = require('./Buildings');
 const Locations = require('./Locations');
-const Constants = require('./Constants');
 
 // 楼层信息
 class Floors extends Model {}
@@ -23,6 +22,10 @@ Floors.init({
 	floorClassId: {
 		type: DataTypes.INTEGER,
 		comment: '楼层类别Id,参考常量表constants'
+	},
+	floorClass: {
+		type: DataTypes.STRING,
+		comment: '楼层类别'
 	},
 	isMaintained: {
 		type: DataTypes.BOOLEAN,
@@ -75,8 +78,6 @@ Floors.belongsTo(Locations);
 
 Buildings.hasMany(Floors);
 Floors.belongsTo(Buildings);
-
-Floors.belongsTo(Constants, { as: 'floorClass' });
 
 Floors.sync().then(() => {
 	// 处理id,id从1000开始自增

@@ -1,5 +1,6 @@
 const postgres = require('../core/db/postgres');
 const { DataTypes, Model } = require('sequelize');
+const constUtil = require('../core/util/constants');
 
 // 常量信息表
 class Constants extends Model {}
@@ -20,6 +21,13 @@ Constants.init({
 	}
 }, { sequelize: postgres, modelName: 'constants', timestamps: false, comment: '常量信息表' });
 
-Constants.sync();
+Constants.sync().then(async () => {
+	let constants = await Constants.findAll({});
+
+	for (let constant of constants) {
+		constUtil.setMap(constant.id, constant.name);
+	}
+	return Promise.resolve();
+});
 
 module.exports = Constants;

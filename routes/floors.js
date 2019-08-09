@@ -3,10 +3,10 @@ const Router = require('koa-router');
 const router = new Router();
 const Floors = require('../models/Floors');
 const { Op } = require('sequelize');
-const Constants = require('../models/Constants');
 const FloorService = require('../services/FloorService');
 const jwt = require('jsonwebtoken');
 const util = require('../core/util');
+const constUtil = require('../core/util/constants');
 
 router.prefix('/api/floors');
 /**
@@ -27,7 +27,7 @@ router.prefix('/api/floors');
 * @apiSuccess {String} data.rows.name 楼层名称
 * @apiSuccess {Number} data.rows.level 楼层
 * @apiSuccess {Number} data.rows.floorClassId 楼层类别Id
-* @apiSuccess {Object} data.rows.floorClassId 楼层类别
+* @apiSuccess {String} data.rows.floorClass 楼层类别
 * @apiSuccess {Date} data.rows.activeStartDate 开始时间
 * @apiSuccess {Boolean} data.rows.isMaintained 是否维护
 * @apiSuccess {String} data.rows.description 描述
@@ -35,6 +35,8 @@ router.prefix('/api/floors');
 * @apiSuccess {Number} data.rows.outerarea 外部面积
 * @apiSuccess {Number} data.rows.innerarea 内部面积
 * @apiSuccess {Number} data.rows.level 楼层
+* @apiSuccess {String} data.rows.createdUserId  创建人usrId
+* @apiSuccess {String} data.rows.createdUserName  创建人userName
 * @apiSuccess {Number} data.rows.status 当前数据分类 0-sv编辑的数据 1-审批中的数据 2-使用的数据 3-被替换的历史数据
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
@@ -62,8 +64,7 @@ router.get('/', async (ctx, next) => {
 		where,
 		limit,
 		offset,
-		attributes: { exclude: [ 'pinyin', 'updatedAt', 'deletedAt' ] },
-		include: [ { model: Constants, as: 'floorClass' } ]
+		attributes: { exclude: [ 'pinyin', 'updatedAt', 'deletedAt' ] }
 	}).then(floors => {
 		ctx.body = ServiceResult.getSuccess(floors);
 		next();
@@ -97,13 +98,15 @@ router.get('/', async (ctx, next) => {
 * @apiSuccess {String} data.name 楼层名称
 * @apiSuccess {Number} ldata.evel 楼层
 * @apiSuccess {Number} data.floorClassId 楼层类别Id
-* @apiSuccess {Object} data.floorClass 楼层类别
+* @apiSuccess {String} data.floorClass 楼层类别
 * @apiSuccess {Boolean} data.isMaintained 是否维护
 * @apiSuccess {String} data.description 描述
 * @apiSuccess {Number} data.area 总面积
 * @apiSuccess {Number} data.outerarea 外部面积
 * @apiSuccess {Number} data.innerarea 内部面积
 * @apiSuccess {Number} data.level 楼层
+* @apiSuccess {String} data.createdUserId  创建人usrId
+* @apiSuccess {String} data.createdUserName  创建人userName
 * @apiSuccess {Number} data.status 当前数据分类 0-sv编辑 1-启用 2-启用
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
@@ -113,17 +116,9 @@ router.post('/', async (ctx, next) => {
 	const data = ctx.request.body;
 
 	return FloorService.saveFloor(data, user)
-		.then(floor => {
-			return Floors.findOne({
-				where: { id: floor.id },
-				attributes: { exclude: [ 'pinyin', 'updatedAt', 'deletedAt' ] },
-				include: [
-					{ model: Constants, as: 'floorClass' }
-				]
-			}).then(res => {
-				ctx.body = ServiceResult.getSuccess(res);
-				next();
-			});
+		.then(res => {
+			ctx.body = ServiceResult.getSuccess(res);
+			next();
 		}).catch(error => {
 			console.log('创建floor失败', error);
 			ctx.body = ServiceResult.getFail('执行错误');
@@ -144,13 +139,15 @@ router.post('/', async (ctx, next) => {
 * @apiSuccess {String} data.name 楼层名称
 * @apiSuccess {Number} ldata.evel 楼层
 * @apiSuccess {Number} data.floorClassId 楼层类别Id
-* @apiSuccess {Object} data.floorClass 楼层类别
+* @apiSuccess {String} data.floorClass 楼层类别
 * @apiSuccess {Boolean} data.isMaintained 是否维护
 * @apiSuccess {String} data.description 描述
 * @apiSuccess {Number} data.area 总面积
 * @apiSuccess {Number} data.outerarea 外部面积
 * @apiSuccess {Number} data.innerarea 内部面积
 * @apiSuccess {Number} data.level 楼层
+* @apiSuccess {String} data.createdUserId  创建人usrId
+* @apiSuccess {String} data.createdUserName  创建人userName
 * @apiSuccess {Number} data.status 当前数据分类 0-sv编辑 1-启用 2-启用
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
@@ -160,10 +157,7 @@ router.get('/:id', async (ctx, next) => {
 
 	return Floors.findOne({
 		where,
-		attributes: { exclude: [ 'pinyin', 'updatedAt', 'deletedAt' ] },
-		include: [
-			{ model: Constants, as: 'floorClass' }
-		]
+		attributes: { exclude: [ 'pinyin', 'updatedAt', 'deletedAt' ] }
 	}).then(res => {
 		ctx.body = ServiceResult.getSuccess(res);
 		next();
@@ -201,9 +195,14 @@ router.put('/:id', async (ctx, next) => {
 	const where = { id: ctx.params.id };
 
 	let floorData = {};
-	util.setProperty([ 'name', 'floorClassId', 'description',
+	util.setProperty([ 'name', 'description',
 		'area', 'outerarea', 'innerarea', 'level'
 	], data, floorData);
+
+	if (data.floorClassId && constUtil.hasConst(data.floorClassId)) {
+		floorData.floorClassId = data.floorClassId;
+		floorData.floorClass = constUtil.getConst(data.floorClassId);
+	}
 
 	if (Object.keys(data).indexOf('isMaintained') > -1) floorData.isMaintained = data.isMaintained;
 	if (data.name) floorData.pinyin = util.getPinyin(data.name);

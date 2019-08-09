@@ -1,6 +1,7 @@
 const Locations = require('../models/Locations');
 const Buildings = require('../models/Buildings');
 const util = require('../core/util');
+const constUtil = require('../core/util/constants');
 
 class BuildingService {
 	/**
@@ -55,8 +56,14 @@ class BuildingService {
 		if (!data.locationId || !data.name) return Promise.reject('参数不正确');
 
 		// 复制基本信息
-		util.setProperty([ 'buildingClassId', 'description', 'mainphone' ], data, buildingData);
+		util.setProperty([ 'description', 'mainphone' ], data, buildingData);
 
+		console.log(data.buildingClassId, constUtil.hasConst(data.buildingClassId));
+
+		if (data.buildingClassId && constUtil.hasConst(data.buildingClassId)) {
+			buildingData.buildingClassId = data.buildingClassId;
+			buildingData.buildingClass = constUtil.getConst(data.buildingClassId);
+		}
 		return Locations.findOne({ where: { id: data.locationId } })
 			.then(location => {
 				if (!location) {

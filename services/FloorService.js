@@ -1,6 +1,7 @@
 const Floors = require('../models/Floors');
 const Buildings = require('../models/Buildings');
 const util = require('../core/util');
+const constUtil = require('../core/util/constants');
 
 class FloorService {
 	/**
@@ -60,7 +61,11 @@ class FloorService {
 		if (!data.buildingId || !data.name) return Promise.reject('参数不正确');
 
 		// 复制基本信息
-		util.setProperty([ 'floorClassId', 'level', 'description', 'area', 'outerarea', 'innerarea' ], data, floorData);
+		util.setProperty([ 'level', 'description', 'area', 'outerarea', 'innerarea' ], data, floorData);
+		if (data.floorClassId && constUtil.hasConst(data.floorClassId)) {
+			floorData.floorClassId = data.floorClassId;
+			floorData.floorClass = constUtil.getConst(data.floorClassId);
+		}
 
 		return Buildings.findOne({ where: { id: data.buildingId } })
 			.then(building => {
@@ -71,7 +76,6 @@ class FloorService {
 				floorData.companyId = building.companyId;
 				floorData.locationId = building.locationId;
 				floorData.buildingName = building.name;
-				floorData.companyId = building.companyId;
 				// 创建楼层信息
 				return Floors.create(floorData);
 			});

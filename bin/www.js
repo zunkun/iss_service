@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 require('console-stamp')(console, { pattern: 'yyyy-mm-dd\'T\'HH:MM:ss:l' });
+
 const fs = require('fs');
 const path = require('path');
 var options;

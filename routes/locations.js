@@ -1,17 +1,15 @@
 const ServiceResult = require('../core/ServiceResult');
 const Companies = require('../models/Companies');
 const Locations = require('../models/Locations');
-const Constants = require('../models/Constants');
 
 const { Op } = require('sequelize');
 const Router = require('koa-router');
 const LocationService = require('../services/LocationService');
 const jwt = require('jsonwebtoken');
-
+const constUtil = require('../core/util/constants');
 const util = require('../core/util');
 const router = new Router();
 router.prefix('/api/locations');
-let paranoid = true;
 
 /**
 * @api {get} /api/locations?limit=&page=&name=&status=&createdUserName=&companyId=&companyName 项目点列表
@@ -47,11 +45,13 @@ let paranoid = true;
 * @apiSuccess {Number} data.rows.area  总面积
 * @apiSuccess {String} data.rows.unit  测量单位
 * @apiSuccess {Number} data.rows.propertyClassId  类别Id
-* @apiSuccess {Object} data.rows.propertyClass  类别，参考常量表
+* @apiSuccess {String} data.rows.propertyClass  类别，参考常量表
 * @apiSuccess {String} data.rows.description  描述
 * @apiSuccess {String} data.rows.zippostal  邮编
 * @apiSuccess {String} data.rows.mainphone  电话总机
 * @apiSuccess {String} data.rows.parkingOpen  停车位数量
+* @apiSuccess {String} data.rows.createdUserId  创建人usrId
+* @apiSuccess {String} data.rows.createdUserName  创建人userName
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
@@ -87,10 +87,7 @@ router.get('/', async (ctx, next) => {
 		where,
 		limit,
 		offset,
-		attributes: { exclude: [ 'updatedAt', 'deletedAt' ] },
-		include: [
-			{ model: Constants, as: 'propertyClass', paranoid, attributes: [ 'id', 'classfication', 'name' ] }
-		]
+		attributes: { exclude: [ 'updatedAt', 'deletedAt' ] }
 	}).then(locations => {
 		ctx.body = ServiceResult.getSuccess(locations);
 		next();
@@ -139,11 +136,13 @@ router.get('/', async (ctx, next) => {
 * @apiSuccess {Number} data.area  总面积
 * @apiSuccess {String} data.unit  测量单位
 * @apiSuccess {Number} data.propertyClassId  类别Id
-* @apiSuccess {Object} data.propertyClass  类别，参考常量表
+* @apiSuccess {String} data.propertyClass  类别，参考常量表
 * @apiSuccess {String} data.description  描述
 * @apiSuccess {String} data.zippostal  邮编
 * @apiSuccess {String} data.mainphone  电话总机
 * @apiSuccess {String} data.parkingOpen  停车位数量
+* @apiSuccess {String} data.createdUserId  创建人usrId
+* @apiSuccess {String} data.createdUserName  创建人userName
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
@@ -156,13 +155,6 @@ router.post('/', async (ctx, next) => {
 	}
 
 	return LocationService.saveLocation(data, user)
-		.then(location => {
-			return Locations.findOne({
-				attributes: { exclude: [ 'pinyin', 'updatedAt', 'deletedAt' ] },
-				where: { id: location.id },
-				include: [ { model: Constants, as: 'propertyClass', attributes: [ 'id', 'name' ] } ]
-			});
-		})
 		.then(location => {
 			ctx.body = ServiceResult.getSuccess(location);
 			next();
@@ -196,11 +188,13 @@ router.post('/', async (ctx, next) => {
 * @apiSuccess {Number} data.area  总面积
 * @apiSuccess {String} data.unit  测量单位
 * @apiSuccess {Number} data.propertyClassId  类别Id
-* @apiSuccess {Object} data.propertyClass  类别，参考常量表
+* @apiSuccess {String} data.propertyClass  类别，参考常量表
 * @apiSuccess {String} data.description  描述
 * @apiSuccess {String} data.zippostal  邮编
 * @apiSuccess {String} data.mainphone  电话总机
 * @apiSuccess {String} data.parkingOpen  停车位数量
+* @apiSuccess {String} data.createdUserId  创建人usrId
+* @apiSuccess {String} data.createdUserName  创建人userName
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
 */
@@ -208,8 +202,7 @@ router.get('/:id', async (ctx, next) => {
 	let location = await Locations.findOne({
 		where: { id: ctx.params.id },
 		include: [
-			{ model: Companies, as: 'company' },
-			{ model: Constants, as: 'propertyClass', attributes: [ 'id', 'classfication', 'name' ] }
+			{ model: Companies, as: 'company' }
 		]
 	});
 	ctx.body = ServiceResult.getSuccess(location);
@@ -252,9 +245,13 @@ router.put('/:id', async (ctx, next) => {
 	}
 	let locationData = {};
 	// 复制基本信息
-	util.setProperty([ 'name', 'costcenter', 'street', 'mainphone', 'propertyClassId',
+	util.setProperty([ 'name', 'costcenter', 'street', 'mainphone',
 		'area', 'unit',	'zippostal', 'description', 'parkingOpen' ], data, locationData);
 
+	if (data.propertyClassId && constUtil.hasConst(data.propertyClassId)) {
+		locationData.propertyClassId = data.propertyClassId;
+		locationData.propertyClass = constUtil.getConst(data.propertyClassId);
+	}
 	if (data.name) locationData.pinyin = util.getPinyin(data.name);
 	// 处理省市区信息
 	util.setZone(data, locationData);

@@ -10,6 +10,7 @@ const CompanyService = require('../services/CompanyService');
 const LocationService = require('../services/LocationService');
 const BuildingService = require('../services/BuildingService');
 const FloorService = require('../services/FloorService');
+const SpaceService = require('../services/SpaceService');
 
 const fileStorage = multer.diskStorage({
 	// 文件保存路径
@@ -98,6 +99,9 @@ router.post('/upload', fileUpload.single('file'), async (ctx, next) => {
 			break;
 		case 'floor':
 			FloorService.saveFloors(filedatas, user);
+			break;
+		case 'space':
+			SpaceService.saveSpaces(filedatas, user);
 			break;
 		default:
 			break;

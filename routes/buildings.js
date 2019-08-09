@@ -2,11 +2,11 @@ const ServiceResult = require('../core/ServiceResult');
 const Router = require('koa-router');
 const router = new Router();
 const Buildings = require('../models/Buildings');
-const Constants = require('../models/Constants');
 const { Op } = require('sequelize');
 const jwt = require('jsonwebtoken');
 const util = require('../core/util');
 const BuildingService = require('../services/BuildingService');
+const constUtil = require('../core/util/constants');
 
 router.prefix('/api/buildings');
 /**
@@ -27,9 +27,11 @@ router.prefix('/api/buildings');
 * @apiSuccess {String} data.rows.name 建筑名称
 * @apiSuccess {Number} data.rows.locationId 项目点id
 * @apiSuccess {Number} data.rows.buildingClassId 建筑类别Id
-* @apiSuccess {Object} data.rows.buildingClass 建筑类别
+* @apiSuccess {String} data.rows.buildingClass 建筑类别
 * @apiSuccess {String} data.rows.description 描述
 * @apiSuccess {String} data.rows.mainphone 电话总机
+* @apiSuccess {String} data.rows.createdUserId  创建人usrId
+* @apiSuccess {String} data.rows.createdUserName  创建人userName
 * @apiSuccess {Number} data.rows.status 当前数据分类 0-sv编辑的数据 1-启用 2-弃用
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
@@ -56,10 +58,7 @@ router.get('/', async (ctx, next) => {
 		where,
 		limit,
 		offset,
-		attributes: { exclude: [ 'pinyin', 'updatedAt', 'deletedAt' ] },
-		include: [
-			{ model: Constants, as: 'buildingClass' }
-		]
+		attributes: { exclude: [ 'pinyin', 'updatedAt', 'deletedAt' ] }
 	}).then(buildings => {
 		ctx.body = ServiceResult.getSuccess(buildings);
 		next();
@@ -92,6 +91,8 @@ router.get('/', async (ctx, next) => {
 * @apiSuccess {Object} data.buildingClass 建筑类别
 * @apiSuccess {String} data.description 描述
 * @apiSuccess {String} data.mainphone 电话总机
+* @apiSuccess {String} data.createdUserId  创建人usrId
+* @apiSuccess {String} data.createdUserName  创建人userName
 * @apiSuccess {Number} data.status 当前数据分类 0-sv编辑的数据 1-启用 2-弃用
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
@@ -101,21 +102,13 @@ router.post('/', async (ctx, next) => {
 	const data = ctx.request.body;
 
 	return BuildingService.saveBuilding(data, user)
-		.then(building => {
-			return Buildings.findOne({
-				attributes: { exclude: [ 'pinyin', 'updatedAt', 'deletedAt' ] },
-				where: { id: building.id },
-				include: [
-					{ model: Constants, as: 'buildingClass' }
-				]
-			}).then(res => {
-				ctx.body = ServiceResult.getSuccess(res);
-				next();
-			}).catch(error => {
-				console.log('创建建筑信息失败', error);
-				ctx.body = ServiceResult.getFail('执行错误');
-				next();
-			});
+		.then(res => {
+			ctx.body = ServiceResult.getSuccess(res);
+			next();
+		}).catch(error => {
+			console.log('创建建筑信息失败', error);
+			ctx.body = ServiceResult.getFail('执行错误');
+			next();
 		});
 });
 
@@ -132,9 +125,11 @@ router.post('/', async (ctx, next) => {
 * @apiSuccess {String} data.name 建筑名称
 * @apiSuccess {Number} data.locationId 项目点id
 * @apiSuccess {Number} data.buildingClassId 建筑类别Id
-* @apiSuccess {Object} data.buildingClass 建筑类别
+* @apiSuccess {String} data.buildingClass 建筑类别
 * @apiSuccess {String} data.description 描述
 * @apiSuccess {String} data.mainphone 电话总机
+* @apiSuccess {String} data.createdUserId  创建人usrId
+* @apiSuccess {String} data.createdUserName  创建人userName
 * @apiSuccess {Number} data.status 当前数据分类 0-sv编辑的数据 1-启用 2-弃用
 * @apiError {Number} errcode 失败不为0
 * @apiError {Number} errmsg 错误消息
@@ -142,10 +137,7 @@ router.post('/', async (ctx, next) => {
 router.get('/:id', async (ctx, next) => {
 	return Buildings.findOne({
 		attributes: { exclude: [ 'pinyin', 'updatedAt', 'deletedAt' ] },
-		where: { id: ctx.params.id },
-		include: [
-			{ model: Constants, as: 'buildingClass' }
-		]
+		where: { id: ctx.params.id }
 	}).then(res => {
 		ctx.body = ServiceResult.getSuccess(res);
 		next();
@@ -179,9 +171,14 @@ router.put('/:id', async (ctx, next) => {
 	const data = ctx.request.body;
 
 	let buildingData = {};
-	util.setProperty([ 'name', 'buildingClassId', 'description', 'mainphone' ], data, buildingData);
+	util.setProperty([ 'name', 'description', 'mainphone' ], data, buildingData);
 	if (data.status) buildingData.status = data.status;
 	if (data.name) buildingData.pinyin = util.getPinyin(data.name);
+
+	if (data.buildingClassId && constUtil.hasConst(data.buildingClassId)) {
+		buildingData.buildingClassId = data.buildingClassId;
+		buildingData.buildingClass = constUtil.getConst(data.buildingClassId);
+	}
 
 	return Buildings.update(buildingData, { where: { id: ctx.params.id } })
 		.then(() => {

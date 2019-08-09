@@ -1,6 +1,7 @@
 const Companies = require('../models/Companies');
 const Locations = require('../models/Locations');
 const util = require('../core/util');
+const constUtil = require('../core/util/constants');
 
 class LocationService {
 	/**
@@ -63,9 +64,13 @@ class LocationService {
 		if (!data.companyId || !data.name) return Promise.reject('参数不正确');
 
 		// 复制基本信息
-		util.setProperty([ 'costcenter', 'street', 'mainphone', 'propertyClassId',
+		util.setProperty([ 'costcenter', 'street', 'mainphone',
 			'area',	'unit',	'zippostal', 'description', 'parkingOpen' ], data, locationData);
 
+		if (data.propertyClassId && constUtil.hasConst(data.propertyClassId)) {
+			locationData.propertyClassId = data.propertyClassId;
+			locationData.propertyClass = constUtil.getConst(data.propertyClassId);
+		}
 		// 处理省市区信息
 		util.setZone(data, locationData);
 
